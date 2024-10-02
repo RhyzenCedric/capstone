@@ -1,0 +1,17 @@
+<!-- res/layout/activity_splash.xml -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"> <!-- Set background color -->
+
+    <TextView
+        android:id="@+id/splashText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="PhisherMan Browser"
+        android:textSize="24sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold" /> <!-- Customize text appearance -->
+
+</RelativeLayout>
