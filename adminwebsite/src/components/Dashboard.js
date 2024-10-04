@@ -1,57 +1,70 @@
 // src/Dashboard.js
 import React, { useState } from 'react';
-
-const initialData = [];
+import Users from './Users';
+import Admins from './Admins';
+import Reports from './Reports';
+import Links from './Links';
+import Settings from './Settings';
 
 const Dashboard = () => {
-  const [data, setData] = useState(initialData);
-  const [inputValue, setInputValue] = useState('');
-
-  const handleAdd = () => {
-    if (inputValue) {
-      setData([...data, inputValue]);
-      setInputValue('');
-    }
-  };
-
-  const handleDelete = (index) => {
-    const newData = data.filter((_, i) => i !== index);
-    setData(newData);
-  };
+  const [activeTab, setActiveTab] = useState('users');
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
-      <div className="flex mb-4">
-        <input
-          type="text"
-          className="border p-2 flex-grow"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Add new item"
-        />
+      {/* Tab Navigation */}
+      <div className="flex space-x-4 mb-6">
         <button
-          className="bg-blue-500 text-white px-4 ml-2"
-          onClick={handleAdd}
+          className={`px-4 py-2 rounded-md ${
+            activeTab === 'users' ? 'bg-[#326789] text-white' : 'bg-white text-[#326789]'
+          }`}
+          onClick={() => setActiveTab('users')}
         >
-          Add
+          Users
+        </button>
+        <button
+          className={`px-4 py-2 rounded-md ${
+            activeTab === 'admins' ? 'bg-[#326789] text-white' : 'bg-white text-[#326789]'
+          }`}
+          onClick={() => setActiveTab('admins')}
+        >
+          Admins
+        </button>
+        <button
+          className={`px-4 py-2 rounded-md ${
+            activeTab === 'reports' ? 'bg-[#326789] text-white' : 'bg-white text-[#326789]'
+          }`}
+          onClick={() => setActiveTab('reports')}
+        >
+          Reports
+        </button>
+        <button
+          className={`px-4 py-2 rounded-md ${
+            activeTab === 'links' ? 'bg-[#326789] text-white' : 'bg-white text-[#326789]'
+          }`}
+          onClick={() => setActiveTab('links')}
+        >
+          Links
+        </button>
+        <button
+          className={`px-4 py-2 rounded-md ${
+            activeTab === 'settings' ? 'bg-[#326789] text-white' : 'bg-white text-[#326789]'
+          }`}
+          onClick={() => setActiveTab('settings')}
+        >
+          Settings
         </button>
       </div>
 
-      <ul className="list-disc pl-5">
-        {data.map((item, index) => (
-          <li key={index} className="flex justify-between items-center mb-2">
-            <span>{item}</span>
-            <button
-              className="bg-red-500 text-white px-2"
-              onClick={() => handleDelete(index)}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* Tab Content */}
+      <div className="p-4 bg-[#E9EEF2] rounded-md">
+        {activeTab === 'users' && <Users />}
+        {activeTab === 'admins' && <Admins />}
+        {activeTab === 'reports' && <Reports />}
+        {activeTab === 'links' && <Links />}
+        {activeTab === 'settings' && <Settings />}
+      </div>
     </div>
   );
 };
