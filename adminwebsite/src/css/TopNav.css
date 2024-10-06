@@ -1,43 +1,108 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+.TopNav {
+  background-color: #2c3e50;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex; /* Use flexbox to align items */
+  align-items: center; /* Center items vertically */
 }
 
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+.TopNav h1 {
+  color: #ecf0f1;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 1rem; /* Add margin to the left */
+  flex-grow: 1; /* Allow the title to take up available space */
+}
+
+.sidebar-toggle {
+  background-color: transparent; /* Remove the background color */
+  color: #ecf0f1; /* Keep the text color the same */
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  margin-left: 1rem; /* Add some space to the left */
+}
+
+.sidebar-toggle:hover {
+  color: #3498db; /* Change text color on hover */
 }
 
 nav {
-  background-color: #ffe169 ;
-  padding: 1rem;
+  flex-grow: 2; /* Stretch nav to take more space */
 }
 
 .tab-list {
   list-style-type: none;
   display: flex;
   gap: 1rem;
+  margin: 0;
+  padding: 0;
+  justify-content: flex-end; /* Align the tab-list to the far right */
 }
 
 .tab-list li {
-  display: inline;
+  margin: 0;
 }
 
 .tab-list a {
-  color: white;
+  color: #bdc3c7;
   text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
   padding: 0.5rem 1rem;
-  border-radius: 5px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
 }
 
 .tab-list a:hover {
-  background-color: #0056b3;
+  color: #ecf0f1;
+  background-color: rgba(236, 240, 241, 0.1);
 }
 
-.content {
-  padding: 2rem;
-  flex-grow: 1;
-  background-color: #f8f9fa;
+.tab-list a.active {
+  color: #3498db;
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Ensure content below the navbar is not hidden */
+body {
+  padding-top: 70px; /* Adjust this value based on the height of your navbar */
+}
+
+@media (max-width: 1200px) { /* First breakpoint to hide last item */
+  .tab-list li:last-child {
+    display: none; /* Hide last tab */
+  }
+}
+
+@media (max-width: 992px) { /* Second breakpoint to hide second last item */
+  .tab-list li:nth-last-child(2) {
+    display: none; /* Hide second last tab */
+  }
+}
+
+@media (max-width: 768px) { /* Third breakpoint to hide third last item */
+  .tab-list li:nth-last-child(3) {
+    display: none; /* Hide third last tab */
+  }
+}
+
+@media (max-width: 576px) { /* Fourth breakpoint to hide all but sidebar button and h1 */
+  .tab-list {
+    display: none; /* Hide the entire tab list */
+  }
+
+  .TopNav {
+    flex-direction: row; /* Keep items in a row */
+    align-items: center; /* Center items vertically */
+  }
+
+  .TopNav h1 {
+    margin: 0 1rem; /* Adjust margin for mobile */
+  }
 }

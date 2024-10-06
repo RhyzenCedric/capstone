@@ -1,0 +1,66 @@
+/* Container for the login form */
+.login-container {
+    max-width: 400px; /* Set a max width for the form */
+    margin: 2rem auto; /* Center the form horizontally and add vertical spacing */
+    padding: 2rem; /* Add padding around the form */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    background-color: #ffffff; /* White background for the form */
+}
+
+/* Title styles */
+.login-container h2 {
+    text-align: center; /* Center the title */
+    margin-bottom: 1.5rem; /* Space below the title */
+}
+
+/* Styles for the input fields and labels */
+.login-container label {
+    display: block; /* Make labels block elements */
+    margin-bottom: 0.5rem; /* Space below the label */
+    font-weight: bold; /* Bold font for labels */
+}
+
+.login-container input {
+    width: 100%; /* Full width for input fields */
+    padding: 0.5rem; /* Padding inside input fields */
+    margin-bottom: 1rem; /* Space below input fields */
+    border: 1px solid #bdc3c7; /* Light border */
+    border-radius: 5px; /* Rounded corners for input fields */
+    box-sizing: border-box; /* Include padding and border in element's total width */
+}
+
+/* Button styles */
+.login-container button {
+    width: 100%; /* Full width for buttons */
+    padding: 0.75rem; /* Padding inside buttons */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners for buttons */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition for background color */
+}
+
+/* Specific styles for the login button */
+.login-container button[type="submit"] {
+    background-color: #108690; /* Primary button color */
+    color: white; /* White text */
+    font-size: 1rem; /* Font size for button text */
+}
+
+/* Hover effect for the login button */
+.login-container button[type="submit"]:hover {
+    background-color: #0e747c; /* Darker shade on hover */
+}
+
+/* Styles for the guest button */
+.guest-button {
+    margin-top: 1rem; /* Space above the guest button */
+    background-color: #ecf0f1; /* Light background color */
+    color: #34495e; /* Dark text color */
+    font-weight: bold; /* Bold font for guest button */
+}
+
+/* Hover effect for the guest button */
+.guest-button:hover {
+    background-color: #dfe6e9; /* Darker shade on hover */
+}

@@ -6,7 +6,6 @@ import Reports from './components/Tabs/Reports';
 import Settings from './components/Tabs/Settings';
 import Login from './components/Entrance/Login';
 import Signup from './components/Entrance/SignUp';
-import './css/TopNav.css';
 import DashboardMainScreen from './components/DashboardMainScreen';
 
 const App = () => {
@@ -21,6 +20,7 @@ const App = () => {
                     <Route path="/dashboard/links" element={<Links />} />
                     <Route path="/dashboard/reports" element={<Reports />} />
                     <Route path="/dashboard/settings" element={<Settings />} />
+                    
                     <Route path="/signup" element={<Signup />} />
                 </Routes>
             </Router>
