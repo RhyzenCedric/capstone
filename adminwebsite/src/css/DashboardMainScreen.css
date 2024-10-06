@@ -1,0 +1,16 @@
+.dashboard-container {
+    display: flex;
+}
+
+.content {
+    margin-left: 0; /* Initially no margin when sidebar is hidden */
+    padding: 2rem;
+    width: 100%; /* Full width when sidebar is hidden */
+    transition: margin-left 0.3s ease; /* Smooth transition */
+}
+
+/* Adjust margin when the sidebar is visible */
+.content.with-sidebar {
+    margin-left: 250px; /* Account for the sidebar width */
+    width: calc(100% - 250px); /* Adjust width */
+}

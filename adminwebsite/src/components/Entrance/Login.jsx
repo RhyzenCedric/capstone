@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../css/Login.css'; 
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ const Login = () => {
     };
 
     return (
-        <div>
+        <div className="login-container"> {/* Add class name for styling */}
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
                 <div>
