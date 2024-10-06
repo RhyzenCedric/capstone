@@ -1,5 +1,12 @@
+import TopNav from "../NavBars/TopNav";
+
 const Settings = () => {
-    return <div><h2>Settings</h2><p>Manage settings here.</p></div>;
+    return (
+        <>
+            <TopNav/>
+            <h1>Settings</h1>
+        </>
+    );
 };
 
 export default Settings;

@@ -1,5 +1,12 @@
+import TopNav from "../NavBars/TopNav";
+
 const Reports = () => {
-    return <div><h2>Reports</h2><p>View reports here.</p></div>;
+    return (
+        <>
+            <TopNav/>
+            <h1>Reports</h1>
+        </>
+    );
 };
 
 export default Reports;
