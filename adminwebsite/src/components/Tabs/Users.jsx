@@ -1,5 +1,12 @@
+import TopNav from "../NavBars/TopNav";
+
 const Users = () => {
-    return <div><h2>Users</h2><p>Manage users here.</p></div>;
+    return (
+        <>
+            <TopNav/>
+            <h1>Users</h1>
+        </>
+    );
 };
 
 export default Users;

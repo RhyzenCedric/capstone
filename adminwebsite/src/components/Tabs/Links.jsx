@@ -1,5 +1,12 @@
+import TopNav from "../NavBars/TopNav";
+
 const Links = () => {
-    return <div><h2>Links</h2><p>Manage links here.</p></div>;
+    return (
+        <>
+            <TopNav/>
+            <h1>Links</h1>
+        </>
+    );
 };
 
 export default Links;

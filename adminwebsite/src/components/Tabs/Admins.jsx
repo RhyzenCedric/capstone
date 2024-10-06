@@ -1,5 +1,12 @@
+import TopNav from "../NavBars/TopNav";
+
 const Admins = () => {
-    return <div><h2>Admins</h2><p>Manage admins here.</p></div>;
+    return (
+        <>
+            <TopNav/>
+            <h1>Admins</h1>
+        </>
+    );
 };
 
 export default Admins;

@@ -1,35 +1,29 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, BrowserRouter } from 'react-router-dom';
 import Users from './components/Tabs/Users';
 import Admins from './components/Tabs/Admins';
 import Links from './components/Tabs/Links';
 import Reports from './components/Tabs/Reports';
 import Settings from './components/Tabs/Settings';
-import './index.css';
+import Login from './components/Entrance/Login';
+import Signup from './components/Entrance/SignUp';
+import './css/TopNav.css';
+import DashboardMainScreen from './components/DashboardMainScreen';
 
 const App = () => {
     return (
-        <Router>
-            <div className="dashboard">
-                <nav>
-                    <ul className="tab-list">
-                        <li><Link to="/users">Users</Link></li>
-                        <li><Link to="/admins">Admins</Link></li>
-                        <li><Link to="/links">Links</Link></li>
-                        <li><Link to="/reports">Reports</Link></li>
-                        <li><Link to="/settings">Settings</Link></li>
-                    </ul>
-                </nav>
-                <div className="content">
-                    <Routes>
-                        <Route path="/users" element={<Users />} />
-                        <Route path="/admins" element={<Admins />} />
-                        <Route path="/links" element={<Links />} />
-                        <Route path="/reports" element={<Reports />} />
-                        <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                </div>
-            </div>
-        </Router>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/dashboard" element={<DashboardMainScreen />} />
+
+                    <Route path="/dashboard/users" element={<Users />} />
+                    <Route path="/dashboard/admins" element={<Admins />} />
+                    <Route path="/dashboard/links" element={<Links />} />
+                    <Route path="/dashboard/reports" element={<Reports />} />
+                    <Route path="/dashboard/settings" element={<Settings />} />
+                    <Route path="/signup" element={<Signup />} />
+                </Routes>
+            </Router>
     );
 };
 
