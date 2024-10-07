@@ -1,50 +1,70 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../css/Signup.css';
+
 
 const Signup = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Here, add logic to handle user registration (e.g., API call)
-        console.log('Signing up with:', { email, password });
-        // Redirect to the login page upon successful signup
+        console.log('Signing up with:', { username, password });
         navigate('/login');
     };
 
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setConfirmPasswordVisible(!confirmPasswordVisible);
+    };
+
     return (
-        <div>
+        <div className="signup-container"> {/* Add this wrapper */}
             <h2>Signup</h2>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label>Email:</label>
+                    <label>Username:</label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
                 </div>
-                <div>
+                <div className="password">
                     <label>Password:</label>
                     <input
-                        type="password"
+                        type={passwordVisible ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                    <i 
+                        className={`fas ${passwordVisible ? 'fa-eye-slash' : 'fa-eye'}`} 
+                        onClick={togglePasswordVisibility}
+                        aria-hidden="true"
+                    ></i>
                 </div>
-                <div>
+                <div className="password">
                     <label>Confirm Password:</label>
                     <input
-                        type="password"
+                        type={confirmPasswordVisible ? 'text' : 'password'}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                     />
+                    <i 
+                        className={`fas ${confirmPasswordVisible ? 'fa-eye-slash' : 'fa-eye'}`} 
+                        onClick={toggleConfirmPasswordVisibility}
+                        aria-hidden="true"
+                    ></i>
                 </div>
                 <button type="submit">Signup</button>
             </form>

@@ -63,7 +63,6 @@
     background-color: transparent;
     border: none;
     color: #ecf0f1; /* Adjust this color as needed */
-    font-size: 1.75rem; /* Slightly larger for better visibility */
     cursor: pointer;
     padding: 0.5rem; /* Increase clickable area */
 }
@@ -71,3 +70,4 @@
 .close-btn:hover {
     color: #e74c3c; /* Change color on hover */
 }
+
