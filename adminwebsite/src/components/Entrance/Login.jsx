@@ -1,49 +1,88 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../css/Login.css'; 
+import '../../css/Login.css';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Here, add logic to handle user authentication (e.g., API call)
-        console.log('Logging in with:', { email, password });
-        // Redirect to the dashboard upon successful login
-        navigate('/dashboard'); // Redirect to users as an example
+
+        try {
+            const response = await fetch('http://localhost:5000/adminlogin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_username: username,
+                    admin_password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("Logged In Successfully")
+                navigate('/dashboard');
+            } else {
+                // Handle failed login
+                alert(data.message); // Show an error message to the user
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('An error occurred during login. Please try again.');
+        }
     };
 
     const handleGuestLogin = () => {
-        // Redirect to the dashboard without authentication
-        navigate('/dashboard'); // Redirect to users as an example
+        navigate('/dashboard');
+    };
+
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    };
+
+    const handleSignUp = () => {
+        navigate('/signup'); // Redirect to the signup page
     };
 
     return (
-        <div className="login-container"> {/* Add class name for styling */}
+        <div className="login-container">
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label>Email:</label>
+                    <label>Username:</label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         required
                     />
                 </div>
-                <div>
+                <div className="password">
                     <label>Password:</label>
                     <input
-                        type="password"
+                        type={passwordVisible ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                    <i 
+                        className={`fas ${passwordVisible ? 'fa-eye-slash' : 'fa-eye'}`} 
+                        onClick={togglePasswordVisibility}
+                        aria-hidden="true"
+                    ></i>
                 </div>
                 <button type="submit">Login</button>
             </form>
+            {/* Sign Up Button */}
+            <button onClick={handleSignUp} className="sign-up-button">
+                Sign Up
+            </button>
             <button onClick={handleGuestLogin} className="guest-button">
                 Continue as Guest
             </button>

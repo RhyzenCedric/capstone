@@ -17,7 +17,6 @@ const TopNav = () => {
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 <i className="fas fa-bars"></i>
             </button>
-
             <h1>Dashboard</h1>
             <nav>
                 <ul className="tab-list">
