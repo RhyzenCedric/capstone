@@ -3,8 +3,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- URL Input Field -->
+    <!-- Top Bar (URL Input and Tabs Button) -->
     <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -15,11 +16,17 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="48dp"
-            android:hint="Enter URL"
+            android:hint="Enter URL or Search a term"
             android:inputType="textUri" />
+
+        <Button
+            android:id="@+id/tabsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tabs" />
     </LinearLayout>
 
-    <!-- SwipeRefreshLayout wraps the WebView -->
+    <!-- SwipeRefreshLayout for WebView -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="match_parent"
@@ -29,14 +36,20 @@
         <FrameLayout
             android:id="@+id/webviewContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <!-- WebViews for each tab will be added here programmatically -->
-        </FrameLayout>
-
+            android:layout_height="match_parent" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Navigation Buttons (Back, Forward, Tabs) -->
+    <!-- Tab Previews RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tabRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone" /> <!-- Hidden initially -->
+
+    <!-- Bottom Bar (Navigation Buttons) -->
     <LinearLayout
+        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -53,12 +66,5 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Forward" />
-
-        <Button
-            android:id="@+id/tabsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tabs" />
     </LinearLayout>
-
 </LinearLayout>

@@ -2,19 +2,48 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../css/Signup.css';
 
-
 const Signup = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(''); // State for error message
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Signing up with:', { username, password });
-        navigate('/login');
+        
+        if (password !== confirmPassword) {
+            setErrorMessage('Passwords do not match');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5000/adminsignup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_username: username,
+                    admin_password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log('Registered Succesfully');
+                navigate('/'); // Redirect on successful signup
+            } else {
+                // Handle error response from the backend
+                setErrorMessage(data.error);
+            }
+        } catch (error) {
+            console.error('Error during signup:', error);
+            setErrorMessage('An error occurred while signing up');
+        }
     };
 
     const togglePasswordVisibility = () => {
@@ -28,6 +57,7 @@ const Signup = () => {
     return (
         <div className="signup-container"> {/* Add this wrapper */}
             <h2>Signup</h2>
+            {errorMessage && <div className="error-message">{errorMessage}</div>} {/* Display error message */}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Username:</label>

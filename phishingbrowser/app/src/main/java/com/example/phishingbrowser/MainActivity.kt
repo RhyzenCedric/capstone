@@ -1,13 +1,15 @@
 package com.example.phishingbrowser
 
 import android.os.Bundle
+import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 
 class MainActivity : AppCompatActivity() {
@@ -17,10 +19,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var forwardButton: Button
     private lateinit var tabsButton: Button
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private lateinit var webviewContainer: FrameLayout  // Correct the type here
+    private lateinit var webviewContainer: FrameLayout
+    private lateinit var tabRecyclerView: RecyclerView  // For showing tabs list
 
-    private val tabList = mutableListOf<WebView>()  // Store multiple WebViews
-    private val tabTitles = mutableListOf<String>()  // Store the titles of each tab
+    private val tabList = mutableListOf<WebView>()  // List of WebViews (tabs)
+    private val tabTitles = mutableListOf<String>()  // List of tab titles
     private var currentTab = 0  // Track the current active tab
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +36,13 @@ class MainActivity : AppCompatActivity() {
         forwardButton = findViewById(R.id.forwardButton)
         tabsButton = findViewById(R.id.tabsButton)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
-        webviewContainer = findViewById(R.id.webviewContainer)  // No more casting error
+        webviewContainer = findViewById(R.id.webviewContainer)
+        tabRecyclerView = findViewById(R.id.tabRecyclerView)
+
+        // Set up RecyclerView for tabs
+        val adapter = TabAdapter(this, tabTitles, { switchToTab(it) }, { closeTab(it) }, { addNewTab() })
+        tabRecyclerView.layoutManager = LinearLayoutManager(this)
+        tabRecyclerView.adapter = adapter
 
         // Set up SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
@@ -45,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
         // Tabs button functionality
         tabsButton.setOnClickListener {
-            showTabsDialog()
+            toggleTabView()
         }
 
         // Back button functionality
@@ -70,74 +79,86 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Add a new tab with a WebView
+    private fun toggleTabView() {
+        if (tabRecyclerView.visibility == View.GONE) {
+            tabRecyclerView.visibility = View.VISIBLE
+            swipeRefreshLayout.visibility = View.GONE
+        } else {
+            tabRecyclerView.visibility = View.GONE
+            swipeRefreshLayout.visibility = View.VISIBLE
+        }
+    }
+
     private fun addNewTab() {
         val webView = WebView(this)
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 swipeRefreshLayout.isRefreshing = false
-                urlInput.setText(url)
+                // Set the URL input to be blank
+                urlInput.setText("")
 
-                // Update the tab title
+                // Update the tab title in real-time
                 val title = view?.title ?: "New Tab"
                 if (tabList.size > currentTab) {
                     tabTitles[currentTab] = title
                 }
+                // Notify the adapter to update the tab title
+                (tabRecyclerView.adapter as TabAdapter).notifyItemChanged(currentTab)
             }
         }
 
+        // Load Google as the initial page but don't show it in the input field
         webView.loadUrl("https://www.google.com")
         tabList.add(webView)
-        tabTitles.add("New Tab")  // Add a default title
-
+        tabTitles.add("New Tab")  // Add default title
         switchToTab(tabList.size - 1)  // Switch to the newly created tab
     }
 
-    // Switch to a specific tab
-    private fun switchToTab(tabIndex: Int) {
-        webviewContainer.removeAllViews()  // Clear the container
-        webviewContainer.addView(tabList[tabIndex])  // Add the WebView of the selected tab
-        currentTab = tabIndex
-        urlInput.setText(tabList[tabIndex].url)
+
+    private fun closeTab(position: Int) {
+        // Remove the tab at the specified position
+        tabList.removeAt(position)
+        tabTitles.removeAt(position)
+        // Notify the adapter that the item has been removed
+        (tabRecyclerView.adapter as TabAdapter).notifyItemRemoved(position)
+
+        // Check if there are no tabs left
+        if (tabList.isEmpty()) {
+            addNewTab()  // Ensure at least one tab is always open
+        } else {
+            // If the closed tab was the current one, switch to the first tab
+            if (currentTab == position) {
+                currentTab = if (position < tabList.size) position else position - 1
+                switchToTab(currentTab)
+            } else {
+                // Switch to the previous tab if the current tab is not closed
+                switchToTab(if (currentTab > position) currentTab - 1 else currentTab)
+            }
+        }
     }
 
-    // Get the current active WebView
+    private fun switchToTab(position: Int) {
+        // Check if the position is valid
+        if (position >= 0 && position < tabList.size) {
+            currentTab = position
+            webviewContainer.removeAllViews()
+            webviewContainer.addView(tabList[position])
+            tabRecyclerView.visibility = View.GONE
+            swipeRefreshLayout.visibility = View.VISIBLE
+
+            // Update the input field with the URL of the current tab
+            urlInput.setText(tabList[position].url)  // Set the input field to the current tab's URL
+            tabTitles[position] = tabList[position].title ?: "Untitled"  // Update tab title
+            // Notify the adapter to update the tab title
+            (tabRecyclerView.adapter as TabAdapter).notifyItemChanged(position)
+        }
+    }
+
     private fun getCurrentWebView(): WebView {
         return tabList[currentTab]
     }
 
-    // Show the list of open tabs and allow closing tabs
-    private fun showTabsDialog() {
-        val tabTitlesArray = tabTitles.toTypedArray()  // Get the titles of the open tabs
-
-        AlertDialog.Builder(this)
-            .setTitle("Open Tabs")
-            .setItems(tabTitlesArray) { _, which ->
-                switchToTab(which)  // Switch to the selected tab
-            }
-            .setPositiveButton("New Tab") { _, _ ->
-                addNewTab()  // Add a new tab
-            }
-            .setNegativeButton("Close Tab") { _, _ ->
-                closeCurrentTab()  // Close the currently active tab
-            }
-            .show()
-    }
-
-    // Close the current tab
-    private fun closeCurrentTab() {
-        if (tabList.size > 1) {
-            tabList.removeAt(currentTab)
-            tabTitles.removeAt(currentTab)
-            if (currentTab >= tabList.size) {
-                currentTab = tabList.size - 1
-            }
-            switchToTab(currentTab)
-        }
-    }
-
-    // Format URL (check if it's a search term or URL)
     private fun formatUrl(input: String): String {
         return if (input.contains(".")) {
             if (!input.startsWith("http://") && !input.startsWith("https://")) {
@@ -150,7 +171,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Handle the back button press
     override fun onBackPressed() {
         if (getCurrentWebView().canGoBack()) {
             getCurrentWebView().goBack()

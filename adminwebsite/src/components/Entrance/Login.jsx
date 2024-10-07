@@ -8,10 +8,34 @@ const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Logging in with:', { username, password });
-        navigate('/dashboard');
+
+        try {
+            const response = await fetch('http://localhost:5000/adminlogin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_username: username,
+                    admin_password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                console.log("Logged In Successfully")
+                navigate('/dashboard');
+            } else {
+                // Handle failed login
+                alert(data.message); // Show an error message to the user
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('An error occurred during login. Please try again.');
+        }
     };
 
     const handleGuestLogin = () => {
