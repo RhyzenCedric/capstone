@@ -141,7 +141,6 @@ app.post('/userlogin', (req, res) => {
     });
 });
 
-// Get all users
 app.get('/users', (req, res) => {
     const sql = "SELECT * FROM users"; // Modify this SQL query as needed
     db.query(sql, (err, results) => {
@@ -187,6 +186,44 @@ app.delete('/admins/:id', (req, res) => {
         res.json({ message: 'Admin deleted successfully' });
     });
 });
+
+app.put('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const updatedUserData = req.body; // This should only contain the fields that are being updated
+
+    const query = `UPDATE users SET ? WHERE userId = ?`; // Adjust the column name as necessary
+    db.query(query, [updatedUserData, id], (err, results) => {
+        if (err) {
+            console.error('Error updating user data:', err);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        if (results.affectedRows === 0) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+        res.json({ message: 'User data updated successfully' });
+    });
+});
+
+app.get('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const query = `SELECT * FROM users WHERE userId = ?`;
+    db.query(query, [id], (err, results) => {
+      if (err) {
+        console.error('Error retrieving user data:', err);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      const user = results[0];
+      res.json(user);
+    });
+  });
+  
 
 // Start the server
 app.listen(PORT, () => {

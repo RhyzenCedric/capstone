@@ -1,0 +1,91 @@
+/* General layout for the Admins page */
+.user-header {
+    color: #2c3e50;
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Styling the table */
+  table {
+    width: 80%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background-color: #ecf0f1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  thead th {
+    background-color: #34495e;
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  tbody td {
+    padding: 0.75rem;
+    text-align: center;
+    color: #2c3e50;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  tbody tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+  
+  /* Buttons in the table */
+  .user-edit-button,
+  .user-delete-button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-edit-button {
+    background-color: #3498db;
+    color: #fff;
+    margin-right: 0.5rem;
+  }
+  
+  .user-edit-button:hover {
+    background-color: #2980b9;
+  }
+  
+  .user-delete-button {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  
+  .user-delete-button:hover {
+    background-color: #c0392b;
+  }
+  
+  /* Responsive design for mobile */
+  @media (max-width: 768px) {
+    table {
+      width: 100%;
+    }
+  
+    .user-header {
+      font-size: 1.5rem;
+      margin: 1rem;
+    }
+  
+    thead th,
+    tbody td {
+      padding: 0.5rem;
+    }
+  }
+  

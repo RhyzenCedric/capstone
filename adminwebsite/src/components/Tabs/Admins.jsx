@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import TopNav from "../NavBars/TopNav";
+import "../../css/Admins.css"
 
 const Admins = () => {
     const [admins, setAdmins] = useState([]); // State to hold user data
@@ -49,7 +50,7 @@ const Admins = () => {
     return (
         <>
             <TopNav />
-            <h1>Admins</h1>
+            <h1 className="admin-header">Admins</h1>
             <table>
                 <thead>
                     <tr>
@@ -63,8 +64,8 @@ const Admins = () => {
                         <tr key={admin.admin_id}> {/* Assuming `id` is the unique identifier */}
                             <td>{admin.admin_username}</td>
                             <td>
-                                <button onClick={() => handleEdit(admin.admin_id)}>Edit</button>
-                                <button onClick={() => handleDelete(admin.admin_id)}>Delete</button>
+                                <button className="admin-edit-button" onClick={() => handleEdit(admin.admin_id)}>Edit</button>
+                                <button className="admin-delete-button" onClick={() => handleDelete(admin.admin_id)}>Delete</button>
                             </td>
                         </tr>
                     ))}
