@@ -12,29 +12,24 @@ const Users = () => {
     const navigate = useNavigate(); 
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await fetch('http://localhost:5000/users');
-                if (!response.ok) throw new Error('Failed to fetch users');
-                const data = await response.json();
-                setUsers(data);
-            } catch (error) {
-                console.error('Error fetching users:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUsers();
+        fetchUsers(); // Fetch users on component mount
     }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/users');
+            if (!response.ok) throw new Error('Failed to fetch users');
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleEdit = (user) => {
         setEditingUser(user);
-    };
-
-    const handleUpdate = async () => {
-        await fetchUsers(); // Re-fetch users after updating
-        setEditingUser(null); // Close the edit modal
     };
 
     const handleDelete = async (userId) => {
@@ -83,13 +78,13 @@ const Users = () => {
 
             {editingUser && ( 
                 <Modal onClose={() => setEditingUser(null)}>
-                <EditUserDetailsAdmin
-                    userId={editingUser.userId}
-                    username={editingUser.userUsername}
-                    onUpdate={handleUpdate}
-                    onClose={() => setEditingUser(null)} // Close modal
-                />
-            </Modal>
+                    <EditUserDetailsAdmin
+                        userId={editingUser.userId}
+                        username={editingUser.userUsername}
+                        onUpdate={fetchUsers} // Pass fetchUsers to update after the modal
+                        onClose={() => setEditingUser(null)} // Close modal
+                    />
+                </Modal>
             )}
         </>
     );
