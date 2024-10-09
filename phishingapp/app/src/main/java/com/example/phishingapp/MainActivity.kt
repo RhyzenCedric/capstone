@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var circleParams: WindowManager.LayoutParams
     private lateinit var removePopup: TextView
     private lateinit var removePopupParams: WindowManager.LayoutParams
+    private lateinit var showCircleButton: Button // Track the button to enable/disable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,16 +57,19 @@ class MainActivity : AppCompatActivity() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         // Find the button in the layout and set up an OnClickListener
-        val button = findViewById<Button>(R.id.show_circle_button)
-        button.setOnClickListener {
+        showCircleButton = findViewById(R.id.show_circle_button)
+        showCircleButton.setOnClickListener {
             createFloatingCircle()
-            // Minimize the main activity window
-            moveTaskToBack(true)
+            // Minimize the main activity window, but keep the app running in the background
         }
     }
 
     // Create the floating circle that can be dragged and snapped to edges
     private fun createFloatingCircle() {
+        // Disable the button and change its text
+        showCircleButton.isEnabled = false
+        showCircleButton.text = "Circle Activated"
+
         // Create a new FloatingActionButton
         floatingCircle = FloatingActionButton(this)
         floatingCircle.setImageResource(android.R.drawable.presence_online) // Use a small icon
@@ -89,6 +93,13 @@ class MainActivity : AppCompatActivity() {
 
         // Add a touch listener to make the circle draggable
         floatingCircle.setOnTouchListener(DraggableTouchListener())
+
+        // Add a click listener to reopen the app when the floating circle is clicked
+        floatingCircle.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(intent)
+        }
 
         // Add the circle to the window
         windowManager.addView(floatingCircle, circleParams)
@@ -128,13 +139,11 @@ class MainActivity : AppCompatActivity() {
         private var initialY = 0
         private var initialTouchX = 0f
         private var initialTouchY = 0f
+        private val removeThresholdPercentage = 0.75f // 75% of screen height
 
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    // Show "Remove?" popup when the user starts dragging
-                    removePopup.visibility = View.VISIBLE
-
                     // Store initial touch positions
                     initialX = circleParams.x
                     initialY = circleParams.y
@@ -147,6 +156,17 @@ class MainActivity : AppCompatActivity() {
                     circleParams.x = initialX + (event.rawX - initialTouchX).toInt()
                     circleParams.y = initialY + (event.rawY - initialTouchY).toInt()
                     windowManager.updateViewLayout(floatingCircle, circleParams)
+
+                    // Get screen size to determine if the circle is in the lower part of the screen
+                    val screenSize = Point()
+                    windowManager.defaultDisplay.getSize(screenSize)
+
+                    // Show "Remove?" popup only if the circle is dragged to the lower 25% of the screen
+                    if (circleParams.y > screenSize.y * removeThresholdPercentage) {
+                        removePopup.visibility = View.VISIBLE
+                    } else {
+                        removePopup.visibility = View.GONE
+                    }
                     return true
                 }
                 MotionEvent.ACTION_UP -> {
@@ -157,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                     val screenSize = Point()
                     windowManager.defaultDisplay.getSize(screenSize)
 
-                    // Define the boundaries of the "Remove?" area
+                    // Define the boundaries of the "Remove?" area (only bottom part of the screen)
                     val removeAreaTop = screenSize.y - removePopup.height
                     val removeAreaBottom = screenSize.y // Bottom of the screen
                     val removeAreaLeft = 0
@@ -171,6 +191,10 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         // Remove the floating circle if it's dragged into the "Remove?" area
                         windowManager.removeView(floatingCircle)
+
+                        // Re-enable the button and change its text back
+                        showCircleButton.isEnabled = true
+                        showCircleButton.text = "Show Floating Circle"
                     } else {
                         // Otherwise, snap the floating circle to the nearest edge (left or right)
                         circleParams.x = if (event.rawX < screenSize.x / 2) {
