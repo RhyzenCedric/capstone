@@ -7,6 +7,14 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.phishingapp.backend.ApiService
+import com.example.phishingapp.backend.SignupRequest
+import com.example.phishingapp.backend.SignupResponse
+import com.example.phishingapp.backend.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 
 class SignupActivity : AppCompatActivity() {
 
@@ -14,7 +22,6 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var editTextEmail: EditText
     private lateinit var editTextPassword: EditText
     private lateinit var buttonSignup: Button
-    private lateinit var textViewLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,9 +31,7 @@ class SignupActivity : AppCompatActivity() {
         editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignup = findViewById(R.id.buttonSignup)
-        textViewLogin = findViewById(R.id.textViewLogin)
 
-        // Handle signup button click
         buttonSignup.setOnClickListener {
             val userUsername = editTextUsername.text.toString().trim()
             val userEmail = editTextEmail.text.toString().trim()
@@ -35,21 +40,29 @@ class SignupActivity : AppCompatActivity() {
             if (userUsername.isEmpty() || userEmail.isEmpty() || userPassword.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                // Add your signup logic here
-                Toast.makeText(this, "Sign up successful", Toast.LENGTH_SHORT).show()
-
-                // After signing up, redirect to login screen
-                val intent = Intent(this, LoginActivity::class.java)
-                startActivity(intent)
-                finish()
+                signupUser(userUsername, userEmail, userPassword)
             }
         }
+    }
 
-        // Navigate to login screen
-        textViewLogin.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+    private fun signupUser(userUsername: String, userEmail: String, userPassword: String) {
+        val signupRequest = SignupRequest(userUsername, userEmail, userPassword)
+
+        RetrofitClient.instance.signup(signupRequest).enqueue(object : Callback<SignupResponse> {
+            override fun onResponse(call: Call<SignupResponse>, response: Response<SignupResponse>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@SignupActivity, response.body()?.message, Toast.LENGTH_SHORT).show()
+                    // Navigate to login screen after successful signup
+                    startActivity(Intent(this@SignupActivity, LoginActivity::class.java))
+                    finish()
+                } else {
+                    Toast.makeText(this@SignupActivity, "Signup failed", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<SignupResponse>, t: Throwable) {
+                Toast.makeText(this@SignupActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }

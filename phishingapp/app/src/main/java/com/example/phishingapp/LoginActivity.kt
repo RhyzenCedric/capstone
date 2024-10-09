@@ -7,6 +7,12 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.phishingapp.backend.LoginRequest
+import com.example.phishingapp.backend.LoginResponse
+import com.example.phishingapp.backend.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
 
@@ -34,13 +40,7 @@ class LoginActivity : AppCompatActivity() {
             if (userUsername.isEmpty() || userPassword.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                if (userUsername == "user" && userPassword == "password") {
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
-                }
+                loginUser(userUsername, userPassword)
             }
         }
 
@@ -56,5 +56,29 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    // Function to log in the user
+    private fun loginUser(userUsername: String, userPassword: String) {
+        val loginRequest = LoginRequest(userUsername, userPassword)
+        val call = RetrofitClient.instance.login(loginRequest)
+
+        call.enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    Toast.makeText(this@LoginActivity, response.body()?.message ?: "Login successful", Toast.LENGTH_SHORT).show()
+                    // Redirect to MainActivity
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    finish()
+                } else {
+                    val errorMessage = response.body()?.error ?: "Login failed: ${response.message()}"
+                    Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 }
