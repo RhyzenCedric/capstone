@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         // Find the button in the layout and set up an OnClickListener
-        showCircleButton = findViewById(R.id.show_circle_button)
+        showCircleButton = findViewById(R.id.button_activate_scanner)
         showCircleButton.setOnClickListener {
             createFloatingCircle()
             // Minimize the main activity window, but keep the app running in the background
