@@ -5,11 +5,133 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <Button
-        android:id="@+id/show_circle_button"
+    <!-- Title centered at the top -->
+    <TextView
+        android:id="@+id/text_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Show Floating Circle"
-        android:layout_centerInParent="true" />
+        android:text="PHISHERMAN"
+        android:textSize="24sp"
+        android:textColor="#1d1e4e"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp" />
+
+    <!-- Button to trigger the floating circle with a tinted background, positioned below the title -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_activate_scanner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#1d1e4e"
+        android:backgroundTint="@color/button_color_state"
+        android:background="@drawable/floating_circle_button"
+        android:text="Activate Scanner"
+        android:layout_below="@id/text_title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
+
+    <!-- 2x2 grid for rectangular buttons with rounded corners -->
+    <GridLayout
+        android:id="@+id/grid_button_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_activate_scanner"
+        android:layout_marginTop="24dp"
+        android:rowCount="2"
+        android:columnCount="2"
+        android:layout_gravity="center"
+        android:layout_centerHorizontal="true"
+        android:alignmentMode="alignMargins"
+        android:padding="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp">
+
+        <!-- Button 1 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_account"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:text="Account"
+            android:background="@drawable/rounded_button" />
+
+        <!-- Button 2 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_browser"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:text="Browser"
+            android:background="@drawable/rounded_button" />
+
+        <!-- Button 3 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_learn_more"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:text="Learn More"
+            android:background="@drawable/rounded_button" />
+
+        <!-- Button 4 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_reports"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_margin="8dp"
+            android:text="Reports"
+            android:background="@drawable/rounded_button" />
+    </GridLayout>
+
+    <!-- Bottom navigation bar with 4 buttons -->
+    <LinearLayout
+        android:id="@+id/bottom_navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <!-- Nav Button 1 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_nav_home"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Home"
+            android:background="@drawable/navbar_button" />
+
+        <!-- Nav Button 2 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_nav_learn_more"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Learn More"
+            android:background="@drawable/navbar_button" />
+
+        <!-- Nav Button 3 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_nav_browser"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Browser"
+            android:background="@drawable/navbar_button" />
+
+        <!-- Nav Button 4 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/button_nav_account"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Account"
+            android:background="@drawable/navbar_button" />
+    </LinearLayout>
 
 </RelativeLayout>

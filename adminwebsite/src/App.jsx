@@ -6,7 +6,7 @@ import Reports from './components/Tabs/Reports';
 import Settings from './components/Tabs/Settings';
 import Login from './components/Entrance/Login';
 import Signup from './components/Entrance/SignUp';
-import DashboardMainScreen from './components/DashboardMainScreen';
+import DashboardMainScreen from './components/DashboardMainScreen'; 
 
 const App = () => {
     return (

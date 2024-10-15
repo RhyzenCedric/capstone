@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import '../../css/TopNav.css';
 import SideNav from "./SideNav";
 
 const TopNav = () => {
-    // State to control sidebar visibility
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const location = useLocation(); // Get the current location
 
-    // Function to toggle the sidebar
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
@@ -20,14 +19,33 @@ const TopNav = () => {
             <h1>Dashboard</h1>
             <nav>
                 <ul className="tab-list">
-                    <li><Link to="/dashboard/users"><i className="fas fa-users"/> Users</Link></li>
-                    <li><Link to="/dashboard/admins"><i className="fas fa-user-shield"/> Admins</Link></li>
-                    <li><Link to="/dashboard/links"><i className="fas fa-link"/> Links</Link></li>
-                    <li><Link to="/dashboard/reports"><i className="fas fa-file-alt"/> Reports</Link></li>
-                    <li><Link to="/dashboard/settings"><i className="fas fa-cog"/> Settings</Link></li>
+                    <li>
+                        <Link to="/dashboard/users" className={location.pathname === "/dashboard/users" ? "active" : ""}>
+                            <i className="fas fa-users"/> Users
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard/admins" className={location.pathname === "/dashboard/admins" ? "active" : ""}>
+                            <i className="fas fa-user-shield"/> Admins
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard/links" className={location.pathname === "/dashboard/links" ? "active" : ""}>
+                            <i className="fas fa-link"/> Links
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard/reports" className={location.pathname === "/dashboard/reports" ? "active" : ""}>
+                            <i className="fas fa-file-alt"/> Reports
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/dashboard/settings" className={location.pathname === "/dashboard/settings" ? "active" : ""}>
+                            <i className="fas fa-cog"/> Settings
+                        </Link>
+                    </li>
                 </ul>
             </nav>
-            {/* Conditionally render the Sidebar with the toggle function passed as a prop */}
             {isSidebarOpen && <SideNav toggleSidebar={toggleSidebar} />}
         </div>
     );

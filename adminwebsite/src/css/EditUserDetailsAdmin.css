@@ -1,0 +1,103 @@
+/* Users.css */
+
+/* Modal container */
+.edit-user-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    padding: 20px;
+}
+
+/* Modal box styling */
+.edit-user-modal form {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    width: 400px;
+    max-width: 100%;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Modal title */
+.edit-user-modal h2 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #b8b8b8;
+}
+
+/* Input fields */
+.edit-user-modal input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+/* Change input border on focus */
+.edit-user-modal input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Buttons */
+.edit-user-modal button {
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Update button styling */
+.edit-user-modal button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+}
+
+/* Update button hover effect */
+.edit-user-modal button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Cancel button styling */
+.edit-user-modal button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Cancel button hover effect */
+.edit-user-modal button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+/* Label styling */
+.edit-user-modal label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* Modal responsiveness */
+@media (max-width: 500px) {
+    .edit-user-modal form {
+        width: 90%;
+    }
+}
