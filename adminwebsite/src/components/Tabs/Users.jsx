@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
+import axios from 'axios'; // Import Axios
 import TopNav from "../NavBars/TopNav";
 import EditUserDetailsAdmin from '../EditDetails/EditUserDetailsAdmin'; 
 import Modal from '../EditDetails/EditUserDetailsAdminModal';
@@ -17,37 +18,36 @@ const Users = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch('http://localhost:5000/users');
-            if (!response.ok) throw new Error('Failed to fetch users');
-            const data = await response.json();
-            setUsers(data);
+            const response = await axios.get('http://localhost:5000/users'); // Use Axios to fetch users
+            setUsers(response.data); // Set users data
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
-            setLoading(false);
+            setLoading(false); // Set loading to false after fetching
         }
     };
 
     const handleEdit = (user) => {
-        setEditingUser(user);
+        setEditingUser(user); // Set the user to edit
     };
 
     const handleDelete = async (userId) => {
         if (window.confirm("Are you sure you want to delete this user?")) {
             try {
-                const response = await fetch(`http://localhost:5000/users/${userId}`, {
-                    method: 'DELETE',
-                });
-                if (!response.ok) throw new Error('Failed to delete user');
-                setUsers((prevUsers) => prevUsers.filter(user => user.userId !== userId));
+                const response = await axios.delete(`http://localhost:5000/users/${userId}`); // Use Axios to delete user
+                if (response.status === 200) { // Check if deletion was successful
+                    setUsers((prevUsers) => prevUsers.filter(user => user.userId !== userId)); // Update users state
+                } else {
+                    throw new Error('Failed to delete user');
+                }
             } catch (error) {
-                console.error('Error deleting user:', error);
+                console.error('Error deleting user:', error); // Log the error
             }
         }
     };
 
     if (loading) {
-        return <h1>Loading...</h1>;
+        return <h1>Loading...</h1>; // Show loading message
     }
 
     return (

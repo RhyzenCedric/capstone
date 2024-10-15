@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; // Import Axios
+import "../../css/EditUserDetailsAdmin.css";
 
 const EditUserDetailsAdmin = ({ userId, username, onUpdate, onClose }) => {
     const [user, setUser] = useState(null); 
@@ -8,12 +10,10 @@ const EditUserDetailsAdmin = ({ userId, username, onUpdate, onClose }) => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/users/${userId}`); // Use userId for fetching
-                if (!response.ok) throw new Error('Failed to fetch user data');
-                const userData = await response.json();
-                setUser(userData);
-                setUserUsername(userData.userUsername); 
-                setUserEmail(userData.userEmail);
+                const response = await axios.get(`http://localhost:5000/users/${userId}`); // Use userId for fetching
+                setUser(response.data);
+                setUserUsername(response.data.userUsername); 
+                setUserEmail(response.data.userEmail);
             } catch (error) {
                 console.error('Error fetching user:', error);
             }
@@ -31,17 +31,13 @@ const EditUserDetailsAdmin = ({ userId, username, onUpdate, onClose }) => {
         };
 
         try {
-            const response = await fetch(`http://localhost:5000/users/${userId}`, { // Use userId for updating
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedData),
-            });
-
-            if (!response.ok) throw new Error('Failed to update user');
-            onUpdate(); 
-            onClose();  
+            const response = await axios.put(`http://localhost:5000/users/${userId}`, updatedData); // Use userId for updating
+            if (response.status === 200) {
+                onUpdate(); 
+                onClose();  
+            } else {
+                throw new Error('Failed to update user');
+            }
         } catch (error) {
             console.error('Error updating user:', error);
         }

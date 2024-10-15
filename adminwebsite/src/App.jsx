@@ -7,7 +7,6 @@ import Settings from './components/Tabs/Settings';
 import Login from './components/Entrance/Login';
 import Signup from './components/Entrance/SignUp';
 import DashboardMainScreen from './components/DashboardMainScreen'; 
-import EditUserDetailsAdmin from './components/EditDetails/EditUserDetailsAdmin';
 
 const App = () => {
     return (
@@ -17,8 +16,6 @@ const App = () => {
                     <Route path="/dashboard" element={<DashboardMainScreen />} />
 
                     <Route path="/dashboard/users" element={<Users />} />
-                    <Route path="/dashboard/users/edit/:username" element={<EditUserDetailsAdmin />} />
-
                     <Route path="/dashboard/admins" element={<Admins />} />
                     <Route path="/dashboard/links" element={<Links />} />
                     <Route path="/dashboard/reports" element={<Reports />} />

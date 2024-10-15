@@ -222,8 +222,44 @@ app.get('/users/:id', (req, res) => {
       const user = results[0];
       res.json(user);
     });
-  });
+});
   
+app.put('/admins/:id', (req, res) => {
+    const { id } = req.params;
+    const updatedAdminData = req.body; // This should only contain the fields that are being updated
+
+    const query = `UPDATE admins SET ? WHERE admin_id = ?`; // Adjust the column name as necessary
+    db.query(query, [updatedAdminData, id], (err, results) => {
+        if (err) {
+            console.error('Error updating user data:', err);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        if (results.affectedRows === 0) {
+            res.status(404).json({ error: 'Admin not found' });
+            return;
+        }
+        res.json({ message: 'Admin data updated successfully' });
+    });
+});
+
+app.get('/admins/:id', (req, res) => {
+    const { id } = req.params;
+    const query = `SELECT * FROM admins WHERE admin_id = ?`;
+    db.query(query, [id], (err, results) => {
+      if (err) {
+        console.error('Error retrieving user data:', err);
+        res.status(500).json({ error: 'Internal server error' });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ error: 'Admin not found' });
+        return;
+      }
+      const user = results[0];
+      res.json(user);
+    });
+});
 
 // Start the server
 app.listen(PORT, () => {

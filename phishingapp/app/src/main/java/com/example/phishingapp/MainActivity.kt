@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
     private fun createFloatingCircle() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
-        showCircleButton.text = "Circle Activated"
+        showCircleButton.text = "Scanner Activated"
 
         // Create a new FloatingActionButton
         floatingCircle = FloatingActionButton(this)
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
 
                         // Re-enable the button and change its text back
                         showCircleButton.isEnabled = true
-                        showCircleButton.text = "Show Floating Circle"
+                        showCircleButton.text = "Activate Scanner"
                     } else {
                         // Otherwise, snap the floating circle to the nearest edge (left or right)
                         circleParams.x = if (event.rawX < screenSize.x / 2) {

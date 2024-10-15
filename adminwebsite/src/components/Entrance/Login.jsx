@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import Axios
 import '../../css/Login.css';
 
 const Login = () => {
@@ -12,25 +13,16 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:5000/adminlogin', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    admin_username: username,
-                    admin_password: password,
-                }),
+            const response = await axios.post('http://localhost:5000/adminlogin', {
+                admin_username: username,
+                admin_password: password,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log("Logged In Successfully")
-                navigate('/dashboard');
+            if (response.status === 200) {
+                console.log("Logged In Successfully");
+                navigate('/dashboard'); // Navigate to dashboard on successful login
             } else {
-                // Handle failed login
-                alert(data.message); // Show an error message to the user
+                alert(response.data.message); // Show error message if login fails
             }
         } catch (error) {
             console.error('Error during login:', error);
@@ -39,11 +31,11 @@ const Login = () => {
     };
 
     const handleGuestLogin = () => {
-        navigate('/dashboard');
+        navigate('/dashboard'); // Direct guest login to dashboard
     };
 
     const togglePasswordVisibility = () => {
-        setPasswordVisible(!passwordVisible);
+        setPasswordVisible(!passwordVisible); // Toggle password visibility
     };
 
     const handleSignUp = () => {
@@ -71,8 +63,8 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                    <i 
-                        className={`fas ${passwordVisible ? 'fa-eye-slash' : 'fa-eye'}`} 
+                    <i
+                        className={`fas ${passwordVisible ? 'fa-eye-slash' : 'fa-eye'}`}
                         onClick={togglePasswordVisibility}
                         aria-hidden="true"
                     ></i>

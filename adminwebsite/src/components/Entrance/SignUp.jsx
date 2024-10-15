@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import Axios
 import '../../css/Signup.css';
 
 const Signup = () => {
@@ -20,25 +21,17 @@ const Signup = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/adminsignup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    admin_username: username,
-                    admin_password: password,
-                }),
+            const response = await axios.post('http://localhost:5000/adminsignup', {
+                admin_username: username,
+                admin_password: password,
             });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('Registered Succesfully');
+            if (response.status === 200) {
+                console.log('Registered Successfully');
                 navigate('/'); // Redirect on successful signup
             } else {
                 // Handle error response from the backend
-                setErrorMessage(data.error);
+                setErrorMessage(response.data.error || 'Signup failed');
             }
         } catch (error) {
             console.error('Error during signup:', error);
@@ -47,11 +40,11 @@ const Signup = () => {
     };
 
     const togglePasswordVisibility = () => {
-        setPasswordVisible(!passwordVisible);
+        setPasswordVisible(!passwordVisible); // Toggle visibility of the password
     };
 
     const toggleConfirmPasswordVisibility = () => {
-        setConfirmPasswordVisible(!confirmPasswordVisible);
+        setConfirmPasswordVisible(!confirmPasswordVisible); // Toggle visibility of confirm password
     };
 
     return (
