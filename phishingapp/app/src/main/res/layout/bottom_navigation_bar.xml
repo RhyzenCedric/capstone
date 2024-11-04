@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:padding="8dp">
+
+    <!-- Nav Button 1 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_nav_home"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Home"
+        android:background="@drawable/navbar_button" />
+
+    <!-- Nav Button 2 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_nav_learn_more"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Learn More"
+        android:background="@drawable/navbar_button" />
+
+    <!-- Nav Button 3 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_nav_browser"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Browser"
+        android:background="@drawable/navbar_button" />
+
+    <!-- Nav Button 4 -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_nav_account"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Account"
+        android:background="@drawable/navbar_button" />
+</LinearLayout>

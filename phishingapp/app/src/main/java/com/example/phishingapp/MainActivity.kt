@@ -1,6 +1,7 @@
 package com.example.phishingapp
 
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Point
 import android.net.Uri
@@ -26,6 +27,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        findViewById<Button>(R.id.button_nav_home).setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        findViewById<Button>(R.id.button_nav_account).setOnClickListener {
+            // Stay on the AccountActivity
+            Toast.makeText(this, "Already on Account", Toast.LENGTH_SHORT).show()
+        }
 
         // Check if overlay permission is granted
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
@@ -69,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
         showCircleButton.text = "Scanner Activated"
+
 
         // Create a new FloatingActionButton
         floatingCircle = FloatingActionButton(this)
