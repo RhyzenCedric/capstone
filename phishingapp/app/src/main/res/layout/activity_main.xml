@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -87,51 +88,13 @@
             android:background="@drawable/rounded_button" />
     </GridLayout>
 
-    <!-- Bottom navigation bar with 4 buttons -->
-    <LinearLayout
+    <include
         android:id="@+id/bottom_navigation_bar"
-        android:layout_width="match_parent"
+        layout="@layout/bottom_navigation_bar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:padding="8dp">
-
-        <!-- Nav Button 1 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_nav_home"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Home"
-            android:background="@drawable/navbar_button" />
-
-        <!-- Nav Button 2 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_nav_learn_more"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Learn More"
-            android:background="@drawable/navbar_button" />
-
-        <!-- Nav Button 3 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_nav_browser"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Browser"
-            android:background="@drawable/navbar_button" />
-
-        <!-- Nav Button 4 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_nav_account"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Account"
-            android:background="@drawable/navbar_button" />
-    </LinearLayout>
+        android:layout_centerHorizontal="true"
+        tools:ignore="IncludeLayoutParam" />
 
 </RelativeLayout>

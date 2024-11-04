@@ -1,6 +1,4 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-<!--    <item android:color="#FF0000" android:state_pressed="true"/> &lt;!&ndash; Red when pressed &ndash;&gt;-->
-<!--    <item android:color="#00FF00" android:state_enabled="false"/> &lt;!&ndash; Green when disabled &ndash;&gt;-->
     <item android:color="#FCCF14"/>
-    <item android:color="#FCCF14"/>
+    <item android:color="#808080" android:state_enabled="false" />
 </selector>
