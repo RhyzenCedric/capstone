@@ -1,5 +1,6 @@
 package com.example.phishingapp
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -36,6 +37,36 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_nav_account).setOnClickListener {
             // Stay on the AccountActivity
             Toast.makeText(this, "Already on Account", Toast.LENGTH_SHORT).show()
+        }
+
+        findViewById<Button>(R.id.button_nav_browser).setOnClickListener {
+            try {
+                // Explicitly set the package and activity of the browser app
+                val intent = Intent().apply {
+                    setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  // Optional: for launching in a new task
+                }
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                // Show a message if the browser app is not installed
+                Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+
+        findViewById<Button>(R.id.button_browser).setOnClickListener {
+            try {
+                // Explicitly set the package and activity of the browser app
+                val intent = Intent().apply {
+                    setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  // Optional: for launching in a new task
+                }
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                // Show a message if the browser app is not installed
+                Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
         }
 
         // Check if overlay permission is granted
