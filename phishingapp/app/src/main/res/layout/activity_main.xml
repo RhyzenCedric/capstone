@@ -47,14 +47,14 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp">
 
-        <!-- Button 1 -->
+        <!-- Button 3 -->
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_account"
+            android:id="@+id/button_learn_more"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_margin="8dp"
-            android:text="Account"
+            android:text="Learn More"
             android:background="@drawable/rounded_button" />
 
         <!-- Button 2 -->
@@ -67,14 +67,14 @@
             android:text="Browser"
             android:background="@drawable/rounded_button" />
 
-        <!-- Button 3 -->
+        <!-- Button 1 -->
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_learn_more"
+            android:id="@+id/button_account"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_margin="8dp"
-            android:text="Learn More"
+            android:text="Account"
             android:background="@drawable/rounded_button" />
 
         <!-- Button 4 -->
