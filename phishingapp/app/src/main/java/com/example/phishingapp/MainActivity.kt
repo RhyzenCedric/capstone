@@ -1,35 +1,21 @@
 package com.example.phishingapp
 
 import android.app.Activity
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.PixelFormat
-import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
-import android.media.ImageReader
-import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.ar.core.Point
-import kotlinx.coroutines.*
-import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity() {
     private lateinit var windowManager: WindowManager
@@ -40,16 +26,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var showCircleButton: Button
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
-    private var mediaProjection: MediaProjection? = null
-    private var virtualDisplay: VirtualDisplay? = null
-    private lateinit var imageReader: ImageReader
-    private val isScanning = AtomicBoolean(false)
-    private val scanningScope = CoroutineScope(Dispatchers.Default)
 
     companion object {
         private const val MEDIA_PROJECTION_REQUEST_CODE = 101
-        private const val SCREEN_CAPTURE_NOTIFICATION_ID = 1
-        private const val SCREEN_CAPTURE_CHANNEL_ID = "screen_capture_channel"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -272,6 +251,7 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         // Remove the floating circle if it's dragged into the "Remove?" area
                         windowManager.removeView(floatingCircle)
+                        stopScanning()
 
                         // Re-enable the button and change its text back
                         showCircleButton.isEnabled = true
@@ -296,6 +276,32 @@ class MainActivity : AppCompatActivity() {
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         val intent = mediaProjectionManager.createScreenCaptureIntent()
         startActivityForResult(intent, MEDIA_PROJECTION_REQUEST_CODE)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Stop the scanning service or any scanning logic you have running
+        stopScanning()
+
+        // Remove the floating circle and the remove popup if they exist
+        if (::floatingCircle.isInitialized) {
+            windowManager.removeView(floatingCircle)
+        }
+        if (::removePopup.isInitialized) {
+            windowManager.removeView(removePopup)
+        }
+    }
+
+    private fun stopScanning() {
+        // Add logic to stop scanning service or any active scanning process here
+        val serviceIntent = Intent(this, ScreenCaptureService::class.java)
+        serviceIntent.action = ScreenCaptureService.ACTION_STOP_PROJECTION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
 
 }
