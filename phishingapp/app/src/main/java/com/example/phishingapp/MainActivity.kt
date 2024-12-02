@@ -1,112 +1,150 @@
 package com.example.phishingapp
 
+import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.graphics.Bitmap
 import android.graphics.PixelFormat
-import android.graphics.Point
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.ar.core.Point
+import kotlinx.coroutines.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var windowManager: WindowManager
     private lateinit var floatingCircle: FloatingActionButton
     private lateinit var circleParams: WindowManager.LayoutParams
     private lateinit var removePopup: TextView
     private lateinit var removePopupParams: WindowManager.LayoutParams
-    private lateinit var showCircleButton: Button // Track the button to enable/disable
+    private lateinit var showCircleButton: Button
+
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+    private var mediaProjection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private lateinit var imageReader: ImageReader
+    private val isScanning = AtomicBoolean(false)
+    private val scanningScope = CoroutineScope(Dispatchers.Default)
+
+    companion object {
+        private const val MEDIA_PROJECTION_REQUEST_CODE = 101
+        private const val SCREEN_CAPTURE_NOTIFICATION_ID = 1
+        private const val SCREEN_CAPTURE_CHANNEL_ID = "screen_capture_channel"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Set up navigation buttons (same as previous implementation)
+        setupNavigationButtons()
+
+        // Initialize MediaProjection Manager
+        mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE)
+                as MediaProjectionManager
+
+        // Check overlay permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            requestOverlayPermission()
+        } else {
+            setupFloatingButton()
+        }
+    }
+
+    private fun setupNavigationButtons() {
+        // Navigation button setup (same as previous implementation)
         findViewById<Button>(R.id.button_nav_home).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
         findViewById<Button>(R.id.button_nav_account).setOnClickListener {
-            // Stay on the AccountActivity
             Toast.makeText(this, "Already on Account", Toast.LENGTH_SHORT).show()
         }
 
         findViewById<Button>(R.id.button_nav_browser).setOnClickListener {
-            try {
-                // Explicitly set the package and activity of the browser app
-                val intent = Intent().apply {
-                    setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  // Optional: for launching in a new task
-                }
-                startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                // Show a message if the browser app is not installed
-                Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
-            }
+            launchBrowserApp()
         }
 
         findViewById<Button>(R.id.button_browser).setOnClickListener {
-            try {
-                // Explicitly set the package and activity of the browser app
-                val intent = Intent().apply {
-                    setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)  // Optional: for launching in a new task
-                }
-                startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                // Show a message if the browser app is not installed
-                Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
-            }
-        }
-
-        // Check if overlay permission is granted
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            startActivityForResult(intent, 100)
-        } else {
-            // If permission is granted, set up the button to create the floating circle
-            setUpFloatingButton()
+            launchBrowserApp()
         }
     }
 
-    // Handle the result of the permission request
+    private fun launchBrowserApp() {
+        try {
+            val intent = Intent().apply {
+                setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun requestOverlayPermission() {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$packageName")
+        )
+        startActivityForResult(intent, 100)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 100) {
-            if (Settings.canDrawOverlays(this)) {
-                setUpFloatingButton()
+        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                // Start the foreground service with projection data
+                val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
+                    action = ScreenCaptureService.ACTION_START_PROJECTION
+                    putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, resultCode)
+                    putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
+                }
+
+                // Create floating circle after permission is granted
+                createFloatingCircle()
             } else {
-                Toast.makeText(this, "Overlay permission is required", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Screen capture permission denied", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Set up the button that will create the floating circle
-    private fun setUpFloatingButton() {
+    private fun setupFloatingButton() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
-        // Find the button in the layout and set up an OnClickListener
         showCircleButton = findViewById(R.id.button_activate_scanner)
         showCircleButton.setOnClickListener {
-            createFloatingCircle()
-            // Minimize the main activity window, but keep the app running in the background
+            requestScreenCapturePermission()
         }
     }
 
-    // Create the floating circle that can be dragged and snapped to edges
     private fun createFloatingCircle() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
@@ -148,7 +186,6 @@ class MainActivity : AppCompatActivity() {
         windowManager.addView(floatingCircle, circleParams)
     }
 
-    // Create the "Remove?" popup at the bottom of the screen
     private fun createRemovePopup() {
         removePopup = TextView(this).apply {
             text = "Remove?"
@@ -176,7 +213,6 @@ class MainActivity : AppCompatActivity() {
         windowManager.addView(removePopup, removePopupParams)
     }
 
-    // Touch listener to handle dragging and snapping the floating circle to the screen edges
     inner class DraggableTouchListener : View.OnTouchListener {
         private var initialX = 0
         private var initialY = 0
@@ -194,6 +230,7 @@ class MainActivity : AppCompatActivity() {
                     initialTouchY = event.rawY
                     return true
                 }
+
                 MotionEvent.ACTION_MOVE -> {
                     // Update the position of the circle while it's being dragged
                     circleParams.x = initialX + (event.rawX - initialTouchX).toInt()
@@ -201,7 +238,7 @@ class MainActivity : AppCompatActivity() {
                     windowManager.updateViewLayout(floatingCircle, circleParams)
 
                     // Get screen size to determine if the circle is in the lower part of the screen
-                    val screenSize = Point()
+                    val screenSize = android.graphics.Point()
                     windowManager.defaultDisplay.getSize(screenSize)
 
                     // Show "Remove?" popup only if the circle is dragged to the lower 25% of the screen
@@ -212,12 +249,13 @@ class MainActivity : AppCompatActivity() {
                     }
                     return true
                 }
+
                 MotionEvent.ACTION_UP -> {
                     // Hide the "Remove?" popup when the user releases the circle
                     removePopup.visibility = View.GONE
 
                     // Get screen size to define the "Remove?" area
-                    val screenSize = Point()
+                    val screenSize = android.graphics.Point()
                     windowManager.defaultDisplay.getSize(screenSize)
 
                     // Define the boundaries of the "Remove?" area (only bottom part of the screen)
@@ -253,4 +291,11 @@ class MainActivity : AppCompatActivity() {
             return false
         }
     }
+    private fun requestScreenCapturePermission() {
+        val mediaProjectionManager =
+            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val intent = mediaProjectionManager.createScreenCaptureIntent()
+        startActivityForResult(intent, MEDIA_PROJECTION_REQUEST_CODE)
+    }
+
 }
