@@ -2,6 +2,7 @@ package com.example.phishingapp
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -10,11 +11,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.*
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.phishingapp.ScreenCaptureService.Companion
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
@@ -93,24 +96,40 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                // Start the foreground service with projection data
-                val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
-                    action = ScreenCaptureService.ACTION_START_PROJECTION
-                    putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, resultCode)
-                    putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data)
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(serviceIntent)
-                } else {
-                    startService(serviceIntent)
-                }
 
-                // Create floating circle after permission is granted
-                createFloatingCircle()
+        // Check if the request code matches and ensure that resultCode indicates success
+        if (requestCode == MEDIA_PROJECTION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Check if the data is not null
+                if (data != null) {
+                    Log.d(TAG, "onActivityResult: starting foreground service")
+                    // Start the foreground service with projection data
+                    val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
+                        action = ScreenCaptureService.ACTION_START_PROJECTION
+                        putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, resultCode)
+                        putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data)
+                    }
+                    Log.d(TAG, "Result Code: $resultCode")
+                    Log.d(TAG, "Intent data: ${data?.extras}")
+                    data.extras?.keySet()?.forEach {
+                        Log.d(ScreenCaptureService.TAG, "Key: $it, Value: ${data.extras?.get(it)}")
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(serviceIntent)
+                    } else {
+                        startService(serviceIntent)
+                    }
+
+                    // Create floating circle after permission is granted
+                    createFloatingCircle()
+                } else {
+                    // Display a message if data is null, which is unexpected
+                    Log.e(TAG, "onActivityResult: Screen capture data is null", )
+                    Toast.makeText(this, "Screen capture data is null", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                Toast.makeText(this, "Screen capture permission denied", Toast.LENGTH_SHORT).show()
+                // Handle the case when the result is not OK
+                Toast.makeText(this, "Screen capture permission denied or failed", Toast.LENGTH_SHORT).show()
             }
         }
     }

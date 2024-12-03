@@ -1,6 +1,6 @@
 package com.example.phishingapp
 
-import android.app.Notification
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -27,10 +27,18 @@ class ScreenCaptureService : Service() {
     private val scanningScope = CoroutineScope(Dispatchers.Default)
     private val isScanning = AtomicBoolean(false)
 
+    // MediaProjection callback to manage resources
+    private val mediaProjectionCallback = object : MediaProjection.Callback() {
+        override fun onStop() {
+            Log.d(TAG, "MediaProjection stopped")
+            stopScreenCapture()
+        }
+    }
+
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "ScreenCaptureServiceChannel"
         private const val NOTIFICATION_ID = 1001
-        private const val TAG = "ScreenCaptureService"
+        const val TAG = "ScreenCaptureService"
 
         // Action constants for service control
         const val ACTION_START_PROJECTION = "ACTION_START_PROJECTION"
@@ -73,32 +81,41 @@ class ScreenCaptureService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_PROJECTION -> {
-                val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, -1)
+                val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val resultData = intent.getParcelableExtra<Intent>(EXTRA_RESULT_DATA)
 
-                if (resultCode != -1 && resultData != null) {
+                if (resultCode == Activity.RESULT_OK && resultData != null) {
+                    Log.d(TAG, "Initializing media projection")
                     initializeMediaProjection(resultCode, resultData)
                 } else {
-                    Log.e(TAG, "Invalid projection data")
+                    Log.e(TAG, "Invalid projection data. resultCode: $resultCode, resultData: $resultData")
                     stopSelf()
                 }
-            }
-            ACTION_STOP_PROJECTION -> {
-                stopScreenCapture()
             }
         }
         return START_STICKY
     }
 
     private fun initializeMediaProjection(resultCode: Int, resultData: Intent) {
-        val mediaProjectionManager =
-            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData)
+
+        // Check if mediaProjection is null before proceeding
+        if (mediaProjection == null) {
+            Log.e(TAG, "Failed to initialize MediaProjection")
+            stopSelf()
+            return
+        }
+
+        // Register the callback BEFORE starting screen capture
+        mediaProjection?.registerCallback(mediaProjectionCallback, null)
+
         startScreenCapture()
     }
 
     private fun startScreenCapture() {
+        Log.d(TAG, "startScreenCapture: starting")
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
@@ -144,6 +161,7 @@ class ScreenCaptureService : Service() {
                             it.close()
                         }
                         delay(1000) // Scan every second
+                        Log.d(TAG, "startScanning: scanning now")
                     } catch (e: Exception) {
                         Log.e(TAG, "Scanning error", e)
                     }
@@ -153,6 +171,7 @@ class ScreenCaptureService : Service() {
     }
 
     private fun convertImageToBitmap(image: android.media.Image): Bitmap {
+        Log.d(TAG, "convertImageToBitmap: converting")
         val plane = image.planes[0]
         val buffer = plane.buffer
         val pixelStride = plane.pixelStride
@@ -169,6 +188,7 @@ class ScreenCaptureService : Service() {
     }
 
     private fun performImageScanning(bitmap: Bitmap): ScanResult {
+        Log.d(TAG, "performImageScanning: performing")
         // Implement your scanning logic here
         return ScanResult(
             isMalicious = bitmap.width > bitmap.height,
@@ -198,6 +218,10 @@ class ScreenCaptureService : Service() {
     private fun stopScreenCapture() {
         isScanning.set(false)
         scanningScope.cancel()
+
+        // Unregister the callback
+        mediaProjection?.unregisterCallback(mediaProjectionCallback)
+
         mediaProjection?.stop()
         virtualDisplay?.release()
         stopSelf()
