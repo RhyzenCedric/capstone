@@ -16,8 +16,10 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.util.Patterns
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
+import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ScreenCaptureService : Service() {
@@ -81,6 +83,7 @@ class ScreenCaptureService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_PROJECTION -> {
+                // Existing start projection logic
                 val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val resultData = intent.getParcelableExtra<Intent>(EXTRA_RESULT_DATA)
 
@@ -92,10 +95,14 @@ class ScreenCaptureService : Service() {
                     stopSelf()
                 }
             }
+            ACTION_STOP_PROJECTION -> {
+                Log.d(TAG, "Stopping screen capture service")
+                stopScreenCapture()
+                stopSelf()
+            }
         }
         return START_STICKY
     }
-
     private fun initializeMediaProjection(resultCode: Int, resultData: Intent) {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
@@ -188,12 +195,106 @@ class ScreenCaptureService : Service() {
     }
 
     private fun performImageScanning(bitmap: Bitmap): ScanResult {
-        Log.d(TAG, "performImageScanning: performing")
-        // Implement your scanning logic here
-        return ScanResult(
-            isMalicious = bitmap.width > bitmap.height,
-            description = "Sample scan result"
-        )
+        Log.d(TAG, "performImageScanning: performing link scanning")
+
+        try {
+            // Step 1: Extract text from bitmap (simulate OCR)
+            val extractedText = simulateOCR(bitmap)
+
+            // Step 2: Find URLs in the extracted text
+            val urls = extractUrls(extractedText)
+
+            // Step 3: Scan each URL for potential threats
+            for (urlString in urls) {
+                val scanResult = scanUrl(urlString)
+                if (scanResult.isMalicious) {
+                    return scanResult
+                }
+            }
+
+            // If no malicious URLs found
+            return ScanResult(
+                isMalicious = false,
+                description = "No suspicious links detected"
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "URL scanning error", e)
+            return ScanResult(
+                isMalicious = false,
+                description = "Scanning error occurred"
+            )
+        }
+    }
+
+    private fun simulateOCR(bitmap: Bitmap): String {
+        // In a real-world scenario, you'd use a proper OCR library like ML Kit or Tesseract
+        // This is a simplified simulation
+        return "Check out this amazing offer at https://suspicious-link.com/free-gift"
+    }
+
+    private fun extractUrls(text: String): List<String> {
+        val urlMatcher = Patterns.WEB_URL
+        val matcher = urlMatcher.matcher(text)
+        val urls = mutableListOf<String>()
+
+        while (matcher.find()) {
+            urls.add(matcher.group())
+        }
+
+        return urls
+    }
+
+    private fun scanUrl(urlString: String): ScanResult {
+        return try {
+            val url = URL(urlString)
+            val hostname = url.host.lowercase()
+
+            // Phishing indicators
+            val phishingIndicators = listOf(
+                "free-gift",
+                "suspicious",
+                "login-verify",
+                "account-secure",
+                "urgent-action"
+            )
+
+            // Check against known bad domains
+            val suspiciousDomains = listOf(
+                "suspicious-link.com",
+                "fake-bank.net",
+                "phishing-site.org"
+            )
+
+            val hasPhishingKeyword = phishingIndicators.any {
+                hostname.contains(it) || urlString.contains(it)
+            }
+
+            val isKnownBadDomain = suspiciousDomains.any {
+                hostname.contains(it)
+            }
+
+            // URL length and complexity check
+            val isLongAndComplexUrl = urlString.length > 100 ||
+                    (urlString.count { it == '.' } > 3 || urlString.count { it == '/' } > 4)
+
+            val isMalicious = hasPhishingKeyword ||
+                    isKnownBadDomain ||
+                    isLongAndComplexUrl
+
+            ScanResult(
+                isMalicious = isMalicious,
+                description = if (isMalicious)
+                    "Potential phishing link detected: $urlString"
+                else
+                    "Link appears safe"
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "URL scanning error for $urlString", e)
+            ScanResult(
+                isMalicious = false,
+                description = "Could not validate URL"
+            )
+        }
     }
 
     private fun handleScanResult(result: ScanResult) {
@@ -216,20 +317,35 @@ class ScreenCaptureService : Service() {
     }
 
     private fun stopScreenCapture() {
-        isScanning.set(false)
-        scanningScope.cancel()
+        try {
+            // Stop scanning
+            isScanning.set(false)
+            scanningScope.cancel()
 
-        // Unregister the callback
-        mediaProjection?.unregisterCallback(mediaProjectionCallback)
+            // Release media projection resources
+            mediaProjection?.let {
+                it.unregisterCallback(mediaProjectionCallback)
+                it.stop()
+            }
 
-        mediaProjection?.stop()
-        virtualDisplay?.release()
-        stopSelf()
+            // Release virtual display
+            virtualDisplay?.release()
+            virtualDisplay = null
+
+            // Clear media projection
+            mediaProjection = null
+
+            Log.d(TAG, "Screen capture stopped successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping screen capture", e)
+        }
     }
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        Log.d(TAG, "Service is being destroyed")
         stopScreenCapture()
         super.onDestroy()
     }

@@ -269,12 +269,15 @@ class MainActivity : AppCompatActivity() {
                         circleParams.x <= removeAreaRight
                     ) {
                         // Remove the floating circle if it's dragged into the "Remove?" area
-                        windowManager.removeView(floatingCircle)
-                        stopScanning()
+                        try {
+                            windowManager.removeView(floatingCircle)
+                            windowManager.removeView(removePopup)
+                        } catch (e: IllegalArgumentException) {
+                            Log.e(ScreenCaptureService.TAG, "Error removing views", e)
+                        }
 
-                        // Re-enable the button and change its text back
-                        showCircleButton.isEnabled = true
-                        showCircleButton.text = "Activate Scanner"
+                        // Stop the scanning service
+                        stopScanning()
                     } else {
                         // Otherwise, snap the floating circle to the nearest edge (left or right)
                         circleParams.x = if (event.rawX < screenSize.x / 2) {
@@ -300,26 +303,47 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        // Stop the scanning service or any scanning logic you have running
+        // Comprehensive service and view cleanup
         stopScanning()
 
-        // Remove the floating circle and the remove popup if they exist
-        if (::floatingCircle.isInitialized) {
-            windowManager.removeView(floatingCircle)
-        }
-        if (::removePopup.isInitialized) {
-            windowManager.removeView(removePopup)
+        // Remove views safely
+        try {
+            if (::floatingCircle.isInitialized) {
+                windowManager.removeView(floatingCircle)
+            }
+            if (::removePopup.isInitialized) {
+                windowManager.removeView(removePopup)
+            }
+        } catch (e: IllegalArgumentException) {
+            Log.e(ScreenCaptureService.TAG, "Error removing views in onDestroy", e)
         }
     }
 
     private fun stopScanning() {
-        // Add logic to stop scanning service or any active scanning process here
-        val serviceIntent = Intent(this, ScreenCaptureService::class.java)
-        serviceIntent.action = ScreenCaptureService.ACTION_STOP_PROJECTION
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
+        // Stop the ScreenCaptureService completely
+        val serviceIntent = Intent(this, ScreenCaptureService::class.java).apply {
+            action = ScreenCaptureService.ACTION_STOP_PROJECTION
+        }
+
+        try {
+            // Stop the service
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
+
+            // Additional logging for debugging
+            Log.d(ScreenCaptureService.TAG, "Stopping ScreenCaptureService from MainActivity")
+        } catch (e: Exception) {
+            Log.e(ScreenCaptureService.TAG, "Error stopping ScreenCaptureService", e)
+            Toast.makeText(this, "Failed to stop scanning service", Toast.LENGTH_SHORT).show()
+        }
+
+        // Reset UI elements
+        if (::showCircleButton.isInitialized) {
+            showCircleButton.isEnabled = true
+            showCircleButton.text = "Activate Scanner"
         }
     }
 
