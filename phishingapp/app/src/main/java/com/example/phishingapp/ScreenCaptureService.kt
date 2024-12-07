@@ -21,6 +21,12 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
+import com.google.android.gms.tasks.Tasks
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.IOException
+import java.util.concurrent.ExecutionException
 
 class ScreenCaptureService : Service() {
     private var mediaProjection: MediaProjection? = null
@@ -227,9 +233,36 @@ class ScreenCaptureService : Service() {
     }
 
     private fun simulateOCR(bitmap: Bitmap): String {
-        // In a real-world scenario, you'd use a proper OCR library like ML Kit or Tesseract
-        // This is a simplified simulation
-        return "Check out this amazing offer at https://suspicious-link.com/free-gift"
+        // Initialize text recognizer
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+        // Create InputImage from bitmap
+        val image = InputImage.fromBitmap(bitmap, 0)
+
+        return try {
+            // Perform text recognition synchronously
+            val result = Tasks.await(recognizer.process(image))
+
+            // Combine all text blocks into a single string
+            val extractedText = result.textBlocks.joinToString("\n") { block ->
+                block.text
+            }
+
+            Log.d(TAG, "OCR extracted text: $extractedText")
+            extractedText
+        } catch (e: ExecutionException) {
+            Log.e(TAG, "ML Kit OCR execution error", e)
+            ""
+        } catch (e: InterruptedException) {
+            Log.e(TAG, "ML Kit OCR interrupted", e)
+            ""
+        } catch (e: IOException) {
+            Log.e(TAG, "ML Kit OCR IO error", e)
+            ""
+        } finally {
+            // Close the recognizer
+            recognizer.close()
+        }
     }
 
     private fun extractUrls(text: String): List<String> {
@@ -238,15 +271,36 @@ class ScreenCaptureService : Service() {
         val urls = mutableListOf<String>()
 
         while (matcher.find()) {
-            urls.add(matcher.group())
+            var url = matcher.group()
+
+            // Ensure the URL has a protocol
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "http://$url"
+            }
+
+            urls.add(url)
         }
 
         return urls
     }
 
+    private fun sanitizeUrl(urlString: String): String {
+        // Remove any surrounding whitespace
+        var cleanUrl = urlString.trim()
+
+        // Ensure protocol is present
+        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
+            cleanUrl = "http://$cleanUrl"
+        }
+
+        return cleanUrl
+    }
+
     private fun scanUrl(urlString: String): ScanResult {
         return try {
-            val url = URL(urlString)
+            // Validate and sanitize URL
+            val sanitizedUrl = sanitizeUrl(urlString)
+            val url = URL(sanitizedUrl)
             val hostname = url.host.lowercase()
 
             // Phishing indicators
@@ -266,7 +320,7 @@ class ScreenCaptureService : Service() {
             )
 
             val hasPhishingKeyword = phishingIndicators.any {
-                hostname.contains(it) || urlString.contains(it)
+                hostname.contains(it) || sanitizedUrl.contains(it)
             }
 
             val isKnownBadDomain = suspiciousDomains.any {
@@ -274,8 +328,8 @@ class ScreenCaptureService : Service() {
             }
 
             // URL length and complexity check
-            val isLongAndComplexUrl = urlString.length > 100 ||
-                    (urlString.count { it == '.' } > 3 || urlString.count { it == '/' } > 4)
+            val isLongAndComplexUrl = sanitizedUrl.length > 100 ||
+                    (sanitizedUrl.count { it == '.' } > 3 || sanitizedUrl.count { it == '/' } > 4)
 
             val isMalicious = hasPhishingKeyword ||
                     isKnownBadDomain ||
@@ -284,7 +338,7 @@ class ScreenCaptureService : Service() {
             ScanResult(
                 isMalicious = isMalicious,
                 description = if (isMalicious)
-                    "Potential phishing link detected: $urlString"
+                    "Potential phishing link detected: $sanitizedUrl"
                 else
                     "Link appears safe"
             )
@@ -292,7 +346,7 @@ class ScreenCaptureService : Service() {
             Log.e(TAG, "URL scanning error for $urlString", e)
             ScanResult(
                 isMalicious = false,
-                description = "Could not validate URL"
+                description = "Invalid URL: $urlString"
             )
         }
     }
