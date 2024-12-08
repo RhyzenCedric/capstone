@@ -35,7 +35,6 @@ class ScreenCaptureService : Service() {
     private val scanningScope = CoroutineScope(Dispatchers.Default)
     private val isScanning = AtomicBoolean(false)
 
-    // MediaProjection callback to manage resources
     private val mediaProjectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
             Log.d(TAG, "MediaProjection stopped")
@@ -46,15 +45,38 @@ class ScreenCaptureService : Service() {
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "ScreenCaptureServiceChannel"
         private const val NOTIFICATION_ID = 1001
+        private const val MALICIOUS_LINKS_NOTIFICATION_ID = 1002
         const val TAG = "ScreenCaptureService"
 
-        // Action constants for service control
         const val ACTION_START_PROJECTION = "ACTION_START_PROJECTION"
         const val ACTION_STOP_PROJECTION = "ACTION_STOP_PROJECTION"
 
-        // Intent extra keys
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_RESULT_DATA = "resultData"
+    }
+
+    private fun levenshteinDistance(s1: String, s2: String): Int {
+        val m = s1.length
+        val n = s2.length
+        val dp = Array(m + 1) { IntArray(n + 1) }
+
+        // Initialize first row and column
+        for (i in 0..m) dp[i][0] = i
+        for (j in 0..n) dp[0][j] = j
+
+        // Fill the rest of the matrix
+        for (i in 1..m) {
+            for (j in 1..n) {
+                val cost = if (s1[i - 1] == s2[j - 1]) 0 else 1
+                dp[i][j] = minOf(
+                    dp[i - 1][j] + 1,      // Deletion
+                    dp[i][j - 1] + 1,      // Insertion
+                    dp[i - 1][j - 1] + cost // Substitution
+                )
+            }
+        }
+
+        return dp[m][n]
     }
 
     override fun onCreate() {
@@ -89,7 +111,6 @@ class ScreenCaptureService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START_PROJECTION -> {
-                // Existing start projection logic
                 val resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED)
                 val resultData = intent.getParcelableExtra<Intent>(EXTRA_RESULT_DATA)
 
@@ -109,21 +130,19 @@ class ScreenCaptureService : Service() {
         }
         return START_STICKY
     }
+
     private fun initializeMediaProjection(resultCode: Int, resultData: Intent) {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData)
 
-        // Check if mediaProjection is null before proceeding
         if (mediaProjection == null) {
             Log.e(TAG, "Failed to initialize MediaProjection")
             stopSelf()
             return
         }
 
-        // Register the callback BEFORE starting screen capture
         mediaProjection?.registerCallback(mediaProjectionCallback, null)
-
         startScreenCapture()
     }
 
@@ -164,11 +183,10 @@ class ScreenCaptureService : Service() {
                         val image = imageReader.acquireLatestImage()
                         image?.let {
                             val bitmap = convertImageToBitmap(it)
-                            val scanResult = performImageScanning(bitmap)
+                            val scanResults = performImageScanning(bitmap)
 
-                            // Handle scan result on main thread
                             withContext(Dispatchers.Main) {
-                                handleScanResult(scanResult)
+                                handleScanResult(scanResults)
                             }
 
                             it.close()
@@ -200,50 +218,36 @@ class ScreenCaptureService : Service() {
         return bitmap
     }
 
-    private fun performImageScanning(bitmap: Bitmap): ScanResult {
+    private fun performImageScanning(bitmap: Bitmap): List<ScanResult> {
         Log.d(TAG, "performImageScanning: performing link scanning")
 
         try {
-            // Step 1: Extract text from bitmap (simulate OCR)
             val extractedText = simulateOCR(bitmap)
-
-            // Step 2: Find URLs in the extracted text
             val urls = extractUrls(extractedText)
 
-            // Step 3: Scan each URL for potential threats
-            for (urlString in urls) {
+            return urls.map { urlString ->
                 val scanResult = scanUrl(urlString)
-                if (scanResult.isMalicious) {
-                    return scanResult
-                }
+                Log.d(TAG, "Scanned URL: $urlString - ${scanResult.description}")
+                scanResult
             }
-
-            // If no malicious URLs found
-            return ScanResult(
-                isMalicious = false,
-                description = "No suspicious links detected"
-            )
         } catch (e: Exception) {
             Log.e(TAG, "URL scanning error", e)
-            return ScanResult(
-                isMalicious = false,
-                description = "Scanning error occurred"
+            return listOf(
+                ScanResult(
+                    url = "Unknown",
+                    isMalicious = false,
+                    description = "Scanning error occurred"
+                )
             )
         }
     }
 
     private fun simulateOCR(bitmap: Bitmap): String {
-        // Initialize text recognizer
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
-        // Create InputImage from bitmap
         val image = InputImage.fromBitmap(bitmap, 0)
 
         return try {
-            // Perform text recognition synchronously
             val result = Tasks.await(recognizer.process(image))
-
-            // Combine all text blocks into a single string
             val extractedText = result.textBlocks.joinToString("\n") { block ->
                 block.text
             }
@@ -260,7 +264,6 @@ class ScreenCaptureService : Service() {
             Log.e(TAG, "ML Kit OCR IO error", e)
             ""
         } finally {
-            // Close the recognizer
             recognizer.close()
         }
     }
@@ -273,7 +276,6 @@ class ScreenCaptureService : Service() {
         while (matcher.find()) {
             var url = matcher.group()
 
-            // Ensure the URL has a protocol
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
                 url = "http://$url"
             }
@@ -285,10 +287,8 @@ class ScreenCaptureService : Service() {
     }
 
     private fun sanitizeUrl(urlString: String): String {
-        // Remove any surrounding whitespace
         var cleanUrl = urlString.trim()
 
-        // Ensure protocol is present
         if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
             cleanUrl = "http://$cleanUrl"
         }
@@ -298,12 +298,12 @@ class ScreenCaptureService : Service() {
 
     private fun scanUrl(urlString: String): ScanResult {
         return try {
-            // Validate and sanitize URL
             val sanitizedUrl = sanitizeUrl(urlString)
             val url = URL(sanitizedUrl)
             val hostname = url.host.lowercase()
+            val tld = hostname.substringAfterLast('.', "")
 
-            // Phishing indicators
+            // Define lists for analysis
             val phishingIndicators = listOf(
                 "free-gift",
                 "suspicious",
@@ -312,13 +312,33 @@ class ScreenCaptureService : Service() {
                 "urgent-action"
             )
 
-            // Check against known bad domains
             val suspiciousDomains = listOf(
                 "suspicious-link.com",
                 "fake-bank.net",
                 "phishing-site.org"
             )
 
+            val legitimateDomains = listOf(
+                "google.com",
+                "microsoft.com",
+                "paypal.com",
+                "amazon.com",
+                "facebook.com",
+                "twitter.com",
+                "apple.com",
+                "bank.com"
+            )
+
+            // TLD Risk Assessment
+            val riskyCcTlds = listOf(
+                "tk", "ml", "ga", "cf", "gq", // Free TLDs often used for scams
+                "pw", "top", "xyz",           // Frequently associated with spam
+                "loan", "win", "bid"          // Suspicious commercial TLDs
+            )
+
+            val isSuspiciousTld = tld in riskyCcTlds
+
+            // Enhanced URL Complexity and Risk Checks
             val hasPhishingKeyword = phishingIndicators.any {
                 hostname.contains(it) || sanitizedUrl.contains(it)
             }
@@ -327,66 +347,136 @@ class ScreenCaptureService : Service() {
                 hostname.contains(it)
             }
 
-            // URL length and complexity check
-            val isLongAndComplexUrl = sanitizedUrl.length > 100 ||
-                    (sanitizedUrl.count { it == '.' } > 3 || sanitizedUrl.count { it == '/' } > 4)
+            val isLongAndComplexUrl = sanitizedUrl.let {
+                it.length > 100 ||                             // Very long URL
+                        (it.count { char -> char == '.' } > 3) ||      // Too many subdomains
+                        (it.count { char -> char == '/' } > 4) ||      // Too many path segments
+                        (it.count { char -> char == '-' } > 2)         // Multiple hyphens
+            }
 
+            // Subdomain obfuscation check
+            val hasObfuscatedSubdomain = hostname.split('.').let { parts ->
+                parts.size > 2 && parts.first().length < 3
+            }
+
+            // Levenshtein distance check for domain similarity
+            val domainSimilarityRisk = legitimateDomains.any { legitimateDomain ->
+                val distance = levenshteinDistance(hostname, legitimateDomain)
+                val similarityRatio = distance.toDouble() / maxOf(hostname.length, legitimateDomain.length)
+
+                // If the similarity ratio is less than 0.3 (30% difference), consider it a potential phishing attempt
+                similarityRatio < 0.3
+            }
+
+            // Comprehensive risk assessment
             val isMalicious = hasPhishingKeyword ||
                     isKnownBadDomain ||
-                    isLongAndComplexUrl
+                    isLongAndComplexUrl ||
+                    domainSimilarityRisk ||
+                    isSuspiciousTld ||
+                    hasObfuscatedSubdomain
 
             ScanResult(
+                url = sanitizedUrl,
                 isMalicious = isMalicious,
-                description = if (isMalicious)
-                    "Potential phishing link detected: $sanitizedUrl"
-                else
-                    "Link appears safe"
+                description = when {
+                    isSuspiciousTld -> "Suspicious top-level domain"
+                    hasPhishingKeyword -> "Suspicious keyword detected"
+                    isKnownBadDomain -> "Known malicious domain"
+                    isLongAndComplexUrl -> "Overly complex URL structure"
+                    hasObfuscatedSubdomain -> "Potential subdomain obfuscation"
+                    domainSimilarityRisk -> "Potential domain spoofing detected"
+                    else -> "Link appears safe"
+                }
             )
         } catch (e: Exception) {
             Log.e(TAG, "URL scanning error for $urlString", e)
             ScanResult(
+                url = urlString,
                 isMalicious = false,
-                description = "Invalid URL: $urlString"
+                description = "Invalid URL"
             )
         }
     }
 
-    private fun handleScanResult(result: ScanResult) {
-        if (result.isMalicious) {
-            showNotification("Potential Threat Detected", result.description)
+    private fun handleScanResult(scanResults: List<ScanResult>) {
+        var maliciousLinksDetected = false
+        val maliciousLinks = mutableListOf<ScanResult>()
+
+        val resultDescription = scanResults.joinToString("\n") { result ->
+            if (result.isMalicious) {
+                maliciousLinksDetected = true
+                maliciousLinks.add(result)
+                "Malicious Link Detected: ${result.url} - ${result.description}"
+            } else {
+                "Safe Link: ${result.url}"
+            }
+        }
+
+        Log.d(TAG, "Scan Results:\n$resultDescription")
+
+        if (maliciousLinksDetected) {
+            // Log the number of malicious links
+            val linkCount = maliciousLinks.size
+            val logMessage = if (linkCount == 1) {
+                "1 malicious link detected"
+            } else {
+                "$linkCount malicious links detected"
+            }
+            Log.w(TAG, logMessage)
+
+            showNotification(
+                "⚠️ Phishing Links Detected",
+                "Multiple suspicious links found on screen",
+                maliciousLinks
+            )
         }
     }
 
-    private fun showNotification(title: String, content: String) {
-        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(content)
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .build()
-
+    private fun showNotification(title: String, content: String, maliciousLinks: List<ScanResult>? = null) {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID + 1, notification)
-    }
 
+        // First, show the screen capture active notification (existing logic)
+        val screenCaptureNotification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle("Screen Capture Active")
+            .setContentText("Monitoring screen for potential threats")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID, screenCaptureNotification)
+
+        // If malicious links are detected, create a separate notification
+        if (maliciousLinks != null && maliciousLinks.isNotEmpty()) {
+            val linkCount = maliciousLinks.size
+            val maliciousLinksNotification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                .setContentTitle("⚠️ Phishing Links Detected")
+                .setContentText(
+                    if (linkCount == 1) "1 malicious link detected"
+                    else "$linkCount malicious links detected"
+                )
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setNumber(linkCount)
+                .build()
+
+            notificationManager.notify(MALICIOUS_LINKS_NOTIFICATION_ID, maliciousLinksNotification)
+        }
+    }
     private fun stopScreenCapture() {
         try {
-            // Stop scanning
             isScanning.set(false)
             scanningScope.cancel()
 
-            // Release media projection resources
             mediaProjection?.let {
                 it.unregisterCallback(mediaProjectionCallback)
                 it.stop()
             }
 
-            // Release virtual display
             virtualDisplay?.release()
             virtualDisplay = null
 
-            // Clear media projection
             mediaProjection = null
 
             Log.d(TAG, "Screen capture stopped successfully")
@@ -394,7 +484,6 @@ class ScreenCaptureService : Service() {
             Log.e(TAG, "Error stopping screen capture", e)
         }
     }
-
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -405,6 +494,7 @@ class ScreenCaptureService : Service() {
     }
 
     data class ScanResult(
+        val url: String,
         val isMalicious: Boolean,
         val description: String
     )
