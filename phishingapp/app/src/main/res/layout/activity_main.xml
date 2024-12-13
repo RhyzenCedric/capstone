@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PHISHERMAN"
-        android:textSize="24sp"
+        android:textSize="30sp"
         android:textColor="#1d1e4e"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
@@ -27,66 +27,46 @@
         android:backgroundTint="@color/button_color_state"
         android:background="@drawable/floating_circle_button"
         android:text="Activate Scanner"
+        android:textStyle="bold"
         android:layout_below="@id/text_title"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp" />
 
-    <!-- 2x2 grid for rectangular buttons with rounded corners -->
-    <GridLayout
-        android:id="@+id/grid_button_group"
+    <!-- Learn More Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_learn_more"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/button_activate_scanner"
         android:layout_marginTop="24dp"
-        android:rowCount="2"
-        android:columnCount="2"
-        android:layout_gravity="center"
-        android:layout_centerHorizontal="true"
-        android:alignmentMode="alignMargins"
-        android:padding="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginRight="16dp"
+        android:text="Learn More"
+        android:background="@drawable/rounded_button" />
 
-        <!-- Button 3 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_learn_more"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Learn More"
-            android:background="@drawable/rounded_button" />
+    <!-- Reports Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_reports"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_learn_more"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Reports"
+        android:background="@drawable/rounded_button" />
 
-        <!-- Button 2 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_browser"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Browser"
-            android:background="@drawable/rounded_button" />
-
-        <!-- Button 1 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_account"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Account"
-            android:background="@drawable/rounded_button" />
-
-        <!-- Button 4 -->
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/button_reports"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Reports"
-            android:background="@drawable/rounded_button" />
-    </GridLayout>
+    <!-- Account Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button_reports"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:text="Account"
+        android:background="@drawable/rounded_button" />
 
     <include
         android:id="@+id/bottom_navigation_bar"

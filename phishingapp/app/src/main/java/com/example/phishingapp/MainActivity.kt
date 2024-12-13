@@ -5,7 +5,10 @@ import android.content.ActivityNotFoundException
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
@@ -22,7 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var windowManager: WindowManager
-    private lateinit var floatingCircle: FloatingActionButton
+    private lateinit var floatingCircle: View
     private lateinit var circleParams: WindowManager.LayoutParams
     private lateinit var removePopup: TextView
     private lateinit var removePopupParams: WindowManager.LayoutParams
@@ -56,34 +59,22 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavigationButtons() {
         // Navigation button setup (same as previous implementation)
         findViewById<Button>(R.id.button_nav_home).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            // Check if we're already on the home screen
+            if (this::class.java != MainActivity::class.java) {
+                val intent = Intent(this, MainActivity::class.java)
+                // Clear top ensures we don't create multiple instances of MainActivity
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                // Optionally, add some feedback if user is already on home screen
+                Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
+            }
         }
 
         findViewById<Button>(R.id.button_nav_account).setOnClickListener {
             Toast.makeText(this, "Already on Account", Toast.LENGTH_SHORT).show()
         }
 
-        findViewById<Button>(R.id.button_nav_browser).setOnClickListener {
-            launchBrowserApp()
-        }
-
-        findViewById<Button>(R.id.button_browser).setOnClickListener {
-            launchBrowserApp()
-        }
-    }
-
-    private fun launchBrowserApp() {
-        try {
-            val intent = Intent().apply {
-                setClassName("com.example.phishingbrowser", "com.example.phishingbrowser.SplashActivity")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(this, "Phishing Browser app is not installed.", Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
-        }
     }
 
     private fun requestOverlayPermission() {
@@ -147,11 +138,17 @@ class MainActivity : AppCompatActivity() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
         showCircleButton.text = "Scanner Activated"
+        showCircleButton.setTypeface(showCircleButton.typeface, Typeface.BOLD)
 
 
-        // Create a new FloatingActionButton
-        floatingCircle = FloatingActionButton(this)
-        floatingCircle.setImageResource(android.R.drawable.presence_online) // Use a small icon
+        // Create a new View for the floating circle
+        floatingCircle = View(this)
+
+        // Set a circular background with translucency
+        floatingCircle.background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.argb(64, 0, 128, 255)) // 25% transparent blue circle
+        }
 
         // Set layout parameters for the floating circle
         circleParams = WindowManager.LayoutParams(

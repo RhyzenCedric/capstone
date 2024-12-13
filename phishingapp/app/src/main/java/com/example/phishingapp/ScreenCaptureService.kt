@@ -98,14 +98,9 @@ class ScreenCaptureService : Service() {
     }
 
     private fun startForegroundService() {
-        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Screen Capture Active")
-            .setContentText("Monitoring screen for potential threats")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
-
-        startForeground(NOTIFICATION_ID, notification)
+        // Remove the separate notification creation
+        // The showNotification method will handle the initial foreground notification
+        showNotification("Screen Capture Active", "Monitoring screen for potential threats")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -437,33 +432,43 @@ class ScreenCaptureService : Service() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // First, show the screen capture active notification (existing logic)
-        val screenCaptureNotification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Screen Capture Active")
-            .setContentText("Monitoring screen for potential threats")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+        // Use the same notification channel and ID for both foreground service and malicious link notifications
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 
-        notificationManager.notify(NOTIFICATION_ID, screenCaptureNotification)
-
-        // If malicious links are detected, create a separate notification
         if (maliciousLinks != null && maliciousLinks.isNotEmpty()) {
             val linkCount = maliciousLinks.size
-            val maliciousLinksNotification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+
+            // Create an expandable notification with detailed link information
+            val inboxStyle = NotificationCompat.InboxStyle()
+            inboxStyle.setBigContentTitle("⚠️ Phishing Links Detected")
+
+            maliciousLinks.forEach { link ->
+                inboxStyle.addLine("${link.url} - ${link.description}")
+            }
+
+            notificationBuilder
                 .setContentTitle("⚠️ Phishing Links Detected")
                 .setContentText(
                     if (linkCount == 1) "1 malicious link detected"
                     else "$linkCount malicious links detected"
                 )
+                .setStyle(inboxStyle)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setNumber(linkCount)
-                .build()
-
-            notificationManager.notify(MALICIOUS_LINKS_NOTIFICATION_ID, maliciousLinksNotification)
+        } else {
+            // Use the original foreground service notification
+            notificationBuilder
+                .setContentTitle("Screen Capture Active")
+                .setContentText("Monitoring screen for potential threats")
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
         }
+
+        // Update the existing foreground notification or create a new one
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
     }
+
     private fun stopScreenCapture() {
         try {
             isScanning.set(false)
