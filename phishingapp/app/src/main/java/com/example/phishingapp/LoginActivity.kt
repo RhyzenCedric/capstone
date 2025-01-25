@@ -67,8 +67,11 @@ class LoginActivity : AppCompatActivity() {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@LoginActivity, response.body()?.message ?: "Login successful", Toast.LENGTH_SHORT).show()
-                    // Redirect to MainActivity
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    // Redirect to MainActivity with username
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.putExtra("userUsername", userUsername)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // Add this flag
+                    startActivity(intent)
                     finish()
                 } else {
                     val errorMessage = response.body()?.error ?: "Login failed: ${response.message()}"
@@ -81,4 +84,6 @@ class LoginActivity : AppCompatActivity() {
             }
         })
     }
+
+
 }

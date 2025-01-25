@@ -34,12 +34,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
     companion object {
+        private const val TAG = "MainActivity"
         private const val MEDIA_PROJECTION_REQUEST_CODE = 101
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val username = intent.getStringExtra("userUsername") ?: "Guest"
+        Log.d(TAG, "Passed username: $username")
 
         // Set up navigation buttons (same as previous implementation)
         setupNavigationButtons()
@@ -72,8 +76,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.button_nav_account).setOnClickListener {
-            Toast.makeText(this, "Already on Account", Toast.LENGTH_SHORT).show()
+            if (javaClass != AccountActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val intent = Intent(this@MainActivity, AccountActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
+            }
         }
+
 
     }
 
