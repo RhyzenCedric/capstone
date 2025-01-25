@@ -30,12 +30,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var removePopup: TextView
     private lateinit var removePopupParams: WindowManager.LayoutParams
     private lateinit var showCircleButton: Button
-
+    private var isAppInBackground = false
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
     companion object {
         private const val TAG = "MainActivity"
         private const val MEDIA_PROJECTION_REQUEST_CODE = 101
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // App goes into background
+        isAppInBackground = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // App comes to foreground
+        isAppInBackground = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -197,9 +209,23 @@ class MainActivity : AppCompatActivity() {
 
         // Add a click listener to reopen the app when the floating circle is clicked
         floatingCircle.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            startActivity(intent)
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+            val runningTasks = activityManager.appTasks
+
+            // Check if the app is in the background
+            val isInBackground = runningTasks.none {
+                it.taskInfo.baseActivity?.className == MainActivity::class.java.name
+            }
+
+            if (isInBackground) {
+                // App is minimized or in the background, redirect to MainActivity
+                val intent = Intent(this, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                startActivity(intent)
+            } else {
+                // App is already on the home screen, display a toast
+                Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Add the circle to the window
@@ -239,6 +265,7 @@ class MainActivity : AppCompatActivity() {
         private var initialTouchX = 0f
         private var initialTouchY = 0f
         private val removeThresholdPercentage = 0.75f // 75% of screen height
+        private val clickThreshold = 10 // Distance threshold for detecting a tap
 
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             when (event.action) {
@@ -273,6 +300,13 @@ class MainActivity : AppCompatActivity() {
                 MotionEvent.ACTION_UP -> {
                     // Hide the "Remove?" popup when the user releases the circle
                     removePopup.visibility = View.GONE
+
+                    val deltaX = Math.abs(event.rawX - initialTouchX)
+                    val deltaY = Math.abs(event.rawY - initialTouchY)
+                    if (deltaX < clickThreshold && deltaY < clickThreshold) {
+                        handleCircleTap() // Call a method to handle the tap functionality
+                        return true
+                    }
 
                     // Get screen size to define the "Remove?" area
                     val screenSize = android.graphics.Point()
@@ -315,6 +349,20 @@ class MainActivity : AppCompatActivity() {
             return false
         }
     }
+
+    private fun handleCircleTap() {
+        if (isAppInBackground) {
+            // App is minimized, open the main screen
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(intent)
+        } else {
+            // App is already active, show a toast
+            Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
     private fun requestScreenCapturePermission() {
         val mediaProjectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
