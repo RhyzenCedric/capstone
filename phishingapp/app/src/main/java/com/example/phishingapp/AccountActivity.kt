@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class AccountActivity : AppCompatActivity() {
@@ -16,6 +17,7 @@ class AccountActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_account)
 
+        setupNavigationButtons()
         // Get username passed from MainActivity
         val username = intent.getStringExtra("userUsername") ?: "Guest"
 
@@ -35,6 +37,31 @@ class AccountActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
             finish()
+        }
+    }
+
+    private fun setupNavigationButtons() {
+        findViewById<Button>(R.id.button_nav_home).setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+            // Pass the username to MainActivity
+            val username = intent.getStringExtra("userUsername") ?: "Guest"
+            intent.putExtra("userUsername", username)
+
+            startActivity(intent)
+        }
+
+        findViewById<Button>(R.id.button_nav_account).setOnClickListener {
+            if (javaClass != AccountActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val intent = Intent(this@AccountActivity, AccountActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

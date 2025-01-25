@@ -87,6 +87,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.button_account).setOnClickListener {
+            if (javaClass != AccountActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val intent = Intent(this@MainActivity, AccountActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
     }
 
