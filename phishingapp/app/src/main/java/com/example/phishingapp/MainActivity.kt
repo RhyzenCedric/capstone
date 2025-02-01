@@ -137,6 +137,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.button_reports).setOnClickListener {
+            if (javaClass != ReportActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val intent = Intent(this@MainActivity, ReportActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
+            }
+        }
+
 
     }
 
