@@ -44,7 +44,8 @@
         android:layout_height="wrap_content"
         android:text="Login"
         android:layout_marginBottom="10dp"
-        android:textColor="#ffffff"/>
+        android:textColor="#ffffff"
+        android:backgroundTint="#108690"/>
 
     <!-- New Guest Button -->
     <Button
@@ -53,7 +54,8 @@
         android:layout_height="wrap_content"
         android:text="Continue as Guest"
         android:layout_marginBottom="10dp"
-        android:textColor="#ffffff"/>
+        android:textColor="#ffffff"
+        android:backgroundTint="#108690"/>
 
     <TextView
         android:id="@+id/textViewSignup"

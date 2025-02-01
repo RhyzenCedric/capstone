@@ -1,7 +1,10 @@
 package com.example.phishingapp
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -56,6 +59,14 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
+
+        val signupText = "Don't have an account? Sign Up"
+        val spannableString = SpannableString(signupText)
+        val signUpStart = signupText.indexOf("Sign Up")
+        val signUpEnd = signUpStart + "Sign Up".length
+        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#108690")), signUpStart, signUpEnd, 0)
+
+        textViewSignup.text = spannableString
     }
 
     // Function to log in the user

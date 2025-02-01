@@ -2,9 +2,12 @@ package com.example.phishingapp
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
@@ -64,11 +67,34 @@ class MainActivity : AppCompatActivity() {
         mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE)
                 as MediaProjectionManager
 
+        val intentFilter = IntentFilter().apply {
+            addAction("com.example.phishingapp.MALICIOUS_LINK_DETECTED")
+            addAction("com.example.phishingapp.NO_MALICIOUS_LINKS")
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            maliciousLinkReceiver,
+            intentFilter
+        )
+
         // Check overlay permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             requestOverlayPermission()
         } else {
             setupFloatingButton()
+        }
+    }
+
+    private val maliciousLinkReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                "com.example.phishingapp.MALICIOUS_LINK_DETECTED" -> {
+                    changeFloatingCircleColorToRed()
+                }
+                "com.example.phishingapp.NO_MALICIOUS_LINKS" -> {
+                    changeFloatingCircleColorToBlue()
+                }
+            }
         }
     }
 
@@ -181,11 +207,13 @@ class MainActivity : AppCompatActivity() {
         // Create a new View for the floating circle
         floatingCircle = View(this)
 
-        // Set a circular background with translucency
-        floatingCircle.background = GradientDrawable().apply {
+        val circleDrawable = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(Color.argb(64, 0, 128, 255)) // 25% transparent blue circle
+            setColor(Color.argb(64, 0, 128, 255)) // Initial Blue
         }
+
+
+        floatingCircle.background = circleDrawable
 
         // Set layout parameters for the floating circle
         circleParams = WindowManager.LayoutParams(
@@ -230,6 +258,18 @@ class MainActivity : AppCompatActivity() {
 
         // Add the circle to the window
         windowManager.addView(floatingCircle, circleParams)
+    }
+
+    private fun changeFloatingCircleColorToRed() {
+        val circleDrawable = floatingCircle.background as GradientDrawable
+        circleDrawable.setColor(Color.argb(65, 255, 115, 100))// Change to red
+    }
+
+    private fun changeFloatingCircleColorToBlue() {
+        if (::floatingCircle.isInitialized) {
+            val circleDrawable = floatingCircle.background as GradientDrawable
+            circleDrawable.setColor(Color.argb(64, 0, 128, 255)) // Original blue color
+        }
     }
 
     private fun createRemovePopup() {
@@ -375,7 +415,11 @@ class MainActivity : AppCompatActivity() {
 
         // Comprehensive service and view cleanup
         stopScanning()
-
+        try {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(maliciousLinkReceiver)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Error unregistering receiver", e)
+        }
         // Remove views safely
         try {
             if (::floatingCircle.isInitialized) {

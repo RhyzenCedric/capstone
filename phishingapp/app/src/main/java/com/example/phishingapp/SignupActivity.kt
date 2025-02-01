@@ -1,7 +1,10 @@
 package com.example.phishingapp
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -22,6 +25,7 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var editTextEmail: EditText
     private lateinit var editTextPassword: EditText
     private lateinit var buttonSignup: Button
+    private lateinit var textViewLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +35,7 @@ class SignupActivity : AppCompatActivity() {
         editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignup = findViewById(R.id.buttonSignup)
+        textViewLogin = findViewById(R.id.textViewLogin)
 
         buttonSignup.setOnClickListener {
             val userUsername = editTextUsername.text.toString().trim()
@@ -43,6 +48,19 @@ class SignupActivity : AppCompatActivity() {
                 signupUser(userUsername, userEmail, userPassword)
             }
         }
+
+        textViewLogin.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        }
+
+        val loginText = "Already have an account? Log In"
+        val spannableString = SpannableString(loginText)
+        val logInStart = loginText.indexOf("Log In")
+        val logInEnd = logInStart + "Log In".length
+        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#108690")), logInStart, logInEnd, 0)
+
+        textViewLogin.text = spannableString
     }
 
     private fun signupUser(userUsername: String, userEmail: String, userPassword: String) {

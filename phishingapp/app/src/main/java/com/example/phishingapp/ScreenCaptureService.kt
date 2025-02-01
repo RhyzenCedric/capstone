@@ -18,6 +18,7 @@ import android.os.IBinder
 import android.util.Log
 import android.util.Patterns
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.*
 import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
@@ -420,11 +421,18 @@ class ScreenCaptureService : Service() {
             }
             Log.w(TAG, logMessage)
 
+            // Send broadcast using LocalBroadcastManager
+            LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(Intent("com.example.phishingapp.MALICIOUS_LINK_DETECTED"))
+
             showNotification(
                 "⚠️ Phishing Links Detected",
                 "Multiple suspicious links found on screen",
                 maliciousLinks
             )
+        } else{
+            LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(Intent("com.example.phishingapp.NO_MALICIOUS_LINKS"))
         }
     }
 
@@ -461,8 +469,10 @@ class ScreenCaptureService : Service() {
             notificationBuilder
                 .setContentTitle("Screen Capture Active")
                 .setContentText("Monitoring screen for potential threats")
+                .setOngoing(true) // Makes the notification ongoing (persistent)
+                .setAutoCancel(false) // Prevents it from being dismissed by swiping
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
         }
 
         // Update the existing foreground notification or create a new one
