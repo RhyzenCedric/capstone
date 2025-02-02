@@ -57,7 +57,7 @@ interface ApiService {
     @GET("/users/{id}")  // Use {id} to pass the userId as a URL parameter
     fun getUserDetails(@Path("id") userId: Int): Call<UserDetails>
 
-    @POST("/submitReport")
-    fun postReport(@Body reportRequest: ReportRequest): Call<ReportResponse>
+    @POST("/submitreport")
+    fun submitReport(@Body reportRequest: ReportRequest): Call<ReportResponse>
 }
 

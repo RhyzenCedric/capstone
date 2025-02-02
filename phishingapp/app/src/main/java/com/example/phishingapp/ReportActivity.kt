@@ -51,7 +51,9 @@ class ReportActivity : AppCompatActivity() {
         }
 
         buttonSubmitReport.setOnClickListener {
-            submitReport(username)
+            if (userId != null) {
+                submitReport(userId)
+            }
         }
     }
 
@@ -69,7 +71,7 @@ class ReportActivity : AppCompatActivity() {
                         Log.d("ReportActivity", "User ID found: $userId")
                         Log.d("ReportActivitySuccess", "Response Body: ${response.body()}")
                         // Once we have the userId, we proceed with the report submission
-                        submitReport(username)
+                        submitReport(userId)
                     } else {
                         Toast.makeText(this@ReportActivity, "Failed to fetch user ID", Toast.LENGTH_SHORT).show()
                         Log.d("ReportActivityFail", "Response Body: ${response.body()}")
@@ -84,8 +86,9 @@ class ReportActivity : AppCompatActivity() {
         }
     }
 
-    private fun submitReport(username: String) {
+    private fun submitReport(userId: Int?) {
         // Check if userId is still null or not yet retrieved
+        Log.d("ReportActivitySubmit", "UserId: $userId")
         if (userId == null) {
             Toast.makeText(this, "Fetching user ID, please try again", Toast.LENGTH_SHORT).show()
             return
@@ -94,11 +97,6 @@ class ReportActivity : AppCompatActivity() {
         val link = editTextLink.text.toString().trim()
         val description = editTextDescription.text.toString().trim()
 
-        Log.d("ReportActivity", "Link: $link")
-        Log.d("ReportActivity", "Description: $description")
-        Log.d("ReportActivity", "User ID: $userId")
-        Log.d("ReportActivity", "Username: $username")
-
         if (link.isEmpty()) {
             Toast.makeText(this, "Please fill in the link you want to report", Toast.LENGTH_SHORT).show()
             return
@@ -106,7 +104,7 @@ class ReportActivity : AppCompatActivity() {
 
         val reportRequest = ReportRequest(userId!!, link, description)
 
-        RetrofitClient.instance.postReport(reportRequest).enqueue(object : Callback<ReportResponse> {
+        RetrofitClient.instance.submitReport(reportRequest).enqueue(object : Callback<ReportResponse> {
             override fun onResponse(call: Call<ReportResponse>, response: Response<ReportResponse>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@ReportActivity, "Report submitted successfully", Toast.LENGTH_SHORT).show()
@@ -120,6 +118,7 @@ class ReportActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun setupNavigationButtons() {
         // Get the username and userId from the current activity (ReportActivity)

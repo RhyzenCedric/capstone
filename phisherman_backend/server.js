@@ -134,12 +134,17 @@ app.post('/userlogin', (req, res) => {
         // Compare the inputted password with the hashed password
         const match = await bcrypt.compare(userPassword, user.userPassword);
         if (match) {
-            return res.status(200).json({ message: 'Login successful' });
+            // Return userId along with the message on successful login
+            return res.status(200).json({
+                message: 'Login successful',
+                userId: user.userId // Include userId in the response
+            });
         } else {
             return res.status(401).json({ error: 'Invalid password' });
         }
     });
 });
+
 
 app.get('/users', (req, res) => {
     const sql = "SELECT * FROM users"; // Modify this SQL query as needed
@@ -260,6 +265,49 @@ app.get('/admins/:id', (req, res) => {
       res.json(user);
     });
 });
+
+app.post('/submitreport', (req, res) => {
+    const { userId, link_reported, report_description } = req.body;
+
+    // Check if userId is provided
+    if (!userId || !link_reported) {
+        return res.status(400).json({ error: 'userId and link_reported are required' });
+    }
+
+    // If report_description is not provided, set it to 'None'
+    const description = report_description || 'None';
+
+    // Check if the username in AccountActivity matches the userId
+    const getUsernameQuery = "SELECT userUsername FROM users WHERE userId = ?";
+    db.query(getUsernameQuery, [userId], (err, results) => {
+        if (err) {
+            console.error('Error fetching username:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        // If no user found with that userId, return error
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const username = results[0].userUsername;
+
+        // Now we can insert the report into the database
+        const sql = "INSERT INTO reports (userId, link_reported, report_description) VALUES (?, ?, ?)";
+        const values = [userId, link_reported, description];
+
+        db.query(sql, values, (err) => {
+            if (err) {
+                console.error('Error inserting report:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            // Return success message
+            res.json({ message: 'Report submitted successfully', username: username });
+        });
+    });
+});
+
 
 // Start the server
 app.listen(PORT, () => {
