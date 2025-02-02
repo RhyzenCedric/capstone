@@ -20,9 +20,11 @@ class AccountActivity : AppCompatActivity() {
         setupNavigationButtons()
         // Get username passed from MainActivity
         val username = intent.getStringExtra("userUsername") ?: "Guest"
+        val userId = intent.extras?.getInt("userId", -1)
 
         // Log the username
         Log.d("AccountActivity", "Received username: $username")
+        Log.d("AccountActivity", "User ID: $userId")
 
         // Initialize UI elements
         textViewUsername = findViewById(R.id.textViewUsername)

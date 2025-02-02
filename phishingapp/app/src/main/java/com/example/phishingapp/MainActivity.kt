@@ -58,7 +58,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val username = intent.getStringExtra("userUsername") ?: "Guest"
-        Log.d(TAG, "Passed username: $username")
+        Log.d(TAG, "Currently logged username:  $username")
+        val userId = intent.extras?.getInt("userId")
+        Log.d(TAG, "User Id:  $userId")
+
+
 
         // Set up navigation buttons (same as previous implementation)
         setupNavigationButtons()
@@ -116,8 +120,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_nav_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val userId = intent.extras?.getInt("userId")
                 val intent = Intent(this@MainActivity, AccountActivity::class.java)
-                intent.putExtra("userUsername", username)
+                intent.putExtra("userUsername", username)  // Pass username
+                intent.putExtra("userId", userId)  // Pass userId
+
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
             } else {
@@ -128,8 +135,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val userId = intent.extras?.getInt("userId")
+                Log.d(TAG, "Passing userId: $userId")
                 val intent = Intent(this@MainActivity, AccountActivity::class.java)
                 intent.putExtra("userUsername", username)
+                intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
             } else {
@@ -140,8 +150,26 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_reports).setOnClickListener {
             if (javaClass != ReportActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val userId = intent.extras?.getInt("userId")
+                Log.d(TAG, "Passing userId: $userId")
                 val intent = Intent(this@MainActivity, ReportActivity::class.java)
                 intent.putExtra("userUsername", username)
+                intent.putExtra("userId", userId)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        findViewById<Button>(R.id.button_reports).setOnClickListener {
+            if (javaClass != ReportActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val userId = intent.extras?.getInt("userId")
+                Log.d(TAG, "Passing userId: $userId")
+                val intent = Intent(this@MainActivity, ReportActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
             } else {

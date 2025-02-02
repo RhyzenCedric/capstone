@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -76,14 +77,21 @@ class LoginActivity : AppCompatActivity() {
 
         call.enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                Log.d("LoginActivity", "Response received: ${response.body()}")
                 if (response.isSuccessful) {
-                    Toast.makeText(this@LoginActivity, response.body()?.message ?: "Login successful", Toast.LENGTH_SHORT).show()
-                    // Redirect to MainActivity with username
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.putExtra("userUsername", userUsername)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // Add this flag
-                    startActivity(intent)
-                    finish()
+                    val loginResponse = response.body()
+                    if (loginResponse != null) {
+                        val userId = loginResponse.userId // Get userId from response
+                        Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
+
+                        // Redirect to MainActivity with userId and username
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        intent.putExtra("userId", userId)
+                        intent.putExtra("userUsername", userUsername)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        startActivity(intent)
+                        finish()
+                    }
                 } else {
                     val errorMessage = response.body()?.error ?: "Login failed: ${response.message()}"
                     Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
