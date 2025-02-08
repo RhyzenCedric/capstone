@@ -349,31 +349,35 @@ const extractTLD = (url) => {
 
 app.post('/reports/approve', (req, res) => {
     const { report_id, link } = req.body;
-    const { url_link, tld } = extractTLD(link); // ✅ Correctly extract both values
+    const { url_link, tld } = extractTLD(link); 
 
     if (!url_link || !tld) {
         return res.status(400).json({ error: "Invalid URL" });
     }
 
-    // Insert into the links table
     const insertLinkQuery = "INSERT INTO links (url_link, tld) VALUES (?, ?)";
-    db.query(insertLinkQuery, [url_link, tld], (err, result) => { // ✅ Use `url_link`, not `link`
+    db.query(insertLinkQuery, [url_link, tld], (err, result) => { 
         if (err) {
             console.error('Error inserting link:', err);
             return res.status(500).json({ error: 'Internal server error' });
         }
 
-        // Delete the approved report
-        const deleteReportQuery = "DELETE FROM reports WHERE report_id = ?";
-        db.query(deleteReportQuery, [report_id], (err, deleteResult) => {
-            if (err) {
-                console.error('Error deleting report:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-            res.json({ message: 'Report approved and link saved.' });
-        });
+        // ✅ Send a response back to the client
+        res.status(200).json({ success: true, report_id });
     });
 });
+
+app.get('/links', (req, res) => {
+    const sql = "SELECT * FROM links"; // Modify this SQL query as needed
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching links:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        res.json(results); // Send the user data as JSON
+    });
+});
+
 
 
 // Start the server

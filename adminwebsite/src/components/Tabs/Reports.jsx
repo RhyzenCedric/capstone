@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import TopNav from "../NavBars/TopNav";
-// import "../../css/Reports.css";
 
 const Reports = () => {
     const [reports, setReports] = useState([]);
@@ -28,7 +27,11 @@ const Reports = () => {
                 const response = await axios.post('http://localhost:5000/reports/approve', { report_id, link });
                 if (response.status === 200) {
                     alert("Report approved successfully!");
-                    fetchReports();
+                    setReports(prevReports =>
+                        prevReports.map(report =>
+                            report.report_id === report_id ? { ...report, approved: true } : report
+                        )
+                    );
                 }
             } catch (error) {
                 console.error('Error approving report:', error);
@@ -41,7 +44,7 @@ const Reports = () => {
             try {
                 const response = await axios.delete(`http://localhost:5000/reports/${report_id}`);
                 if (response.status === 200) {
-                    setReports((prevReports) => prevReports.filter(report => report.report_id !== report_id));
+                    setReports(prevReports => prevReports.filter(report => report.report_id !== report_id));
                 } else {
                     throw new Error('Failed to delete report');
                 }
@@ -75,7 +78,13 @@ const Reports = () => {
                             <td>{report.link_reported}</td>
                             <td>{report.report_description}</td>
                             <td>
-                                <button className="report-approve-button" onClick={() => handleApprove(report.report_id, report.link_reported)}>Approve</button>
+                                <button
+                                    className="report-approve-button"
+                                    onClick={() => handleApprove(report.report_id, report.link_reported)}
+                                    disabled={report.approved} // Disable if approved
+                                >
+                                    {report.approved ? "Approved" : "Approve"}
+                                </button>
                                 <button className="report-delete-button" onClick={() => handleDelete(report.report_id)}>Delete</button>
                             </td>
                         </tr>
