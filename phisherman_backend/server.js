@@ -3,6 +3,7 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const { parse } = require('tldts');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -304,6 +305,72 @@ app.post('/submitreport', (req, res) => {
 
             // Return success message
             res.json({ message: 'Report submitted successfully', username: username });
+        });
+    });
+});
+
+app.get('/reports', (req, res) => {
+    const sql = `
+        SELECT reports.report_id, reports.link_reported, reports.report_description, 
+               users.userUsername 
+        FROM reports 
+        INNER JOIN users ON reports.userId = users.userId
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching reports:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        res.json(results);
+    });
+});
+
+
+const extractTLD = (url) => {
+    try {
+        const hostname = new URL(`https://${url}`).hostname; // Ensure valid URL format
+        const parts = hostname.split('.');
+
+        if (parts.length < 2) {
+            console.error("Invalid domain:", url);
+            return { domain: null, tld: null };
+        }
+
+        return {
+            url_link: hostname,      // Use url_link instead of domain
+            tld: parts[parts.length - 1] // Only the TLD (e.g., "com")
+        };
+    } catch (error) {
+        console.error("Invalid URL:", url);
+        return { url_link: null, tld: null };
+    }
+};
+
+app.post('/reports/approve', (req, res) => {
+    const { report_id, link } = req.body;
+    const { url_link, tld } = extractTLD(link); // ✅ Correctly extract both values
+
+    if (!url_link || !tld) {
+        return res.status(400).json({ error: "Invalid URL" });
+    }
+
+    // Insert into the links table
+    const insertLinkQuery = "INSERT INTO links (url_link, tld) VALUES (?, ?)";
+    db.query(insertLinkQuery, [url_link, tld], (err, result) => { // ✅ Use `url_link`, not `link`
+        if (err) {
+            console.error('Error inserting link:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        // Delete the approved report
+        const deleteReportQuery = "DELETE FROM reports WHERE report_id = ?";
+        db.query(deleteReportQuery, [report_id], (err, deleteResult) => {
+            if (err) {
+                console.error('Error deleting report:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+            res.json({ message: 'Report approved and link saved.' });
         });
     });
 });
