@@ -311,10 +311,10 @@ app.post('/submitreport', (req, res) => {
 
 app.get('/reports', (req, res) => {
     const sql = `
-        SELECT reports.report_id, reports.link_reported, reports.report_description, 
+        SELECT reports.report_id, reports.link_reported, reports.report_description, reports.approved, 
                users.userUsername 
-        FROM reports 
-        INNER JOIN users ON reports.userId = users.userId
+        FROM reports
+        JOIN users ON reports.userId = users.userId
     `;
 
     db.query(sql, (err, results) => {
@@ -325,6 +325,7 @@ app.get('/reports', (req, res) => {
         res.json(results);
     });
 });
+
 
 
 const extractTLD = (url) => {
@@ -355,29 +356,69 @@ app.post('/reports/approve', (req, res) => {
         return res.status(400).json({ error: "Invalid URL" });
     }
 
-    const insertLinkQuery = "INSERT INTO links (url_link, tld) VALUES (?, ?)";
-    db.query(insertLinkQuery, [url_link, tld], (err, result) => { 
+    // First, update the report to mark it as approved
+    const updateReportQuery = "UPDATE reports SET approved = 1 WHERE report_id = ?";
+    
+    db.query(updateReportQuery, [report_id], (err, result) => {
         if (err) {
-            console.error('Error inserting link:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+            console.error('Error updating report:', err);
+            return res.status(500).json({ error: 'Failed to approve report' });
         }
 
-        // ✅ Send a response back to the client
-        res.status(200).json({ success: true, report_id });
+        // Then, insert the link into the links table with url_link and tld
+        const insertLinkQuery = "INSERT INTO links (url_link, tld) VALUES (?, ?)";
+        
+        db.query(insertLinkQuery, [link, tld], (err, result) => {
+            if (err) {
+                console.error('Error inserting link into links table:', err);
+                return res.status(500).json({ error: 'Failed to store link' });
+            }
+
+            return res.status(200).json({ message: 'Report approved and link stored successfully' });
+        });
     });
 });
 
+
+
+
 app.get('/links', (req, res) => {
-    const sql = "SELECT * FROM links"; // Modify this SQL query as needed
+    const sql = `
+        SELECT 
+            links.link_id, 
+            links.url_link, 
+            links.tld, 
+            links.date_verified, 
+            users.userUsername AS reported_by 
+        FROM links
+        JOIN reports ON links.url_link = reports.link_reported
+        JOIN users ON reports.userId = users.userId
+    `;
+
     db.query(sql, (err, results) => {
         if (err) {
             console.error('Error fetching links:', err);
             return res.status(500).json({ error: 'Internal server error' });
         }
-        res.json(results); // Send the user data as JSON
+        res.json(results);
     });
 });
 
+app.delete('/reports/:report_id', (req, res) => {
+    const reportId = req.params.report_id;
+    const sql = "DELETE FROM reports WHERE report_id = ?";
+
+    db.query(sql, [reportId], (err, results) => {
+        if (err) {
+            console.error('Error deleting report:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
+        res.json({ message: 'Report deleted successfully' });
+    });
+});
 
 
 // Start the server
