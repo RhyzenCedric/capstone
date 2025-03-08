@@ -102,6 +102,11 @@ class ReportActivity : AppCompatActivity() {
             return
         }
 
+        if (description.isEmpty()) {
+            Toast.makeText(this, "Please add a report description", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val reportRequest = ReportRequest(userId!!, link, description)
 
         RetrofitClient.instance.submitReport(reportRequest).enqueue(object : Callback<ReportResponse> {
