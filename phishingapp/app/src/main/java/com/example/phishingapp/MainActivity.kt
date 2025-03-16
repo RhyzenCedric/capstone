@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var showCircleButton: Button
     private var isAppInBackground = false
     private lateinit var mediaProjectionManager: MediaProjectionManager
+    private var isRed = false
 
     companion object {
         private const val TAG = "MainActivity"
@@ -303,12 +304,15 @@ class MainActivity : AppCompatActivity() {
     private fun changeFloatingCircleColorToRed() {
         val circleDrawable = floatingCircle.background as GradientDrawable
         circleDrawable.setColor(Color.argb(65, 255, 115, 100))// Change to red
+        isRed= true
+
     }
 
     private fun changeFloatingCircleColorToBlue() {
         if (::floatingCircle.isInitialized) {
             val circleDrawable = floatingCircle.background as GradientDrawable
             circleDrawable.setColor(Color.argb(64, 0, 128, 255)) // Original blue color
+            isRed=false
         }
     }
 
@@ -431,6 +435,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleCircleTap() {
+        if (isRed) {
+            handleCircleTapReport()
+        } else {
+            handleCircleTapHome()
+        }
+    }
+
+    private fun handleCircleTapHome() {
         if (isAppInBackground) {
             // App is minimized, open the main screen
             val intent = Intent(this, MainActivity::class.java)
@@ -439,6 +451,18 @@ class MainActivity : AppCompatActivity() {
         } else {
             // App is already active, show a toast
             Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun handleCircleTapReport() {
+        if (isAppInBackground) {
+            // App is minimized, open the main screen
+            val intent = Intent(this, ReportActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            startActivity(intent)
+        } else {
+            // App is already active, show a toast
+            Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
         }
     }
 
