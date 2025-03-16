@@ -456,13 +456,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleCircleTapReport() {
         if (isAppInBackground) {
-            // App is minimized, open the main screen
+            // App is minimized, open the report screen
+            val username = intent.getStringExtra("userUsername") ?: "Guest"
+            val userId = intent.extras?.getInt("userId")
             val intent = Intent(this, ReportActivity::class.java)
+            intent.putExtra("userUsername", username)
+            intent.putExtra("userId", userId)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             startActivity(intent)
         } else {
-            // App is already active, show a toast
-            Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
+            // App is already active, navigate to report screen
+            val username = intent.getStringExtra("userUsername") ?: "Guest"
+            val userId = intent.extras?.getInt("userId")
+            val intent = Intent(this, ReportActivity::class.java)
+            intent.putExtra("userUsername", username)
+            intent.putExtra("userId", userId)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            startActivity(intent)
         }
     }
 

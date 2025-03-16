@@ -41,6 +41,11 @@ class ReportActivity : AppCompatActivity() {
         textViewUsername.text = username
         getUserIdFromUsername(username)
 
+        val reportedLink = intent.getStringExtra("reportedLink")
+        if (reportedLink != null) {
+            editTextLink.setText(reportedLink) // Auto-fill the reported link field
+        }
+
         // We try to get the userId from the intent
         val userId = intent.extras?.getInt("userId", -1)
         Log.d("ReportActivity", "Received username: $username, userId: $userId")
