@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private var isAppInBackground = false
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isRed = false
+    private var detectedMaliciousLink: String? = null
 
     companion object {
         private const val TAG = "MainActivity"
@@ -94,14 +95,21 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 "com.example.phishingapp.MALICIOUS_LINK_DETECTED" -> {
+                    detectedMaliciousLink = intent.getStringExtra("maliciousLink") ?: "Unknown Link" // ✅ Corrected
+
                     changeFloatingCircleColorToRed()
+
+                    // Notify user
+                    //Toast.makeText(this@MainActivity, "Phishing Link Detected: $detectedMaliciousLink", Toast.LENGTH_LONG).show()
                 }
                 "com.example.phishingapp.NO_MALICIOUS_LINKS" -> {
+                    detectedMaliciousLink = null
                     changeFloatingCircleColorToBlue()
                 }
             }
         }
     }
+
 
     private fun setupNavigationButtons() {
         // Navigation button setup (same as previous implementation)
@@ -456,25 +464,30 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleCircleTapReport() {
         if (isAppInBackground) {
-            // App is minimized, open the report screen
             val username = intent.getStringExtra("userUsername") ?: "Guest"
             val userId = intent.extras?.getInt("userId")
-            val intent = Intent(this, ReportActivity::class.java)
-            intent.putExtra("userUsername", username)
-            intent.putExtra("userId", userId)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
+            val intent = Intent(this, ReportActivity::class.java).apply {
+                putExtra("userUsername", username)
+                putExtra("userId", userId)
+                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
             startActivity(intent)
         } else {
-            // App is already active, navigate to report screen
             val username = intent.getStringExtra("userUsername") ?: "Guest"
             val userId = intent.extras?.getInt("userId")
-            val intent = Intent(this, ReportActivity::class.java)
-            intent.putExtra("userUsername", username)
-            intent.putExtra("userId", userId)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            val intent = Intent(this, ReportActivity::class.java).apply {
+                putExtra("userUsername", username)
+                putExtra("userId", userId)
+                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
             startActivity(intent)
         }
     }
+
 
 
     private fun requestScreenCapturePermission() {

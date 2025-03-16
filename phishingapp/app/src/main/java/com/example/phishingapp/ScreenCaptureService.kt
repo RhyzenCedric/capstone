@@ -397,40 +397,27 @@ class ScreenCaptureService : Service() {
 
     private fun handleScanResult(scanResults: List<ScanResult>) {
         var maliciousLinksDetected = false
-        val maliciousLinks = mutableListOf<ScanResult>()
+        val maliciousLinks = mutableListOf<String>() // Store detected malicious links
 
-        val resultDescription = scanResults.joinToString("\n") { result ->
+        scanResults.forEach { result ->
             if (result.isMalicious) {
                 maliciousLinksDetected = true
-                maliciousLinks.add(result)
-                "Malicious Link Detected: ${result.url} - ${result.description}"
-            } else {
-                "Safe Link: ${result.url}"
+                maliciousLinks.add(result.url)
+                Log.d(TAG, "Malicious Link Detected: ${result.url} - ${result.description}")
             }
         }
 
-        Log.d(TAG, "Scan Results:\n$resultDescription")
-
         if (maliciousLinksDetected) {
-            // Log the number of malicious links
-            val linkCount = maliciousLinks.size
-            val logMessage = if (linkCount == 1) {
-                "1 malicious link detected"
-            } else {
-                "$linkCount malicious links detected"
-            }
-            Log.w(TAG, logMessage)
-
-            // Send broadcast using LocalBroadcastManager
-            LocalBroadcastManager.getInstance(this)
-                .sendBroadcast(Intent("com.example.phishingapp.MALICIOUS_LINK_DETECTED"))
+            val intent = Intent("com.example.phishingapp.MALICIOUS_LINK_DETECTED")
+            intent.putExtra("maliciousLink", maliciousLinks.first()) // Pass the first detected malicious link
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
             showNotification(
-                "⚠️ Phishing Links Detected",
-                "Multiple suspicious links found on screen",
-                maliciousLinks
+                "⚠️ Phishing Link Detected",
+                "Malicious link: ${maliciousLinks.first()}",
+                scanResults
             )
-        } else{
+        } else {
             LocalBroadcastManager.getInstance(this)
                 .sendBroadcast(Intent("com.example.phishingapp.NO_MALICIOUS_LINKS"))
         }
