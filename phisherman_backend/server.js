@@ -330,23 +330,26 @@ app.get('/reports', (req, res) => {
 
 const extractTLD = (url) => {
     try {
-        const hostname = new URL(`https://${url}`).hostname; // Ensure valid URL format
-        const parts = hostname.split('.');
+        // Ensure URL is valid and standardized
+        const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+        const parsedUrl = new URL(formattedUrl);
+        
+        const hostname = parsedUrl.hostname;
+        const tld = hostname.split('.').pop();
 
-        if (parts.length < 2) {
-            console.error("Invalid domain:", url);
-            return { domain: null, tld: null };
-        }
+        // Remove trailing slash from pathname
+        let cleanedUrl = parsedUrl.href.replace(/\/+$/, '');
 
         return {
-            url_link: hostname,      // Use url_link instead of domain
-            tld: parts[parts.length - 1] // Only the TLD (e.g., "com")
+            url_link: cleanedUrl, // Store URL WITHOUT trailing slash
+            tld: tld
         };
     } catch (error) {
         console.error("Invalid URL:", url);
         return { url_link: null, tld: null };
     }
 };
+
 
 app.post('/reports/approve', (req, res) => {
     const { report_id, link } = req.body;
@@ -356,25 +359,36 @@ app.post('/reports/approve', (req, res) => {
         return res.status(400).json({ error: "Invalid URL" });
     }
 
-    // First, update the report to mark it as approved
-    const updateReportQuery = "UPDATE reports SET approved = 1 WHERE report_id = ?";
+    // Get userId from the report before approving
+    const getUserQuery = "SELECT userId FROM reports WHERE report_id = ?";
     
-    db.query(updateReportQuery, [report_id], (err, result) => {
-        if (err) {
-            console.error('Error updating report:', err);
-            return res.status(500).json({ error: 'Failed to approve report' });
+    db.query(getUserQuery, [report_id], (err, results) => {
+        if (err || results.length === 0) {
+            console.error('Error fetching userId:', err);
+            return res.status(500).json({ error: 'Failed to fetch userId' });
         }
 
-        // Then, insert the link into the links table with url_link and tld
-        const insertLinkQuery = "INSERT INTO links (url_link, tld) VALUES (?, ?)";
-        
-        db.query(insertLinkQuery, [link, tld], (err, result) => {
+        const userId = results[0].userId;
+
+        // Approve the report
+        const updateReportQuery = "UPDATE reports SET approved = 1 WHERE report_id = ?";
+        db.query(updateReportQuery, [report_id], (err, result) => {
             if (err) {
-                console.error('Error inserting link into links table:', err);
-                return res.status(500).json({ error: 'Failed to store link' });
+                console.error('Error updating report:', err);
+                return res.status(500).json({ error: 'Failed to approve report' });
             }
 
-            return res.status(200).json({ message: 'Report approved and link stored successfully' });
+            // Insert the link along with the userId
+            const insertLinkQuery = "INSERT INTO links (url_link, tld, userId) VALUES (?, ?, ?)";
+
+            db.query(insertLinkQuery, [url_link, tld, userId], (err, result) => {
+                if (err) {
+                    console.error('Error inserting link into links table:', err);
+                    return res.status(500).json({ error: 'Failed to store link' });
+                }
+
+                return res.status(200).json({ message: 'Report approved and link stored successfully' });
+            });
         });
     });
 });
@@ -391,8 +405,9 @@ app.get('/links', (req, res) => {
             links.date_verified, 
             users.userUsername AS reported_by 
         FROM links
-        JOIN reports ON links.url_link = reports.link_reported
-        JOIN users ON reports.userId = users.userId
+        LEFT JOIN reports ON LOWER(links.url_link) = LOWER(reports.link_reported) 
+        LEFT JOIN users ON reports.userId = users.userId
+        WHERE reports.approved = 1;
     `;
 
     db.query(sql, (err, results) => {
@@ -400,6 +415,7 @@ app.get('/links', (req, res) => {
             console.error('Error fetching links:', err);
             return res.status(500).json({ error: 'Internal server error' });
         }
+        console.log("Fetched links:", results);
         res.json(results);
     });
 });
