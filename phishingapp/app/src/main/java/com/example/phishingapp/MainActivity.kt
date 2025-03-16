@@ -452,13 +452,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleCircleTapHome() {
         if (isAppInBackground) {
-            // App is minimized, open the main screen
-            val intent = Intent(this, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            val username = intent.getStringExtra("userUsername") ?: "Guest"
+            val userId = intent.extras?.getInt("userId")
+
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("userUsername", username)
+                putExtra("userId", userId)
+                //putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
             startActivity(intent)
         } else {
-            // App is already active, show a toast
-            Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
+            val username = intent.getStringExtra("userUsername") ?: "Guest"
+            val userId = intent.extras?.getInt("userId")
+
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("userUsername", username)
+                putExtra("userId", userId)
+                //putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            startActivity(intent)
         }
     }
 
