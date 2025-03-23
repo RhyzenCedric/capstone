@@ -6,9 +6,11 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.phishingapp.backend.ReportRequest
 import com.example.phishingapp.backend.ReportResponse
 import com.example.phishingapp.backend.RetrofitClient
@@ -22,7 +24,7 @@ class ReportActivity : AppCompatActivity() {
     private lateinit var textViewUsername: TextView
     private lateinit var editTextLink: EditText
     private lateinit var editTextDescription: EditText
-    private lateinit var buttonSubmitReport: Button
+    private lateinit var buttonSubmitReport: ConstraintLayout
     private var userId: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,7 +137,7 @@ class ReportActivity : AppCompatActivity() {
         val username = intent.getStringExtra("userUsername") ?: "Guest"
         val userId = intent.extras?.getInt("userId", -1) // Retrieve userId from intent or set to -1 if not present
 
-        findViewById<Button>(R.id.button_nav_home).setOnClickListener {
+        findViewById<ImageView>(R.id.return_icon).setOnClickListener {
             // Only pass data if we are navigating to a different activity
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -147,7 +149,7 @@ class ReportActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<Button>(R.id.button_nav_account).setOnClickListener {
+        /*findViewById<Button>(R.id.button_nav_account).setOnClickListener {
             val intent = Intent(this, AccountActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
@@ -156,7 +158,7 @@ class ReportActivity : AppCompatActivity() {
             intent.putExtra("userId", userId)
 
             startActivity(intent)
-        }
+        }*/
     }
 
 }

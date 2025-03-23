@@ -4,14 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 
 class AccountActivity : AppCompatActivity() {
 
     private lateinit var textViewUsername: TextView
-    private lateinit var buttonLogout: Button
+    private lateinit var buttonLogout: ConstraintLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +30,7 @@ class AccountActivity : AppCompatActivity() {
 
         // Initialize UI elements
         textViewUsername = findViewById(R.id.textViewUsername)
-        buttonLogout = findViewById(R.id.buttonLogout)
+        buttonLogout = findViewById(R.id.logout_button_plate)
 
         // Set the username
         textViewUsername.text = username
@@ -43,7 +45,7 @@ class AccountActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationButtons() {
-        findViewById<Button>(R.id.button_nav_home).setOnClickListener {
+        findViewById<ImageView>(R.id.return_icon).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
@@ -54,7 +56,7 @@ class AccountActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        findViewById<Button>(R.id.button_nav_account).setOnClickListener {
+        /*findViewById<Button>(R.id.button_nav_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
                 val intent = Intent(this@AccountActivity, AccountActivity::class.java)
@@ -64,6 +66,6 @@ class AccountActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
     }
 }
