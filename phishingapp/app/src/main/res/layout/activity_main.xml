@@ -1,91 +1,204 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="16dp">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- Title centered between screen top and scanner button -->
-    <TextView
-        android:id="@+id/text_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PHISHERMAN"
-        android:layout_marginTop="50dp"
-        android:textSize="30sp"
-        android:textColor="#1d1e4e"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/button_activate_scanner"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
-
-    <!-- Activate Scanner Button -->
-
-    <!-- Learn More Button -->
-
-    <!-- Reports Button -->
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_activate_scanner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/floating_circle_button"
-        android:backgroundTint="@color/button_color_state"
-        android:text="Activate Scanner"
-        android:textColor="#1d1e4e"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_title" />
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_learn_more"
+    <!-- Top Background Image (rect-home.png) -->
+    <ImageView
+        android:id="@+id/top_background"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/rounded_button"
-        android:text="Learn More"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_activate_scanner" />
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/rect_home"
+        app:layout_constraintHeight_percent="0.595"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_reports"
+    <!-- Bottom White Background -->
+    <View
+        android:id="@+id/bottom_background"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Reports"
-        android:background="@drawable/rounded_button"
-        app:layout_constraintTop_toBottomOf="@id/button_learn_more"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_white_bg_home"
+        app:layout_constraintHeight_percent="0.55"
+        app:layout_constraintTop_toBottomOf="@id/top_background"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- Account Button -->
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button_account"
+    <!-- Main UI Content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Account"
-        android:background="@drawable/rounded_button"
-        app:layout_constraintTop_toBottomOf="@id/button_reports"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="50dp"/>
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-    <!-- Bottom Navigation Bar (Fixed at the Bottom) -->
-    <include
-        android:id="@+id/bottom_navigation_bar"
-        layout="@layout/bottom_navigation_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:ignore="IncludeLayoutParam" />
+        <!-- Title centered between screen top and scanner button -->
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PHISHERMAN"
+            android:layout_marginTop="100dp"
+            android:textSize="16sp"
+            android:textColor="#1d1e4e"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/button_activate_scanner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <!-- Activate Scanner Button -->
+
+        <ImageView
+            android:id="@+id/button_activate_scanner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="236dp"
+            android:clickable="true"
+            android:contentDescription="Activate Scanner Icon"
+            android:focusable="true"
+            android:src="@drawable/home_activate"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.473"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+        <!-- Button Row: Learn More, Reports, Account -->
+
+        <!-- Text Labels Below Buttons -->
+        <TextView
+            android:id="@+id/text_stay_protected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="Stay Protected"
+            android:textColor="#1d1e4e"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_reports"
+            android:layout_width="84dp"
+            android:layout_height="85dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/rounded_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toStartOf="@id/button_account"
+            app:layout_constraintHorizontal_bias="0.478"
+            app:layout_constraintStart_toEndOf="@id/button_learn_more"
+            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
+
+            <!-- SVG Icon (Centered Inside Button) -->
+            <ImageView
+                android:id="@+id/reports_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/reports_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_account"
+            android:layout_width="84dp"
+            android:layout_height="85dp"
+            android:layout_marginTop="100dp"
+            android:layout_marginEnd="44dp"
+            android:background="@drawable/rounded_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
+
+            <!-- SVG Icon (Centered Inside Button) -->
+            <ImageView
+                android:id="@+id/account_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/account_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_learn_more"
+            android:layout_width="84dp"
+            android:layout_height="85dp"
+            android:layout_marginStart="44dp"
+            android:layout_marginTop="100dp"
+            android:background="@drawable/rounded_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
+
+            <!-- SVG Icon (Centered Inside Button) -->
+            <ImageView
+                android:id="@+id/learn_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/learn_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/text_learn_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LEARN MORE"
+            android:textSize="12sp"
+            android:textColor="#1d1e4e"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/button_learn_more"
+            app:layout_constraintStart_toStartOf="@id/button_learn_more"
+            app:layout_constraintEnd_toEndOf="@id/button_learn_more"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/text_reports"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REPORTS"
+            android:textSize="12sp"
+            android:textColor="#1d1e4e"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/button_reports"
+            app:layout_constraintStart_toStartOf="@id/button_reports"
+            app:layout_constraintEnd_toEndOf="@id/button_reports"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/text_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ACCOUNT"
+            android:textSize="12sp"
+            android:textColor="#1d1e4e"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/button_account"
+            app:layout_constraintStart_toStartOf="@id/button_account"
+            app:layout_constraintEnd_toEndOf="@id/button_account"
+            android:layout_marginTop="4dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

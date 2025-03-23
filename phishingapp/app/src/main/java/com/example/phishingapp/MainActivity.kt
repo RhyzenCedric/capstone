@@ -20,9 +20,11 @@ import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.phishingapp.ScreenCaptureService.Companion
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -32,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var circleParams: WindowManager.LayoutParams
     private lateinit var removePopup: TextView
     private lateinit var removePopupParams: WindowManager.LayoutParams
-    private lateinit var showCircleButton: Button
+    private lateinit var showCircleButton: ImageView
     private var isAppInBackground = false
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isRed = false
@@ -113,7 +115,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigationButtons() {
         // Navigation button setup (same as previous implementation)
-        findViewById<Button>(R.id.button_nav_home).setOnClickListener {
+        /*findViewById<Button>(R.id.button_nav_home).setOnClickListener {
             // Check if we're already on the home screen
             if (this::class.java != MainActivity::class.java) {
                 val intent = Intent(this, MainActivity::class.java)
@@ -139,9 +141,9 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
 
-        findViewById<Button>(R.id.button_account).setOnClickListener {
+        findViewById<ConstraintLayout>(R.id.button_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
                 val userId = intent.extras?.getInt("userId")
@@ -156,7 +158,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.button_reports).setOnClickListener {
+        findViewById<ConstraintLayout>(R.id.button_reports).setOnClickListener {
             if (javaClass != ReportActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
                 val userId = intent.extras?.getInt("userId")
@@ -171,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.button_reports).setOnClickListener {
+        /*findViewById<Button>(R.id.button_reports).setOnClickListener {
             if (javaClass != ReportActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
                 val userId = intent.extras?.getInt("userId")
@@ -184,7 +186,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
             }
-        }
+        }*/
 
 
     }
@@ -249,8 +251,7 @@ class MainActivity : AppCompatActivity() {
     private fun createFloatingCircle() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
-        showCircleButton.text = "Scanner Activated"
-        showCircleButton.setTypeface(showCircleButton.typeface, Typeface.BOLD)
+        showCircleButton.setImageResource(R.drawable.home_activated)
 
 
         // Create a new View for the floating circle
@@ -558,7 +559,6 @@ class MainActivity : AppCompatActivity() {
         // Reset UI elements
         if (::showCircleButton.isInitialized) {
             showCircleButton.isEnabled = true
-            showCircleButton.text = "Activate Scanner"
         }
     }
 

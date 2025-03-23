@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:width="208dp"
+    android:height="208dp"
+    android:viewportWidth="208"
+    android:viewportHeight="208"
+    tools:ignore="ExtraText">
+
+  <!-- Shadow Effect (Offset slightly downward) -->
+  <path
+      android:pathData="M104,105m-102,0a102,102 0,1 1,204 0a102,102 0,1 1,-204 0"
+      android:fillColor="#50000000"
+      android:fillAlpha="0.1"/>  <!-- Adjust transparency for subtle shadow -->
+
+  <!-- Main Circle -->
+  <path
+      android:pathData="M104,100m-100,0a100,100 0,1 1,200 0a100,100 0,1 1,-200 0"
+      android:fillColor="#FCFDFF"/>
+
+  <!-- Inner Icon (Lock Symbol) -->
+  <path
+      android:pathData="M109.15,65.27C109.15,62.42 106.85,60.12 104,60.12C101.15,60.12 98.85,62.42 98.85,65.27V101.29C98.85,104.13 101.15,106.43 104,106.43C106.85,106.43 109.15,104.13 109.15,101.29V65.27ZM85.88,79.51C88.07,77.7 88.36,74.45 86.54,72.26C84.72,70.08 81.47,69.79 79.28,71.6C70.78,78.68 65.35,89.36 65.35,101.29C65.35,122.59 82.66,139.88 104,139.88C125.34,139.88 142.65,122.59 142.65,101.29C142.65,89.36 137.21,78.68 128.7,71.6C126.51,69.79 123.26,70.09 121.44,72.26C119.62,74.43 119.93,77.7 122.1,79.51C128.37,84.71 132.33,92.54 132.33,101.29C132.33,116.92 119.64,129.59 103.98,129.59C88.33,129.59 75.64,116.92 75.64,101.29C75.64,92.54 79.62,84.71 85.87,79.51H85.88Z"
+      android:fillColor="#6F6F7A"/>
+</vector>
