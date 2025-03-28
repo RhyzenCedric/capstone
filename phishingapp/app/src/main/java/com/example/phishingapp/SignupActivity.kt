@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.phishingapp.backend.ApiService
 import com.example.phishingapp.backend.SignupRequest
 import com.example.phishingapp.backend.SignupResponse
@@ -24,7 +25,7 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var editTextUsername: EditText
     private lateinit var editTextEmail: EditText
     private lateinit var editTextPassword: EditText
-    private lateinit var buttonSignup: Button
+    private lateinit var buttonSignup: ConstraintLayout
     private lateinit var textViewLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -39,7 +39,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/user_plate"
-        android:layout_width="336dp"
+        android:layout_width="375dp"
         android:layout_height="131dp"
         android:layout_marginTop="40dp"
         android:background="@drawable/rounded_button"
@@ -57,8 +57,8 @@
             android:layout_height="wrap_content"
             android:text="User"
             android:textColor="#ffffff"
-            android:textSize="20sp"
-            android:textStyle="bold"
+            android:textSize="24sp"
+            android:fontFamily="@font/inter_bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -80,7 +80,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/edit_profile_plate"
-        android:layout_width="336dp"
+        android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/rounded_gray_button"
@@ -137,7 +137,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/history_plate"
-        android:layout_width="336dp"
+        android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/rounded_gray_button"
@@ -194,7 +194,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/help_center_plate"
-        android:layout_width="336dp"
+        android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/rounded_gray_button"
@@ -251,7 +251,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/logout_button_plate"
-        android:layout_width="336dp"
+        android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginTop="10dp"
         android:background="@drawable/rounded_gray_button"

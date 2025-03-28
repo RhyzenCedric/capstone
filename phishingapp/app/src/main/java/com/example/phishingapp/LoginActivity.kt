@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.phishingapp.backend.LoginRequest
 import com.example.phishingapp.backend.LoginResponse
 import com.example.phishingapp.backend.RetrofitClient
@@ -22,7 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
     private lateinit var editTextUsername: EditText
     private lateinit var editTextPassword: EditText
-    private lateinit var buttonLogin: Button
+    private lateinit var buttonLogin: ConstraintLayout
     private lateinit var textViewSignup: TextView
     private lateinit var buttonGuest: Button // Guest button
 
