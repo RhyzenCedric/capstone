@@ -59,5 +59,8 @@ interface ApiService {
 
     @POST("/submitreport")
     fun submitReport(@Body reportRequest: ReportRequest): Call<ReportResponse>
+
+    @GET("links/{userId}")
+    fun getUserLinks(@Path("userId") userId: Int): Call<List<Threat>>
 }
 
