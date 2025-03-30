@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.mpandroidchart)
     implementation(libs.retrofit)
     implementation(libs.gson)
     implementation(libs.androidx.core.ktx)

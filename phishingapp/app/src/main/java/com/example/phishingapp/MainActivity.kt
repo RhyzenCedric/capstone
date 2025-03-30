@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     private var detectedMaliciousLink: String? = null
 
     companion object {
-        private const val TAG = "MainActivity"
+        const val TAG = "MainActivity"
         private const val MEDIA_PROJECTION_REQUEST_CODE = 101
     }
 

@@ -20,6 +20,7 @@ core = "1.46.0"
 
 
 [libraries]
+mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version = "3.1.0" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

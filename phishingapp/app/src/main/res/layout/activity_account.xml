@@ -22,7 +22,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/history_plate" />
+        app:layout_constraintTop_toBottomOf="@+id/analytics_plate" />
 
     <ImageView
         android:id="@+id/return_icon"
@@ -162,7 +162,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/history_plate"
+        android:id="@+id/analytics_plate"
         android:layout_width="375dp"
         android:layout_height="61dp"
         android:layout_marginTop="10dp"
@@ -228,7 +228,7 @@
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/history_plate"
+        app:layout_constraintTop_toBottomOf="@+id/analytics_plate"
         tools:ignore="MissingConstraints">
 
         <ImageView

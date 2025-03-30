@@ -94,7 +94,6 @@ class ReportActivity : AppCompatActivity() {
     }
 
     private fun submitReport(userId: Int?) {
-        // Check if userId is still null or not yet retrieved
         Log.d("ReportActivitySubmit", "UserId: $userId")
         if (userId == null) {
             Toast.makeText(this, "Fetching user ID, please try again", Toast.LENGTH_SHORT).show()
@@ -114,12 +113,20 @@ class ReportActivity : AppCompatActivity() {
             return
         }
 
-        val reportRequest = ReportRequest(userId!!, link, description)
+        val reportRequest = ReportRequest(userId, link, description)
 
         RetrofitClient.instance.submitReport(reportRequest).enqueue(object : Callback<ReportResponse> {
             override fun onResponse(call: Call<ReportResponse>, response: Response<ReportResponse>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@ReportActivity, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+
+                    // Navigate back to MainActivity
+                    val intent = Intent(this@ReportActivity, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    intent.putExtra("userUsername", textViewUsername.text.toString())
+                    intent.putExtra("userId", userId)
+                    startActivity(intent)
+                    finish() // Close the ReportActivity to prevent going back to it
                 } else {
                     Toast.makeText(this@ReportActivity, "Failed to submit report", Toast.LENGTH_SHORT).show()
                 }

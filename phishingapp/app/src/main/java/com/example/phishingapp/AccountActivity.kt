@@ -9,11 +9,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.example.phishingapp.MainActivity.Companion.TAG
 
 class AccountActivity : AppCompatActivity() {
 
     private lateinit var textViewUsername: TextView
     private lateinit var buttonLogout: ConstraintLayout
+    private lateinit var buttonAnalytics: ConstraintLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +33,7 @@ class AccountActivity : AppCompatActivity() {
         // Initialize UI elements
         textViewUsername = findViewById(R.id.textViewUsername)
         buttonLogout = findViewById(R.id.logout_button_plate)
+        buttonAnalytics =findViewById(R.id.analytics_plate)
 
         // Set the username
         textViewUsername.text = username
@@ -42,6 +45,7 @@ class AccountActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+
     }
 
     private fun setupNavigationButtons() {
@@ -54,6 +58,21 @@ class AccountActivity : AppCompatActivity() {
             intent.putExtra("userUsername", username)
 
             startActivity(intent)
+        }
+
+        findViewById<ConstraintLayout>(R.id.analytics_plate).setOnClickListener {
+            if (javaClass != AnalyticsActivity::class.java) {
+                val username = intent.getStringExtra("userUsername") ?: "Guest"
+                val userId = intent.extras?.getInt("userId")
+                Log.d(TAG, "Passing userId: $userId")
+                val intent = Intent(this@AccountActivity, AnalyticsActivity::class.java)
+                intent.putExtra("userUsername", username)
+                intent.putExtra("userId", userId)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Analytics Screen", Toast.LENGTH_SHORT).show()
+            }
         }
 
         /*findViewById<Button>(R.id.button_nav_account).setOnClickListener {

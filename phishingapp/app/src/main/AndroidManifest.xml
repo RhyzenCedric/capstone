@@ -60,6 +60,10 @@
             android:name=".ReportActivity"
             android:exported="false"/>
 
+        <activity
+            android:name=".AnalyticsActivity"
+            android:exported="false"/>
+
         <service
             android:name=".ScreenCaptureService"
             android:foregroundServiceType="mediaProjection"
