@@ -82,6 +82,7 @@
             android:background="@android:drawable/editbox_background"
             android:hint="Password"
             android:inputType="textPassword"
+            android:fontFamily="sans-serif"
             android:padding="10dp"
             android:backgroundTint="#D9D9D9"
             android:textColorHint="#6F6F7A"
@@ -89,6 +90,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editTextUsername" />
 
+
+        <ImageView
+            android:id="@+id/passwordToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Toggle Password Visibility"
+            android:padding="10dp"
+            android:src="@drawable/visible_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextPassword"
+            app:layout_constraintEnd_toEndOf="@+id/editTextPassword"
+            app:layout_constraintTop_toTopOf="@+id/editTextPassword"
+            app:layout_constraintVertical_bias="0.739" />
 
         <EditText
             android:id="@+id/editTextEmail"

@@ -416,14 +416,19 @@ class MainActivity : AppCompatActivity() {
                         circleParams.y <= removeAreaBottom &&
                         circleParams.x + floatingCircle.width >= removeAreaLeft &&
                         circleParams.x <= removeAreaRight
-                    ) {
-                        // Remove the floating circle if it's dragged into the "Remove?" area
-                        try {
-                            windowManager.removeView(floatingCircle)
-                            windowManager.removeView(removePopup)
-                        } catch (e: IllegalArgumentException) {
-                            Log.e(ScreenCaptureService.TAG, "Error removing views", e)
-                        }
+                    )  {
+                        // Change the image to home_activate before removing the view
+                        showCircleButton.setImageResource(R.drawable.home_activate)
+
+                        // Delay the removal slightly to allow the UI to update
+                        floatingCircle.postDelayed({
+                            try {
+                                windowManager.removeView(floatingCircle)
+                                windowManager.removeView(removePopup)
+                            } catch (e: IllegalArgumentException) {
+                                Log.e(ScreenCaptureService.TAG, "Error removing views", e)
+                            }
+                        }, 100) // Short delay (100ms) to ensure image update
 
                         // Stop the scanning service
                         stopScanning()

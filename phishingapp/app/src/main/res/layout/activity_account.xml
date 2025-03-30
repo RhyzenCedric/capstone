@@ -10,6 +10,20 @@
 
     <!-- Title Text (Centered in the Same Row) -->
 
+    <TextView
+        android:id="@+id/accountNameLabel3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+
+        android:text="MORE"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/history_plate" />
+
     <ImageView
         android:id="@+id/return_icon"
         android:layout_width="14dp"
@@ -70,13 +84,25 @@
         android:id="@+id/accountNameLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="MORE"
+        android:text="GENERAL"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/user_plate" />
+
+    <TextView
+        android:id="@+id/accountNameLabel2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="DANGER ZONE"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/about_us_plate" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/edit_profile_plate"
@@ -150,15 +176,15 @@
         tools:ignore="MissingConstraints">
 
         <ImageView
-            android:id="@+id/history_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:id="@+id/analytics_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:clickable="true"
-            android:contentDescription="History"
+            android:contentDescription="Analytics"
             android:focusable="true"
-            android:src="@drawable/history_icon"
+            android:src="@drawable/analytics_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -166,7 +192,7 @@
             android:id="@+id/history_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="History"
+            android:text="Analytics"
             android:textColor="#000000"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -196,12 +222,11 @@
         android:id="@+id/help_center_plate"
         android:layout_width="375dp"
         android:layout_height="61dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="50dp"
         android:background="@drawable/rounded_gray_button"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/history_plate"
         tools:ignore="MissingConstraints">
@@ -253,14 +278,13 @@
         android:id="@+id/logout_button_plate"
         android:layout_width="375dp"
         android:layout_height="61dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="50dp"
         android:background="@drawable/rounded_gray_button"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/help_center_plate"
+        app:layout_constraintTop_toBottomOf="@+id/about_us_plate"
         tools:ignore="MissingConstraints">
 
         <ImageView
@@ -299,6 +323,62 @@
             android:layout_marginEnd="24dp"
             android:clickable="true"
             android:contentDescription="Logout"
+            android:focusable="true"
+            android:src="@drawable/proceed_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/about_us_plate"
+        android:layout_width="375dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rounded_gray_button"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/help_center_plate"
+        tools:ignore="MissingConstraints">
+
+        <ImageView
+            android:id="@+id/about_us_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="24dp"
+            android:clickable="true"
+            android:contentDescription="Help Center"
+            android:focusable="true"
+            android:src="@drawable/about_us"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/about_us_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="About Us"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5" />
+
+        <ImageView
+            android:id="@+id/about_us_proceed_icon"
+            android:layout_width="10dp"
+            android:layout_height="17dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="24dp"
+            android:clickable="true"
+            android:contentDescription="Proceed"
             android:focusable="true"
             android:src="@drawable/proceed_icon"
             app:layout_constraintEnd_toEndOf="parent"

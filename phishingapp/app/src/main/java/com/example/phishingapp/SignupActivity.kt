@@ -3,10 +3,12 @@ package com.example.phishingapp
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,6 +29,8 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var editTextPassword: EditText
     private lateinit var buttonSignup: ConstraintLayout
     private lateinit var textViewLogin: TextView
+    private lateinit var passwordToggle: ImageView
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +41,7 @@ class SignupActivity : AppCompatActivity() {
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignup = findViewById(R.id.buttonSignup)
         textViewLogin = findViewById(R.id.textViewLogin)
+        passwordToggle = findViewById(R.id.passwordToggle)
 
         buttonSignup.setOnClickListener {
             val userUsername = editTextUsername.text.toString().trim()
@@ -48,6 +53,18 @@ class SignupActivity : AppCompatActivity() {
             } else {
                 signupUser(userUsername, userEmail, userPassword)
             }
+        }
+
+        passwordToggle.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                editTextPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                passwordToggle.setImageResource(R.drawable.invisible_icon)
+            } else {
+                editTextPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                passwordToggle.setImageResource(R.drawable.visible_icon)
+            }
+            editTextPassword.setSelection(editTextPassword.text.length) // Keep cursor position
         }
 
         textViewLogin.setOnClickListener {

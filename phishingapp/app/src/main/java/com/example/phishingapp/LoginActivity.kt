@@ -3,11 +3,13 @@ package com.example.phishingapp
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +28,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var buttonLogin: ConstraintLayout
     private lateinit var textViewSignup: TextView
     private lateinit var buttonGuest: Button // Guest button
+    private lateinit var passwordToggle: ImageView
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,7 @@ class LoginActivity : AppCompatActivity() {
         buttonLogin = findViewById(R.id.buttonLogin)
         textViewSignup = findViewById(R.id.textViewSignup)
         buttonGuest = findViewById(R.id.buttonGuest) // Find the guest button by its ID
+        passwordToggle = findViewById(R.id.passwordToggle)
 
         // Handle login button click
         buttonLogin.setOnClickListener {
@@ -47,6 +52,18 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 loginUser(userUsername, userPassword)
             }
+        }
+
+        passwordToggle.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            if (isPasswordVisible) {
+                editTextPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                passwordToggle.setImageResource(R.drawable.invisible_icon)
+            } else {
+                editTextPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                passwordToggle.setImageResource(R.drawable.visible_icon)
+            }
+            editTextPassword.setSelection(editTextPassword.text.length) // Keep cursor position
         }
 
         // Handle guest button click
