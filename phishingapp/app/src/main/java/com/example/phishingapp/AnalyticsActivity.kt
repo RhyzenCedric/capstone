@@ -107,43 +107,47 @@ class AnalyticsActivity : AppCompatActivity() {
         val utcFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
             timeZone = TimeZone.getTimeZone("UTC") // Parse as UTC
         }
-        val manilaFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).apply {
+        val manilaFormat = SimpleDateFormat("MMM-dd", Locale.getDefault()).apply {
             timeZone = TimeZone.getTimeZone("Asia/Manila") // Convert to Manila time
         }
 
-        val threatsByTime = mutableMapOf<Long, Int>()
+        val threatsByTime = mutableMapOf<String, Int>()
 
         for (threat in threatsList) {
             try {
                 val utcDate = utcFormat.parse(threat.date_verified)
                 utcDate?.let {
-                    val manilaDateString = manilaFormat.format(it) // Convert to Manila time string
-                    val manilaDate = manilaFormat.parse(manilaDateString) // Convert back to Date object
+                    // Convert to Manila time and format as MMM-dd
+                    val manilaDateString = manilaFormat.format(it)
 
-                    // Normalize date to midnight to ensure correct day parsing
-                    val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"))
-                    calendar.time = manilaDate
-                    calendar.set(Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(Calendar.MINUTE, 0)
-                    calendar.set(Calendar.SECOND, 0)
-                    calendar.set(Calendar.MILLISECOND, 0)
-
-                    val timeInDays: Long = calendar.timeInMillis / (1000 * 60 * 60 * 24) // Convert to days
-                    threatsByTime[timeInDays] = threatsByTime.getOrDefault(timeInDays, 0) + 1
-                    Log.d("ThreatDate", "Original: ${threat.date_verified}, Manila Time: $manilaDateString, Parsed Days: $timeInDays")
+                    // Add or increment the count for this date
+                    threatsByTime[manilaDateString] = threatsByTime.getOrDefault(manilaDateString, 0) + 1
+                    Log.d("ThreatDate", "Original: ${threat.date_verified}, Manila Date: $manilaDateString")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
 
-        val sortedEntries = threatsByTime.toSortedMap()
+        // We need to maintain an internal date format for sorting
+        val sortFormat = SimpleDateFormat("MMM-dd", Locale.getDefault())
+
+        // Sort the map by date
+        val sortedEntries = threatsByTime.entries.sortedBy {
+            try {
+                sortFormat.parse(it.key)?.time ?: 0
+            } catch (e: Exception) {
+                0L
+            }
+        }
         Log.d("SortedEntries", sortedEntries.toString()) // Log sorted entries
 
-        val xAxisValues: MutableList<Long> = sortedEntries.keys.toMutableList()
+        // Create a list for x-axis labels
+        val xAxisLabels = sortedEntries.map { it.key }.toMutableList()
 
-        for ((time, count) in sortedEntries) {
-            entries.add(Entry(time.toFloat(), count.toFloat()))
+        // Create entries with index positions
+        sortedEntries.forEachIndexed { index, (_, count) ->
+            entries.add(Entry(index.toFloat(), count.toFloat()))
         }
 
         val dataSet = LineDataSet(entries, "Threats Over Time").apply {
@@ -157,16 +161,40 @@ class AnalyticsActivity : AppCompatActivity() {
         lineChart.data = LineData(dataSet)
         lineChart.xAxis.apply {
             position = XAxis.XAxisPosition.BOTTOM
-            granularity = 1f // Ensure only distinct dates are shown
-            valueFormatter = DateAxisFormatter(xAxisValues)
+            granularity = 1f
+            labelRotationAngle = 45f // Rotate labels 45 degrees
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    val index = value.toInt()
+                    return if (index >= 0 && index < xAxisLabels.size) xAxisLabels[index] else ""
+                }
+            }
+            // Add these lines:
+            setLabelCount(xAxisLabels.size, true) // Force showing all labels
+            setAvoidFirstLastClipping(true)
         }
 
-        lineChart.axisLeft.setDrawGridLines(false)
-        lineChart.axisRight.isEnabled = false
-        lineChart.description.isEnabled = false
-        lineChart.invalidate()
+// Also add this to ensure proper spacing
+        lineChart.apply {
+            description.isEnabled = false
+            extraBottomOffset = 10f // Add padding at bottom for labels
+
+            // Add these new lines:
+            animateX(500) // Add animation to make the chart more visible
+            setTouchEnabled(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
+            setPinchZoom(true)
+            invalidate() // Force a redraw of the chart
+        }
     }
 
+    override fun onResume() {
+        super.onResume()
+        lineChart.post {
+            setupLineChart()
+        }
+    }
 
 
 
