@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonLogin = findViewById(R.id.buttonLogin)
         textViewSignup = findViewById(R.id.textViewSignup)
-        buttonGuest = findViewById(R.id.buttonGuest) // Find the guest button by its ID
+        //buttonGuest = findViewById(R.id.buttonGuest) // Find the guest button by its ID
         passwordToggle = findViewById(R.id.passwordToggle)
 
         // Handle login button click
@@ -67,11 +67,11 @@ class LoginActivity : AppCompatActivity() {
         }
 
         // Handle guest button click
-        buttonGuest.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java) // Directly go to MainActivity
-            startActivity(intent)
-            finish()
-        }
+//        buttonGuest.setOnClickListener {
+//            val intent = Intent(this, MainActivity::class.java) // Directly go to MainActivity
+//            startActivity(intent)
+//            finish()
+//        }
 
         // Navigate to sign-up screen
         textViewSignup.setOnClickListener {
@@ -83,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
         val spannableString = SpannableString(signupText)
         val signUpStart = signupText.indexOf("Sign Up")
         val signUpEnd = signUpStart + "Sign Up".length
-        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#108690")), signUpStart, signUpEnd, 0)
+        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#1B1E46")), signUpStart, signUpEnd, 0)
 
         textViewSignup.text = spannableString
     }

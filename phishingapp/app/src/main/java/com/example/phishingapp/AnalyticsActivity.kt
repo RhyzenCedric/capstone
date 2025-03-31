@@ -4,7 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,12 +23,20 @@ import com.github.mikephil.charting.data.LineDataSet
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
+import com.github.mikephil.charting.formatter.ValueFormatter
+import java.util.concurrent.TimeUnit
 
 class AnalyticsActivity : AppCompatActivity() {
 
     private lateinit var lineChart: LineChart
     private lateinit var adapter: ThreatsAdapter
     private var threatsList = mutableListOf<Threat>()
+    private lateinit var timeUnitSpinner: Spinner
+    private var selectedTimeUnit = "Days" // Default to Days
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +51,23 @@ class AnalyticsActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         setupNavigationButtons()
+
+        // Setup the Spinner (Dropdown)
+        timeUnitSpinner = findViewById(R.id.spinnerTimeUnit)
+        val timeUnits = arrayOf("Days") // Only "Days" remains
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeUnits)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        timeUnitSpinner.adapter = adapter
+
+        // Handle dropdown selection
+        timeUnitSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                selectedTimeUnit = timeUnits[position] // Store selected time unit
+                setupLineChart() // Refresh the chart when a new unit is selected
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
 
         val userId = intent.extras?.getInt("userId", -1)
         if (userId != null && userId != -1) {
@@ -75,16 +104,46 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun setupLineChart() {
         val entries = mutableListOf<Entry>()
-        val threatCounts = mutableMapOf<String, Int>()
-
-        for (threat in threatsList) {
-            val date = threat.date_verified.substring(0, 10)
-            threatCounts[date] = threatCounts.getOrDefault(date, 0) + 1
+        val utcFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC") // Parse as UTC
+        }
+        val manilaFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("Asia/Manila") // Convert to Manila time
         }
 
-        var index = 0f
-        for ((date, count) in threatCounts) {
-            entries.add(Entry(index++, count.toFloat()))
+        val threatsByTime = mutableMapOf<Long, Int>()
+
+        for (threat in threatsList) {
+            try {
+                val utcDate = utcFormat.parse(threat.date_verified)
+                utcDate?.let {
+                    val manilaDateString = manilaFormat.format(it) // Convert to Manila time string
+                    val manilaDate = manilaFormat.parse(manilaDateString) // Convert back to Date object
+
+                    // Normalize date to midnight to ensure correct day parsing
+                    val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"))
+                    calendar.time = manilaDate
+                    calendar.set(Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(Calendar.MINUTE, 0)
+                    calendar.set(Calendar.SECOND, 0)
+                    calendar.set(Calendar.MILLISECOND, 0)
+
+                    val timeInDays: Long = calendar.timeInMillis / (1000 * 60 * 60 * 24) // Convert to days
+                    threatsByTime[timeInDays] = threatsByTime.getOrDefault(timeInDays, 0) + 1
+                    Log.d("ThreatDate", "Original: ${threat.date_verified}, Manila Time: $manilaDateString, Parsed Days: $timeInDays")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        val sortedEntries = threatsByTime.toSortedMap()
+        Log.d("SortedEntries", sortedEntries.toString()) // Log sorted entries
+
+        val xAxisValues: MutableList<Long> = sortedEntries.keys.toMutableList()
+
+        for ((time, count) in sortedEntries) {
+            entries.add(Entry(time.toFloat(), count.toFloat()))
         }
 
         val dataSet = LineDataSet(entries, "Threats Over Time").apply {
@@ -95,16 +154,25 @@ class AnalyticsActivity : AppCompatActivity() {
             circleRadius = 4f
         }
 
-        val lineData = LineData(dataSet)
-        lineChart.data = lineData
+        lineChart.data = LineData(dataSet)
+        lineChart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            granularity = 1f // Ensure only distinct dates are shown
+            valueFormatter = DateAxisFormatter(xAxisValues)
+        }
 
-        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        lineChart.xAxis.setDrawGridLines(false)
         lineChart.axisLeft.setDrawGridLines(false)
         lineChart.axisRight.isEnabled = false
         lineChart.description.isEnabled = false
         lineChart.invalidate()
     }
+
+
+
+
+
+
+
 
     private fun setupNavigationButtons() {
         findViewById<ImageView>(R.id.return_icon).setOnClickListener {

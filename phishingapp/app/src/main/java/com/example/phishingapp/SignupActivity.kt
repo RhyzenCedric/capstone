@@ -76,7 +76,7 @@ class SignupActivity : AppCompatActivity() {
         val spannableString = SpannableString(loginText)
         val logInStart = loginText.indexOf("Log In")
         val logInEnd = logInStart + "Log In".length
-        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#108690")), logInStart, logInEnd, 0)
+        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#1B1E46")), logInStart, logInEnd, 0)
 
         textViewLogin.text = spannableString
     }
