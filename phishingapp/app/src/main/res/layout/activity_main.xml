@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Top Background Image (rect-home.png) -->
+    <!-- Top Background Image -->
     <ImageView
         android:id="@+id/top_background"
         android:layout_width="match_parent"
@@ -25,185 +25,193 @@
         app:layout_constraintTop_toBottomOf="@id/top_background"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- Main UI Content -->
+    <!-- Guideline to Position Elements Dynamically -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.35" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.7" />
+
+    <!-- Title -->
+
+    <!-- Activate Scanner Button -->
+
+    <!-- Stay Protected Text -->
+
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="300dp"
+        android:fontFamily="@font/inter_extra_bold"
+        android:text="PHISHERMAN"
+        android:textColor="#1d1e4e"
+        android:textSize="@dimen/text_title_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/top_background"
+        tools:ignore="MissingConstraints" />
+
+    <ImageView
+        android:id="@+id/button_activate_scanner"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:contentDescription="Activate Scanner Icon"
+        android:focusable="true"
+        android:src="@drawable/home_activate"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.3" />
+
+    <!-- Buttons Row -->
+    <TextView
+        android:id="@+id/text_stay_protected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/inter_extra_bold"
+        android:text="Stay Protected"
+        android:textColor="#1d1e4e"
+        android:textSize="@dimen/text_stay_protected_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_activate_scanner" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="16dp"
-        android:padding="16dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/text_stay_protected"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Title centered between screen top and scanner button -->
-        <TextView
-            android:id="@+id/text_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="PHISHERMAN"
-            android:textColor="#1d1e4e"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toTopOf="@id/button_activate_scanner"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
-
-        <!-- Activate Scanner Button -->
-
-        <ImageView
-            android:id="@+id/button_activate_scanner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="236dp"
-            android:clickable="true"
-            android:contentDescription="Activate Scanner Icon"
-            android:focusable="true"
-            android:src="@drawable/home_activate"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.473"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_title" />
-
-        <!-- Button Row: Learn More, Reports, Account -->
-
-        <!-- Text Labels Below Buttons -->
-
-        <TextView
-            android:id="@+id/text_stay_protected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="45dp"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="Stay Protected"
-            android:textColor="#1d1e4e"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.475"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner" />
-
+        <!-- Learn More Button -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/button_reports"
-            android:layout_width="84dp"
-            android:layout_height="85dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="100dp"
-            android:layout_marginEnd="8dp"
+            android:id="@+id/button_learn_more"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:background="@drawable/rounded_button"
             android:clickable="true"
             android:focusable="true"
-            app:layout_constraintEnd_toStartOf="@id/button_account"
-            app:layout_constraintHorizontal_bias="0.478"
-            app:layout_constraintStart_toEndOf="@id/button_learn_more"
-            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/button_reports"
+            tools:ignore="MissingConstraints">
 
-            <!-- SVG Icon (Centered Inside Button) -->
+            <ImageView
+                android:id="@+id/learn_icon"
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
+                android:src="@drawable/learn_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/label_learn_more"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/label_margin_top"
+                android:fontFamily="@font/inter_bold"
+                android:text="Learn More"
+                android:textColor="#1d1e4e"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.50"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/learn_icon" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Reports Button -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/button_reports"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/rounded_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_percent="0.25"
+            app:layout_constraintStart_toEndOf="@id/button_learn_more"
+            app:layout_constraintEnd_toStartOf="@id/button_account"
+            tools:ignore="MissingConstraints">
+
             <ImageView
                 android:id="@+id/reports_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
                 android:src="@drawable/reports_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/label_reports"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/label_margin_top"
+                android:fontFamily="@font/inter_bold"
+                android:text="Reports"
+                android:textColor="#1d1e4e"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/reports_icon" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Account Button -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/button_account"
-            android:layout_width="84dp"
-            android:layout_height="85dp"
-            android:layout_marginTop="100dp"
-            android:layout_marginEnd="44dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:background="@drawable/rounded_button"
             android:clickable="true"
             android:focusable="true"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintWidth_percent="0.25"
+            app:layout_constraintStart_toEndOf="@id/button_reports"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
+            tools:ignore="MissingConstraints">
 
-            <!-- SVG Icon (Centered Inside Button) -->
             <ImageView
                 android:id="@+id/account_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="@dimen/image_size"
+                android:layout_height="@dimen/image_size"
                 android:src="@drawable/account_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/button_learn_more"
-            android:layout_width="84dp"
-            android:layout_height="85dp"
-            android:layout_marginStart="44dp"
-            android:layout_marginTop="100dp"
-            android:background="@drawable/rounded_button"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/button_activate_scanner">
-
-            <!-- SVG Icon (Centered Inside Button) -->
-            <ImageView
-                android:id="@+id/learn_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/learn_icon"
-                app:layout_constraintBottom_toBottomOf="parent"
+            <TextView
+                android:id="@+id/label_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/label_margin_top"
+                android:fontFamily="@font/inter_bold"
+                android:text="Account"
+                android:textColor="#1d1e4e"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.503"
                 app:layout_constraintStart_toStartOf="parent"
-
-                app:layout_constraintTop_toTopOf="parent" />
-
+                app:layout_constraintTop_toBottomOf="@id/account_icon" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <TextView
-            android:id="@+id/text_learn_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="LEARN MORE"
-            android:textColor="#1d1e4e"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="@id/button_learn_more"
-            app:layout_constraintStart_toStartOf="@id/button_learn_more"
-            app:layout_constraintTop_toBottomOf="@id/button_learn_more" />
-
-        <TextView
-            android:id="@+id/text_reports"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="REPORTS"
-            android:textColor="#1d1e4e"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="@id/button_reports"
-            app:layout_constraintStart_toStartOf="@id/button_reports"
-            app:layout_constraintTop_toBottomOf="@id/button_reports" />
-
-        <TextView
-            android:id="@+id/text_account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="ACCOUNT"
-            android:textColor="#1d1e4e"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="@id/button_account"
-            app:layout_constraintStart_toStartOf="@id/button_account"
-            app:layout_constraintTop_toBottomOf="@id/button_account" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="image_size">64dp</dimen>
+    <dimen name="button_image_size">128dp</dimen>
+    <dimen name="text_title_size">24sp</dimen>
+    <dimen name="text_stay_protected_size">18sp</dimen>
+    <dimen name="label_margin_top" tools:ignore="MissingDefaultResource">24dp</dimen>
+    <dimen name="label_text_size" tools:ignore="MissingDefaultResource">16sp</dimen>
+</resources>

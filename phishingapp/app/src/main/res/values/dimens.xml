@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="image_size">32dp</dimen>
+    <dimen name="button_image_size">64dp</dimen>
+    <dimen name="text_title_size">16sp</dimen>
+    <dimen name="text_stay_protected_size">14sp</dimen>
+
+</resources>
+
