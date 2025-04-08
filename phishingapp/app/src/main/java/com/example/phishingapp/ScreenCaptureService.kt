@@ -344,7 +344,7 @@ class ScreenCaptureService : Service() {
             }
 
             val isLongAndComplexUrl = sanitizedUrl.let {
-                it.length > 100 ||                             // Very long URL
+                it.length > 50 ||                             // Very long URL
                         (it.count { char -> char == '.' } > 3) ||      // Too many subdomains
                         (it.count { char -> char == '/' } > 4) ||      // Too many path segments
                         (it.count { char -> char == '-' } > 2)         // Multiple hyphens
@@ -412,6 +412,10 @@ class ScreenCaptureService : Service() {
             intent.putExtra("maliciousLink", maliciousLinks.first()) // Pass the first detected malicious link
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
+            triggerVibration()
+            Log.d(TAG, "⚠️ Triggered haptic feedback due to malicious link")
+
+
             showNotification(
                 "⚠️ Phishing Link Detected",
                 "Malicious link: ${maliciousLinks.first()}",
@@ -422,6 +426,19 @@ class ScreenCaptureService : Service() {
                 .sendBroadcast(Intent("com.example.phishingapp.NO_MALICIOUS_LINKS"))
         }
     }
+
+    private fun triggerVibration() {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
+        vibrator?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                it.vibrate(android.os.VibrationEffect.createOneShot(200, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                it.vibrate(200)
+            }
+        }
+    }
+
 
     private fun showNotification(title: String, content: String, maliciousLinks: List<ScanResult>? = null) {
         val notificationManager =

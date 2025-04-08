@@ -25,7 +25,7 @@ import retrofit2.Response
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var editTextUsername: EditText
-    private lateinit var editTextEmail: EditText
+    //private lateinit var editTextEmail: EditText
     private lateinit var editTextPassword: EditText
     private lateinit var buttonSignup: ConstraintLayout
     private lateinit var textViewLogin: TextView
@@ -37,7 +37,7 @@ class SignupActivity : AppCompatActivity() {
         setContentView(R.layout.activity_signup)
 
         editTextUsername = findViewById(R.id.editTextUsername)
-        editTextEmail = findViewById(R.id.editTextEmail)
+        //editTextEmail = findViewById(R.id.editTextEmail)
         editTextPassword = findViewById(R.id.editTextPassword)
         buttonSignup = findViewById(R.id.buttonSignup)
         textViewLogin = findViewById(R.id.textViewLogin)
@@ -45,13 +45,13 @@ class SignupActivity : AppCompatActivity() {
 
         buttonSignup.setOnClickListener {
             val userUsername = editTextUsername.text.toString().trim()
-            val userEmail = editTextEmail.text.toString().trim()
+            //val userEmail = editTextEmail.text.toString().trim()
             val userPassword = editTextPassword.text.toString().trim()
 
             if (userUsername.isEmpty() || userPassword.isEmpty()) {
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                signupUser(userUsername, userEmail, userPassword)
+                signupUser(userUsername, userPassword)
             }
         }
 
@@ -81,8 +81,8 @@ class SignupActivity : AppCompatActivity() {
         textViewLogin.text = spannableString
     }
 
-    private fun signupUser(userUsername: String, userEmail: String, userPassword: String) {
-        val signupRequest = SignupRequest(userUsername, userEmail, userPassword)
+    private fun signupUser(userUsername: String, userPassword: String) {
+        val signupRequest = SignupRequest(userUsername, userPassword)
 
         RetrofitClient.instance.signup(signupRequest).enqueue(object : Callback<SignupResponse> {
             override fun onResponse(call: Call<SignupResponse>, response: Response<SignupResponse>) {

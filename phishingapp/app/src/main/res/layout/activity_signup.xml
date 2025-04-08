@@ -104,21 +104,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/editTextPassword"
             app:layout_constraintEnd_toEndOf="@+id/editTextPassword"
             app:layout_constraintTop_toTopOf="@+id/editTextPassword"
-            app:layout_constraintVertical_bias="0.739" />
-
-        <EditText
-            android:id="@+id/editTextEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="950dp"
-            android:background="@android:drawable/editbox_background"
-            android:hint="Email"
-            android:inputType="textEmailAddress"
-            android:padding="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintVertical_bias="0.75" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/buttonSignup"

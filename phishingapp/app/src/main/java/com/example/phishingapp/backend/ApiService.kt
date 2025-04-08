@@ -10,7 +10,7 @@ import retrofit2.http.Query
 
 data class SignupRequest(
     val userUsername: String,
-    val userEmail: String,
+
     val userPassword: String
 )
 
@@ -26,7 +26,7 @@ data class LoginRequest(
 
 data class UserDetails(
     val userUsername: String,
-    val userEmail: String,
+
     val userId: Int?,
 )
 
