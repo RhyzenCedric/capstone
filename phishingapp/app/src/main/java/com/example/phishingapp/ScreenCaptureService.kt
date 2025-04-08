@@ -344,7 +344,7 @@ class ScreenCaptureService : Service() {
             }
 
             val isLongAndComplexUrl = sanitizedUrl.let {
-                it.length > 50 ||                             // Very long URL
+                it.length > 20 ||                             // Very long URL
                         (it.count { char -> char == '.' } > 3) ||      // Too many subdomains
                         (it.count { char -> char == '/' } > 4) ||      // Too many path segments
                         (it.count { char -> char == '-' } > 2)         // Multiple hyphens
