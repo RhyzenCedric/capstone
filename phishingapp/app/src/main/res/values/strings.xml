@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">phishingapp</string>
+    <string name="accessibility_service_description">Phishing Detector</string>
 </resources>

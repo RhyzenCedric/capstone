@@ -7,6 +7,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -239,6 +243,7 @@ class ScreenCaptureService : Service() {
     }
 
     private fun simulateOCR(bitmap: Bitmap): String {
+        // Use the full-resolution bitmap without resizing
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val image = InputImage.fromBitmap(bitmap, 0)
 
@@ -324,6 +329,18 @@ class ScreenCaptureService : Service() {
                 "apple.com",
                 "bank.com"
             )
+
+            // Whitelist of known safe domains
+            val safeDomains = listOf(
+                "messenger.com",
+                "facebook.com",
+                "whatsapp.com"
+            )
+
+            // Check if the URL is in the safe domains
+            if (safeDomains.any { hostname.contains(it) }) {
+                return ScanResult(url = sanitizedUrl, isMalicious = false, description = "Known safe domain")
+            }
 
             // TLD Risk Assessment
             val riskyCcTlds = listOf(

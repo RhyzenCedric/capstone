@@ -71,6 +71,12 @@
             android:name=".AnalyticsActivity"
             android:exported="false"/>
 
+        <activity
+            android:name=".LinkTapActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.AppCompat.Dialog.Alert" />
+
         <service
             android:name=".ScreenCaptureService"
             android:foregroundServiceType="mediaProjection"
