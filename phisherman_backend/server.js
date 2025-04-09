@@ -103,8 +103,8 @@ app.post('/usersignup', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(userPassword, 10);
 
-        const sql = "INSERT INTO users (userUsername, userEmail, userPassword) VALUES (?, ?, ?)";
-        const values = [userUsername, userEmail, hashedPassword];
+        const sql = "INSERT INTO users (userUsername, userPassword) VALUES (?, ?)";
+        const values = [userUsername, hashedPassword];
 
         db.query(sql, values, (err) => {
             if (err) {
