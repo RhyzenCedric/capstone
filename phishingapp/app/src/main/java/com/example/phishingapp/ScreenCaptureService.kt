@@ -7,10 +7,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.ColorMatrix
-import android.graphics.ColorMatrixColorFilter
-import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -327,7 +323,9 @@ class ScreenCaptureService : Service() {
                 "facebook.com",
                 "twitter.com",
                 "apple.com",
-                "bank.com"
+                "bank.com",
+                "open.spotify.com",
+                "youtube.com"
             )
 
             // Whitelist of known safe domains
