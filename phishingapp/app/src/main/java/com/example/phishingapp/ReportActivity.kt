@@ -156,16 +156,6 @@ class ReportActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        /*findViewById<Button>(R.id.button_nav_account).setOnClickListener {
-            val intent = Intent(this, AccountActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-            // Pass the username and userId to AccountActivity
-            intent.putExtra("userUsername", username)
-            intent.putExtra("userId", userId)
-
-            startActivity(intent)
-        }*/
     }
 
 }

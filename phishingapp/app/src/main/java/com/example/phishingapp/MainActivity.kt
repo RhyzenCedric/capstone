@@ -69,6 +69,12 @@ class MainActivity : AppCompatActivity() {
         val userId = intent.extras?.getInt("userId")
         Log.d(TAG, "User Id:  $userId")
 
+        val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("userUsername", username) // Replace with actual username
+        editor.putInt("userId", userId ?: 0) // Replace with actual user ID
+        editor.apply()
+
 
 
         // Set up navigation buttons (same as previous implementation)
@@ -116,36 +122,8 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
     private fun setupNavigationButtons() {
-        // Navigation button setup (same as previous implementation)
-        /*findViewById<Button>(R.id.button_nav_home).setOnClickListener {
-            // Check if we're already on the home screen
-            if (this::class.java != MainActivity::class.java) {
-                val intent = Intent(this, MainActivity::class.java)
-                // Clear top ensures we don't create multiple instances of MainActivity
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
-            } else {
-                // Optionally, add some feedback if user is already on home screen
-                Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        findViewById<Button>(R.id.button_nav_account).setOnClickListener {
-            if (javaClass != AccountActivity::class.java) {
-                val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val userId = intent.extras?.getInt("userId")
-                val intent = Intent(this@MainActivity, AccountActivity::class.java)
-                intent.putExtra("userUsername", username)  // Pass username
-                intent.putExtra("userId", userId)  // Pass userId
-
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
-            }
-        }*/
-
         findViewById<ConstraintLayout>(R.id.button_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
@@ -175,22 +153,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
             }
         }
-
-        /*findViewById<Button>(R.id.button_reports).setOnClickListener {
-            if (javaClass != ReportActivity::class.java) {
-                val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val userId = intent.extras?.getInt("userId")
-                Log.d(TAG, "Passing userId: $userId")
-                val intent = Intent(this@MainActivity, ReportActivity::class.java)
-                intent.putExtra("userUsername", username)
-                intent.putExtra("userId", userId)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
-            }
-        }*/
-
 
     }
 
@@ -471,7 +433,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleCircleTap() {
         if (isRed) {
             handleCircleTapReport()
-        } else {
+       } else {
             handleCircleTapHome()
         }
     }
@@ -489,44 +451,38 @@ class MainActivity : AppCompatActivity() {
             }
             startActivity(intent)
         } else {
-            val username = intent.getStringExtra("userUsername") ?: "Guest"
-            val userId = intent.extras?.getInt("userId")
-
-            val intent = Intent(this, MainActivity::class.java).apply {
-                putExtra("userUsername", username)
-                putExtra("userId", userId)
-                //putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            startActivity(intent)
+            Toast.makeText(this, "Already on Home Screen", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun handleCircleTapReport() {
-        if (isAppInBackground) {
-            val username = intent.getStringExtra("userUsername") ?: "Guest"
-            val userId = intent.extras?.getInt("userId")
-
-            val intent = Intent(this, ReportActivity::class.java).apply {
-                putExtra("userUsername", username)
-                putExtra("userId", userId)
-                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            }
-            startActivity(intent)
-        } else {
-            val username = intent.getStringExtra("userUsername") ?: "Guest"
-            val userId = intent.extras?.getInt("userId")
-
-            val intent = Intent(this, ReportActivity::class.java).apply {
-                putExtra("userUsername", username)
-                putExtra("userId", userId)
-                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            startActivity(intent)
+//        if (isAppInBackground) {
+//            val username = intent.getStringExtra("userUsername") ?: "Guest"
+//            val userId = intent.extras?.getInt("userId")
+//
+//            val intent = Intent(this, ReportActivity::class.java).apply {
+//                putExtra("userUsername", username)
+//                putExtra("userId", userId)
+//                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+//                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+//            }
+//            startActivity(intent)
+//        } else {
+//            val username = intent.getStringExtra("userUsername") ?: "Guest"
+//            val userId = intent.extras?.getInt("userId")
+//
+//            val intent = Intent(this, ReportActivity::class.java).apply {
+//                putExtra("userUsername", username)
+//                putExtra("userId", userId)
+//                putExtra("reportedLink", detectedMaliciousLink) // ✅ Pass the stored malicious link
+//                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            }
+//            startActivity(intent)
+//        }
+        if (isAppInBackground){
+            Toast.makeText(this, "A Malicious link was found!", Toast.LENGTH_SHORT).show()
         }
-    }
+   }
 
 
 

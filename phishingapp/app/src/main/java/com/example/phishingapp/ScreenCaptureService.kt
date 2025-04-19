@@ -91,6 +91,11 @@ class ScreenCaptureService : Service() {
         createNotificationChannel()
         startForegroundService()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val username = sharedPreferences.getString("userUsername", "Guest") ?: "Guest"
+        val userId = sharedPreferences.getInt("userId", 0)
+        Log.d(TAG, "Retrieved Username: $username")
+        Log.d(TAG, "Retrieved User ID: $userId")
     }
 
     private fun createNotificationChannel() {
@@ -496,7 +501,20 @@ class ScreenCaptureService : Service() {
         overlayView.setOnClickListener {
             // Handle tap on the overlay
             Log.d(TAG, "Overlay tapped for URL: $url")
-            // You can show a dialog or perform any other action here
+
+            // Retrieve user data from SharedPreferences
+            val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+            val username = sharedPreferences.getString("userUsername", "Guest") ?: "Guest"
+            val userId = sharedPreferences.getInt("userId", 0)
+
+            // Create an intent to start the ReportActivity
+            val intent = Intent(this, ReportActivity::class.java).apply {
+                putExtra("userUsername", username) // Pass the retrieved username
+                putExtra("userId", userId) // Pass the retrieved user ID
+                putExtra("reportedLink", url) // Pass the tapped URL
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
+            startActivity(intent)
         }
 
         val layoutParams = WindowManager.LayoutParams(
