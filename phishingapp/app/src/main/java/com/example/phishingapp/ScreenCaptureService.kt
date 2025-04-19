@@ -1,6 +1,7 @@
 package com.example.phishingapp
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -8,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
@@ -39,8 +41,13 @@ class ScreenCaptureService : Service() {
     private val scanningScope = CoroutineScope(Dispatchers.Default)
     private val isScanning = AtomicBoolean(false)
     private lateinit var windowManager: WindowManager
-    private val overlays = mutableListOf<View>()
-    private val overlayCoordinates = mutableSetOf<Pair<Int, Int>>()
+    private val overlays = mutableMapOf<String, Pair<View, Pair<Int, Int>>>() // URL -> (View, Coordinates)
+    private var wasAppInForeground = false // Track the previous state
+    private val visibleLinks = mutableSetOf<String>() // Track currently visible links
+
+    // Store link positions with coordinates
+    data class LinkPosition(val url: String, val boundingBox: Rect)
+    private val currentLinkPositions = mutableMapOf<String, LinkPosition>()
 
     private val mediaProjectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
@@ -111,8 +118,6 @@ class ScreenCaptureService : Service() {
     }
 
     private fun startForegroundService() {
-        // Remove the separate notification creation
-        // The showNotification method will handle the initial foreground notification
         showNotification("Screen Capture Active", "Monitoring screen for potential threats")
     }
 
@@ -154,12 +159,49 @@ class ScreenCaptureService : Service() {
         startScreenCapture()
     }
 
+    private fun isAppInForeground(): Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val runningTasks = activityManager.getRunningTasks(1)
+
+        if (runningTasks.isNotEmpty()) {
+            val topActivity = runningTasks[0].topActivity
+            val packageName = topActivity?.packageName
+
+            // First check if this is our package
+            if (packageName == packageName) {
+                // It's our app's package, now check if it's one of our main activities
+                val mainActivities = listOf(
+                    "com.example.phishingapp.ReportActivity",
+                    "com.example.phishingapp.AccountActivity",
+                    "com.example.phishingapp.SignupActivity",
+                    "com.example.phishingapp.LoginActivity",
+                    "com.example.phishingapp.StartupActivity",
+                    "com.example.phishingapp.AnalyticsActivity"
+                )
+
+                // Return true only if it's one of our main activities
+                return mainActivities.any { activityName ->
+                    topActivity?.className == activityName
+                }
+            }
+
+            // It's not our package at all, so our app is not in foreground
+            return false
+        }
+
+        // No running tasks, so definitely not in foreground
+        return false
+    }
+
     private fun startScreenCapture() {
         Log.d(TAG, "startScreenCapture: starting")
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
         val screenDensity = displayMetrics.densityDpi
+
+        // Log the screen dimensions
+        Log.d(TAG, "Screen Dimensions: width=$screenWidth, height=$screenHeight, density=$screenDensity")
 
         imageReader = ImageReader.newInstance(
             screenWidth,
@@ -188,18 +230,46 @@ class ScreenCaptureService : Service() {
             scanningScope.launch {
                 while (isScanning.get()) {
                     try {
+                        // Check app foreground status
+                        val isInForeground = isAppInForeground()
+
+                        // Handle state transitions
+                        if (isInForeground != wasAppInForeground) {
+                            withContext(Dispatchers.Main) {
+                                if (isInForeground) {
+                                    // App just came to foreground, remove overlays
+                                    Log.d(TAG, "App is now in the foreground, temporarily removing overlays")
+                                    removeAllOverlays()
+                                } else {
+                                    // App just went to background, reset tracking
+                                    Log.d(TAG, "App is now in the background, resuming overlay creation")
+                                    visibleLinks.clear()
+                                    currentLinkPositions.clear()
+                                }
+                            }
+                            // Update the state tracking variable
+                            wasAppInForeground = isInForeground
+                        }
+
+                        // If app is in foreground, pause the actual scanning
+                        if (isInForeground) {
+                            delay(1000) // Wait for 1 second before checking again
+                            continue
+                        }
+
+                        // Perform scanning when app is in background
                         val image = imageReader.acquireLatestImage()
                         image?.let {
                             val bitmap = convertImageToBitmap(it)
-                            val (scanResults, boundingBoxes) = performImageScanning(bitmap)
+                            val scanResults = performImageScanning(bitmap)
 
                             withContext(Dispatchers.Main) {
-                                handleScanResult(scanResults, boundingBoxes, bitmap)
+                                handleScanResult(scanResults, bitmap)
                             }
 
                             it.close()
                         }
-                        delay(500) // Scan every second
+                        delay(500) // Scan every 0.5 seconds
                         Log.d(TAG, "startScanning: scanning now")
                     } catch (e: Exception) {
                         Log.e(TAG, "Scanning error", e)
@@ -223,26 +293,55 @@ class ScreenCaptureService : Service() {
             Bitmap.Config.ARGB_8888
         )
         bitmap.copyPixelsFromBuffer(buffer)
+
+        // Log the bitmap dimensions
+        Log.d(TAG, "Bitmap Dimensions: width=${bitmap.width}, height=${bitmap.height}")
+
         return bitmap
     }
 
-    private fun performImageScanning(bitmap: Bitmap): Pair<List<ScanResult>, List<android.graphics.Rect>> {
+    private data class ScanningResult(
+        val scanResults: List<ScanResult>,
+        val linkPositions: List<LinkPosition>
+    )
+
+    private fun performImageScanning(bitmap: Bitmap): ScanningResult {
         Log.d(TAG, "performImageScanning: performing link scanning")
 
         try {
-            val (extractedText, boundingBoxes) = simulateOCR(bitmap)
-            val urls = extractUrls(extractedText)
+            val textRecognitionResult = performOCR(bitmap)
+            val extractedText = textRecognitionResult.first
+            val textElements = textRecognitionResult.second
 
-            val scanResults = urls.map { urlString ->
-                val scanResult = scanUrl(urlString)
-                Log.d(TAG, "Scanned URL: $urlString - ${scanResult.description}")
-                scanResult
+            // New list to track currently visible links in this scan
+            val newVisibleLinks = mutableSetOf<String>()
+            val newLinkPositions = mutableListOf<LinkPosition>()
+            val scanResults = mutableListOf<ScanResult>()
+
+            // Process each text element that might contain URLs
+            textElements.forEach { (text, boundingBox) ->
+                val urls = extractUrls(text)
+
+                urls.forEach { urlString ->
+                    val scanResult = scanUrl(urlString)
+                    scanResults.add(scanResult)
+
+                    if (scanResult.isMalicious) {
+                        newVisibleLinks.add(urlString)
+                        newLinkPositions.add(LinkPosition(urlString, boundingBox))
+                        Log.d(TAG, "Detected malicious URL: $urlString at position: $boundingBox")
+                    }
+                }
             }
 
-            return Pair(scanResults, boundingBoxes)
+            // Store the newly visible links
+            visibleLinks.clear()
+            visibleLinks.addAll(newVisibleLinks)
+
+            return ScanningResult(scanResults, newLinkPositions)
         } catch (e: Exception) {
             Log.e(TAG, "URL scanning error", e)
-            return Pair(
+            return ScanningResult(
                 listOf(
                     ScanResult(
                         url = "Unknown",
@@ -255,7 +354,7 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun simulateOCR(bitmap: Bitmap): Pair<String, List<android.graphics.Rect>> {
+    private fun performOCR(bitmap: Bitmap): Pair<String, List<Pair<String, Rect>>> {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val image = InputImage.fromBitmap(bitmap, 0)
 
@@ -265,21 +364,19 @@ class ScreenCaptureService : Service() {
                 block.text
             }
 
-            // Extract bounding boxes for malicious links only
-            val maliciousBoundingBoxes = result.textBlocks.flatMap { block ->
+            // Extract text elements with their bounding boxes
+            val textElements = result.textBlocks.flatMap { block ->
                 block.lines.flatMap { line ->
-                    line.elements.filter { element ->
-                        val text = element.text
-                        val urls = extractUrls(text)
-                        urls.any { url -> scanUrl(url).isMalicious } // Check if the URL is malicious
-                    }.mapNotNull { element ->
-                        element.boundingBox // Get the bounding box of the malicious link
+                    line.elements.mapNotNull { element ->
+                        element.boundingBox?.let { box ->
+                            Pair(element.text, box)
+                        }
                     }
                 }
             }
 
-            Log.d(TAG, "OCR extracted text: $extractedText")
-            Pair(extractedText, maliciousBoundingBoxes)
+            Log.d(TAG, "OCR extracted text elements: ${textElements.size}")
+            Pair(extractedText, textElements)
         } catch (e: Exception) {
             Log.e(TAG, "ML Kit OCR error", e)
             Pair("", emptyList())
@@ -288,21 +385,25 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun mapBoundingBoxToScreen(bitmap: Bitmap, boundingBox: android.graphics.Rect): android.graphics.Rect {
+    private fun mapBoundingBoxToScreen(bitmap: Bitmap, boundingBox: Rect): Rect {
         val displayMetrics = resources.displayMetrics
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
 
-        // Scale the bounding box to screen coordinates
+        // Calculate scale factors
         val scaleX = screenWidth.toFloat() / bitmap.width
         val scaleY = screenHeight.toFloat() / bitmap.height
 
-        return android.graphics.Rect(
+        // Scale the bounding box to screen coordinates
+        val screenBoundingBox = Rect(
             (boundingBox.left * scaleX).toInt(),
             (boundingBox.top * scaleY).toInt(),
             (boundingBox.right * scaleX).toInt(),
             (boundingBox.bottom * scaleY).toInt()
         )
+
+        Log.d(TAG, "Mapped bounding box: $screenBoundingBox")
+        return screenBoundingBox
     }
 
     private fun extractUrls(text: String): List<String> {
@@ -399,10 +500,10 @@ class ScreenCaptureService : Service() {
             }
 
             val isLongAndComplexUrl = sanitizedUrl.let {
-                it.length > 20 ||                             // Very long URL
-                        (it.count { char -> char == '.' } > 3) ||      // Too many subdomains
-                        (it.count { char -> char == '/' } > 4) ||      // Too many path segments
-                        (it.count { char -> char == '-' } > 2)         // Multiple hyphens
+                it.length > 20 ||                        // Very long URL
+                        (it.count { char -> char == '.' } > 3) || // Too many subdomains
+                        (it.count { char -> char == '/' } > 4) || // Too many path segments
+                        (it.count { char -> char == '-' } > 2)    // Multiple hyphens
             }
 
             // Subdomain obfuscation check
@@ -450,29 +551,57 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun handleScanResult(scanResults: List<ScanResult>, boundingBoxes: List<android.graphics.Rect>, bitmap: Bitmap) {
-        var maliciousLinksDetected = false
-        val maliciousLinks = mutableListOf<String>() // Store detected malicious links
+    private fun handleScanResult(scanningResult: ScanningResult, bitmap: Bitmap) {
+        if (wasAppInForeground) {
+            Log.d(TAG, "App is in foreground, skipping overlay handling")
+            return
+        }
 
-        scanResults.forEachIndexed { index, result ->
-            if (result.isMalicious) {
-                maliciousLinksDetected = true
-                maliciousLinks.add(result.url)
-                Log.d(TAG, "Malicious Link Detected: ${result.url} - ${result.description}")
+        val maliciousLinks = scanningResult.scanResults.filter { it.isMalicious }
+        var maliciousLinksDetected = maliciousLinks.isNotEmpty()
 
-                // Add overlay for the malicious link
-                val boundingBox = boundingBoxes.getOrNull(index)
-                if (boundingBox != null) {
-                    // Map the bounding box to screen coordinates
-                    val screenBoundingBox = mapBoundingBoxToScreen(bitmap, boundingBox)
-                    addTransparentOverlay(result.url, screenBoundingBox)
+        // Find links that disappeared (were visible before but not now)
+        val disappearedLinks = overlays.keys.filter { url ->
+            !visibleLinks.contains(url)
+        }
+
+        // Remove overlays for links that disappeared
+        disappearedLinks.forEach { url ->
+            removeOverlay(url)
+            Log.d(TAG, "Removed overlay for disappeared link: $url")
+        }
+
+        // Update or create overlays for visible links
+        scanningResult.linkPositions.forEach { linkPosition ->
+            val url = linkPosition.url
+            val boundingBox = linkPosition.boundingBox
+            val screenBoundingBox = mapBoundingBoxToScreen(bitmap, boundingBox)
+
+            // Check if this link already has an overlay but at a different position
+            if (overlays.containsKey(url)) {
+                val oldCoords = overlays[url]!!.second
+                val newCoords = Pair(screenBoundingBox.left, screenBoundingBox.top)
+
+                // If position changed significantly, update the overlay
+                if (hasPositionChangedSignificantly(oldCoords, newCoords)) {
+                    Log.d(TAG, "Link position changed for $url: $oldCoords -> $newCoords")
+                    removeOverlay(url)
+                    addOverlay(url, screenBoundingBox)
                 }
+            } else {
+                // Add new overlay
+                addOverlay(url, screenBoundingBox)
             }
+
+            // Store the current position
+            currentLinkPositions[url] = linkPosition
         }
 
         if (maliciousLinksDetected) {
+            val firstMaliciousLink = maliciousLinks.first().url
+
             val intent = Intent("com.example.phishingapp.MALICIOUS_LINK_DETECTED")
-            intent.putExtra("maliciousLink", maliciousLinks.first()) // Pass the first detected malicious link
+            intent.putExtra("maliciousLink", firstMaliciousLink)
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
             triggerVibration()
@@ -480,8 +609,8 @@ class ScreenCaptureService : Service() {
 
             showNotification(
                 "⚠️ Phishing Link Detected",
-                "Malicious link: ${maliciousLinks.first()}",
-                scanResults
+                "Malicious link: $firstMaliciousLink",
+                maliciousLinks
             )
         } else {
             LocalBroadcastManager.getInstance(this)
@@ -489,14 +618,18 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun addTransparentOverlay(url: String, boundingBox: android.graphics.Rect) {
-        // Check if an overlay already exists for these coordinates
-        val coordinates = Pair(boundingBox.left, boundingBox.top)
-        if (overlayCoordinates.contains(coordinates)) {
-            Log.d(TAG, "Overlay already exists for coordinates: $coordinates")
-            return
-        }
-        Log.d(TAG, "Adding overlay for coordinates: $coordinates")
+    // Determine if position changed significantly enough to warrant updating the overlay
+    private fun hasPositionChangedSignificantly(oldCoords: Pair<Int, Int>, newCoords: Pair<Int, Int>): Boolean {
+        val xDiff = Math.abs(oldCoords.first - newCoords.first)
+        val yDiff = Math.abs(oldCoords.second - newCoords.second)
+
+        // If position changed by more than 10 pixels in either direction
+        return xDiff > 10 || yDiff > 10
+    }
+
+    private fun addOverlay(url: String, boundingBox: Rect) {
+        Log.d(TAG, "Adding overlay for URL: $url at position: $boundingBox")
+
         val overlayView = TransparentOverlayView(this)
         overlayView.setOnClickListener {
             // Handle tap on the overlay
@@ -509,17 +642,18 @@ class ScreenCaptureService : Service() {
 
             // Create an intent to start the ReportActivity
             val intent = Intent(this, ReportActivity::class.java).apply {
-                putExtra("userUsername", username) // Pass the retrieved username
-                putExtra("userId", userId) // Pass the retrieved user ID
-                putExtra("reportedLink", url) // Pass the tapped URL
+                putExtra("userUsername", username)
+                putExtra("userId", userId)
+                putExtra("reportedLink", url)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
+
             startActivity(intent)
         }
 
         val layoutParams = WindowManager.LayoutParams(
-            boundingBox.width(), // Width of the overlay
-            boundingBox.height(), // Height of the overlay
+            boundingBox.width(),
+            boundingBox.height(),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             } else {
@@ -532,21 +666,40 @@ class ScreenCaptureService : Service() {
         // Position the overlay based on the bounding box
         layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.x = boundingBox.left
-        layoutParams.y = boundingBox.top
+        layoutParams.y = boundingBox.top - 100 // Adjust vertical position as needed
 
-        windowManager.addView(overlayView, layoutParams)
-        overlays.add(overlayView)
-
-        // Add the coordinates to the set
-        overlayCoordinates.add(coordinates)
+        try {
+            windowManager.addView(overlayView, layoutParams)
+            // Store the overlay with its coordinates
+            overlays[url] = Pair(overlayView, Pair(boundingBox.left, boundingBox.top))
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding overlay: ${e.message}")
+        }
     }
 
-    private fun removeOverlays() {
-        overlays.forEach { windowManager.removeView(it) }
+    private fun removeOverlay(url: String) {
+        overlays[url]?.let { (view, _) ->
+            try {
+                windowManager.removeView(view)
+                overlays.remove(url)
+                Log.d(TAG, "Removed overlay for URL: $url")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing overlay: ${e.message}")
+            }
+        }
+    }
+
+    private fun removeAllOverlays() {
+        Log.d(TAG, "Removing all overlays (total: ${overlays.size})")
+        overlays.forEach { (_, pair) ->
+            try {
+                windowManager.removeView(pair.first)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing overlay: ${e.message}")
+            }
+        }
         overlays.clear()
-        overlayCoordinates.clear() // Clear the coordinates set
     }
-
 
     private fun triggerVibration() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator
@@ -559,7 +712,6 @@ class ScreenCaptureService : Service() {
             }
         }
     }
-
 
     private fun showNotification(title: String, content: String, maliciousLinks: List<ScanResult>? = null) {
         val notificationManager =
@@ -594,8 +746,8 @@ class ScreenCaptureService : Service() {
             notificationBuilder
                 .setContentTitle("Screen Capture Active")
                 .setContentText("Monitoring screen for potential threats")
-                .setOngoing(true) // Makes the notification ongoing (persistent)
-                .setAutoCancel(false) // Prevents it from being dismissed by swiping
+                .setOngoing(true)
+                .setAutoCancel(false)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
         }
@@ -619,6 +771,9 @@ class ScreenCaptureService : Service() {
 
             mediaProjection = null
 
+            visibleLinks.clear()
+            currentLinkPositions.clear()
+
             Log.d(TAG, "Screen capture stopped successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping screen capture", e)
@@ -630,7 +785,7 @@ class ScreenCaptureService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "Service is being destroyed")
         stopScreenCapture()
-        removeOverlays()
+        removeAllOverlays()
         super.onDestroy()
     }
 

@@ -9,6 +9,8 @@ class TransparentOverlayView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    var url: String? = null // Add a property to store the URL
+
     init {
         // For debugging, make the overlay visible
         setBackgroundColor(Color.argb(128, 255, 0, 0)) // Semi-transparent red background

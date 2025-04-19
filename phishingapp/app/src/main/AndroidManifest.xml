@@ -17,6 +17,9 @@
         tools:ignore="ProtectedPermissions"/>
     <uses-permission android:name="android.permission.CAPTURE_SCREEN_ACTIVITY"
         tools:ignore="ProtectedPermissions"/>
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
 
     <!-- Remove redundant or overly broad permissions -->
@@ -71,11 +74,7 @@
             android:name=".AnalyticsActivity"
             android:exported="false"/>
 
-        <activity
-            android:name=".LinkTapActivity"
-            android:exported="true"
-            android:launchMode="singleInstance"
-            android:theme="@style/Theme.AppCompat.Dialog.Alert" />
+
 
         <service
             android:name=".ScreenCaptureService"
