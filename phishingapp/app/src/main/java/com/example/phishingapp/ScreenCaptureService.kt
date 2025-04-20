@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.graphics.Rect
@@ -16,7 +17,9 @@ import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.util.Patterns
 import android.view.Gravity
@@ -38,12 +41,15 @@ class ScreenCaptureService : Service() {
     private var mediaProjection: MediaProjection? = null
     private var virtualDisplay: VirtualDisplay? = null
     private lateinit var imageReader: ImageReader
-    private val scanningScope = CoroutineScope(Dispatchers.Default)
+    private var scanningScope = CoroutineScope(Dispatchers.Default)
     private val isScanning = AtomicBoolean(false)
     private lateinit var windowManager: WindowManager
     private val overlays = mutableMapOf<String, Pair<View, Pair<Int, Int>>>() // URL -> (View, Coordinates)
     private var wasAppInForeground = false // Track the previous state
     private val visibleLinks = mutableSetOf<String>() // Track currently visible links
+    private val isPaused = AtomicBoolean(false)
+    private var isScanningPaused = false
+    private var isServicePaused = false
 
     // Store link positions with coordinates
     data class LinkPosition(val url: String, val boundingBox: Rect)
@@ -64,6 +70,10 @@ class ScreenCaptureService : Service() {
 
         const val ACTION_START_PROJECTION = "ACTION_START_PROJECTION"
         const val ACTION_STOP_PROJECTION = "ACTION_STOP_PROJECTION"
+        const val ACTION_PAUSE_SCANNING = "com.example.phishingapp.ACTION_PAUSE_SCANNING"
+        const val ACTION_RESUME_SCANNING = "com.example.phishingapp.ACTION_RESUME_SCANNING"
+        const val ACTION_PAUSE_AND_CLEAR = "com.example.phishingapp.ACTION_PAUSE_AND_CLEAR"
+        const val ACTION_STOP_SCANNING = "com.example.phishingapp.ACTION_STOP_SCANNING"
 
         const val EXTRA_RESULT_CODE = "resultCode"
         const val EXTRA_RESULT_DATA = "resultData"
@@ -103,6 +113,46 @@ class ScreenCaptureService : Service() {
         val userId = sharedPreferences.getInt("userId", 0)
         Log.d(TAG, "Retrieved Username: $username")
         Log.d(TAG, "Retrieved User ID: $userId")
+
+        val filter = IntentFilter().apply {
+            addAction(ACTION_PAUSE_SCANNING)
+            addAction(ACTION_RESUME_SCANNING)
+            addAction(ACTION_PAUSE_AND_CLEAR)
+            addAction(ACTION_STOP_SCANNING)
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            scanControlReceiver,
+            filter
+        )
+    }
+
+    private val scanControlReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                ACTION_PAUSE_SCANNING -> {
+                    Log.d(TAG, "Received request to pause scanning")
+                    isPaused.set(true)
+                }
+                ACTION_PAUSE_AND_CLEAR -> {
+                    Log.d(TAG, "Received request to pause scanning and clear overlays")
+                    isPaused.set(true)
+                    isServicePaused = true
+                    removeAllOverlays()
+                    stopScanning()
+                }
+                ACTION_RESUME_SCANNING -> {
+                    Log.d(TAG, "Received request to resume scanning")
+                    isPaused.set(false)
+                    isServicePaused = false
+                    visibleLinks.clear()
+                    currentLinkPositions.clear()
+                    // Reset the coroutine scope
+                    scanningScope = CoroutineScope(Dispatchers.Default)
+                    startScanning() // Resume scanning
+                }
+            }
+        }
     }
 
     private fun createNotificationChannel() {
@@ -176,7 +226,8 @@ class ScreenCaptureService : Service() {
                     "com.example.phishingapp.SignupActivity",
                     "com.example.phishingapp.LoginActivity",
                     "com.example.phishingapp.StartupActivity",
-                    "com.example.phishingapp.AnalyticsActivity"
+                    "com.example.phishingapp.AnalyticsActivity",
+
                 )
 
                 // Return true only if it's one of our main activities
@@ -210,6 +261,10 @@ class ScreenCaptureService : Service() {
             2
         )
 
+        // Release any existing virtual display
+        virtualDisplay?.release()
+        virtualDisplay = null
+
         virtualDisplay = mediaProjection?.createVirtualDisplay(
             "ScreenCapture",
             screenWidth,
@@ -229,7 +284,18 @@ class ScreenCaptureService : Service() {
         if (isScanning.compareAndSet(false, true)) {
             scanningScope.launch {
                 while (isScanning.get()) {
+                    if (isServicePaused) {
+                        Log.d(TAG, "Service is paused, exiting scanning loop")
+                        isScanning.set(false)
+                        return@launch
+                    }
                     try {
+                        // Check if scanning is paused
+                        if (isPaused.get() || isScanningPaused) {
+                            delay(100) // Check pause state every 0.5 seconds
+                            continue
+                        }
+
                         // Check app foreground status
                         val isInForeground = isAppInForeground()
 
@@ -277,6 +343,12 @@ class ScreenCaptureService : Service() {
                 }
             }
         }
+    }
+
+    private fun stopScanning() {
+        Log.d(TAG, "Stopping scanning")
+        isScanning.set(false)
+        scanningScope.cancel()
     }
 
     private fun convertImageToBitmap(image: android.media.Image): Bitmap {
@@ -631,25 +703,9 @@ class ScreenCaptureService : Service() {
         Log.d(TAG, "Adding overlay for URL: $url at position: $boundingBox")
 
         val overlayView = TransparentOverlayView(this)
-        overlayView.setOnClickListener {
-            // Handle tap on the overlay
-            Log.d(TAG, "Overlay tapped for URL: $url")
+        overlayView.url = url // Set the URL property
 
-            // Retrieve user data from SharedPreferences
-            val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-            val username = sharedPreferences.getString("userUsername", "Guest") ?: "Guest"
-            val userId = sharedPreferences.getInt("userId", 0)
-
-            // Create an intent to start the ReportActivity
-            val intent = Intent(this, ReportActivity::class.java).apply {
-                putExtra("userUsername", username)
-                putExtra("userId", userId)
-                putExtra("reportedLink", url)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            }
-
-            startActivity(intent)
-        }
+        // No need for a custom click listener anymore as we're handling it in the view
 
         val layoutParams = WindowManager.LayoutParams(
             boundingBox.width(),
@@ -659,7 +715,8 @@ class ScreenCaptureService : Service() {
             } else {
                 WindowManager.LayoutParams.TYPE_PHONE
             },
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         )
 
@@ -691,14 +748,27 @@ class ScreenCaptureService : Service() {
 
     private fun removeAllOverlays() {
         Log.d(TAG, "Removing all overlays (total: ${overlays.size})")
-        overlays.forEach { (_, pair) ->
+
+        // Make a copy of the overlays to avoid concurrent modification
+        val overlaysCopy = HashMap(overlays)
+
+        overlaysCopy.forEach { (url, pair) ->
             try {
-                windowManager.removeView(pair.first)
+                val view = pair.first
+                windowManager.removeView(view)
+                Log.d(TAG, "Successfully removed overlay for: $url")
             } catch (e: Exception) {
                 Log.e(TAG, "Error removing overlay: ${e.message}")
             }
         }
+
+        // Clear the original collection after removal attempts
         overlays.clear()
+        visibleLinks.clear()
+        currentLinkPositions.clear()
+
+        // Log completion
+        Log.d(TAG, "All overlays removed")
     }
 
     private fun triggerVibration() {
@@ -756,6 +826,13 @@ class ScreenCaptureService : Service() {
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
     }
 
+    fun forceRemoveAllOverlays() {
+        isPaused.set(true)
+        Handler(Looper.getMainLooper()).post {
+            removeAllOverlays()
+        }
+    }
+
     private fun stopScreenCapture() {
         try {
             isScanning.set(false)
@@ -784,6 +861,7 @@ class ScreenCaptureService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "Service is being destroyed")
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(scanControlReceiver)
         stopScreenCapture()
         removeAllOverlays()
         super.onDestroy()

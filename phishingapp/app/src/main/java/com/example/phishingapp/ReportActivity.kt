@@ -11,6 +11,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.phishingapp.backend.ReportRequest
 import com.example.phishingapp.backend.ReportResponse
 import com.example.phishingapp.backend.RetrofitClient
@@ -154,6 +155,8 @@ class ReportActivity : AppCompatActivity() {
             intent.putExtra("userId", userId)
 
             startActivity(intent)
+            LocalBroadcastManager.getInstance(this)
+                .sendBroadcast(Intent(ScreenCaptureService.ACTION_RESUME_SCANNING))
         }
 
     }
