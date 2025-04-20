@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
@@ -61,17 +62,17 @@ class TransparentOverlayView @JvmOverloads constructor(
                     setMessage("This link may be unsafe:\n\n$urlToReport\n\nHow would you like to proceed?")
 
                     setPositiveButton("Proceed Anyway") { _, _ ->
-                        Log.d(TAG, "User chose to proceed to: $urlToReport")
-                        resumeScanning()
+                        Log.d(TAG, "User  chose to proceed to: $urlToReport")
+                        openUrlInBrowser(urlToReport) // Open the URL in a browser
                     }
 
                     setNeutralButton("Go Back") { _, _ ->
-                        Log.d(TAG, "User chose to go back")
+                        Log.d(TAG, "User  chose to go back")
                         resumeScanning()
                     }
 
                     setNegativeButton("Report Link") { _, _ ->
-                        Log.d(TAG, "User chose to report: $urlToReport")
+                        Log.d(TAG, "User  chose to report: $urlToReport")
                         reportLink(urlToReport)
                     }
 
@@ -100,6 +101,17 @@ class TransparentOverlayView @JvmOverloads constructor(
                 resumeScanning()
             }
         }, 300) // Give 300ms for overlay removal to complete
+    }
+
+    private fun openUrlInBrowser(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(url) // Set the URL to open
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Ensure it opens in a new task
+        }
+        context.startActivity(intent) // Start the browser activity
+        LocalBroadcastManager.getInstance(context)
+            .sendBroadcast(Intent(ScreenCaptureService.ACTION_RESUME_SCANNING))
+
     }
 
     private fun resumeScanning() {

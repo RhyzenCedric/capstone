@@ -292,7 +292,7 @@ class ScreenCaptureService : Service() {
                     try {
                         // Check if scanning is paused
                         if (isPaused.get() || isScanningPaused) {
-                            delay(100) // Check pause state every 0.5 seconds
+                            delay(100) // Check pause state every 0.1 seconds
                             continue
                         }
 
@@ -325,15 +325,19 @@ class ScreenCaptureService : Service() {
 
                         // Perform scanning when app is in background
                         val image = imageReader.acquireLatestImage()
-                        image?.let {
-                            val bitmap = convertImageToBitmap(it)
-                            val scanResults = performImageScanning(bitmap)
+                        if (image != null) {
+                            try {
+                                val bitmap = convertImageToBitmap(image)
+                                val scanResults = performImageScanning(bitmap)
 
-                            withContext(Dispatchers.Main) {
-                                handleScanResult(scanResults, bitmap)
+                                withContext(Dispatchers.Main) {
+                                    handleScanResult(scanResults, bitmap)
+                                }
+                            } finally {
+                                image.close() // Ensure the image is closed after processing
                             }
-
-                            it.close()
+                        } else {
+                            Log.d(TAG, "No image acquired from ImageReader")
                         }
                         delay(500) // Scan every 0.5 seconds
                         Log.d(TAG, "startScanning: scanning now")
@@ -348,7 +352,7 @@ class ScreenCaptureService : Service() {
     private fun stopScanning() {
         Log.d(TAG, "Stopping scanning")
         isScanning.set(false)
-        scanningScope.cancel()
+        scanningScope.cancel() // Cancel the coroutine scope
     }
 
     private fun convertImageToBitmap(image: android.media.Image): Bitmap {
