@@ -195,38 +195,77 @@ app.delete('/admins/:id', (req, res) => {
 
 app.put('/users/:id', (req, res) => {
     const { id } = req.params;
-    const updatedUserData = req.body; // This should only contain the fields that are being updated
+    const { newUsername, currentPassword, newPassword } = req.body;
 
-    const query = `UPDATE users SET ? WHERE userId = ?`; // Adjust the column name as necessary
-    db.query(query, [updatedUserData, id], (err, results) => {
+    // Step 1: Get the current user data
+    const selectQuery = 'SELECT userUsername, userPassword FROM users WHERE userId = ?';
+    db.query(selectQuery, [id], async (err, results) => {
         if (err) {
-            console.error('Error updating user data:', err);
-            res.status(500).json({ error: 'Internal server error' });
-            return;
+            console.error('Error retrieving user data:', err);
+            return res.status(500).json({ error: 'Internal server error' });
         }
-        if (results.affectedRows === 0) {
-            res.status(404).json({ error: 'User not found' });
-            return;
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
         }
-        res.json({ message: 'User data updated successfully' });
+
+        const currentUser = results[0];
+
+        // Step 2: If password update is requested, verify and hash new password
+        let updatedPassword = currentUser.userPassword;
+
+        if (newPassword) {
+            if (!currentPassword) {
+                return res.status(400).json({ error: 'Current password is required to change the password' });
+            }
+
+            const isMatch = await bcrypt.compare(currentPassword, currentUser.userPassword);
+            if (!isMatch) {
+                return res.status(401).json({ error: 'Current password is incorrect' });
+            }
+
+            updatedPassword = await bcrypt.hash(newPassword, 10);
+        }
+
+        // Step 3: Use newUsername if provided, else keep the old one
+        const updatedUsername = newUsername || currentUser.userUsername;
+
+        // Step 4: Perform the update
+        const updateQuery = `UPDATE users SET userUsername = ?, userPassword = ? WHERE userId = ?`;
+        db.query(updateQuery, [updatedUsername, updatedPassword, id], (err, updateResult) => {
+            if (err) {
+                console.error('Error updating user data:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            if (updateResult.affectedRows === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+
+            res.json({ message: 'User profile updated successfully' });
+        });
     });
 });
 
 app.get('/users/:id', (req, res) => {
     const { id } = req.params;
-    const query = `SELECT * FROM users WHERE userId = ?`;
+    const query = `SELECT userId, userUsername, userPassword FROM users WHERE userId = ?`; // Include userPassword in the SELECT statement
     db.query(query, [id], (err, results) => {
-      if (err) {
-        console.error('Error retrieving user data:', err);
-        res.status(500).json({ error: 'Internal server error' });
-        return;
-      }
-      if (results.length === 0) {
-        res.status(404).json({ error: 'User not found' });
-        return;
-      }
-      const user = results[0];
-      res.json(user);
+        if (err) {
+            console.error('Error retrieving user data:', err);
+            res.status(500).json({ error: 'Internal server error' });
+            return;
+        }
+        if (results.length === 0) {
+            res.status(404).json({ error: 'User  not found' });
+            return;
+        }
+        const user = results[0];
+        res.json({
+            userId: user.userId,
+            userUsername: user.userUsername,
+            userPassword: user.userPassword // Return the plaintext password
+        });
     });
 });
   

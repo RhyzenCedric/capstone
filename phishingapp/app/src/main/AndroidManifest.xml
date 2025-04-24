@@ -60,6 +60,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:exported="false" />
 
         <activity
@@ -72,6 +73,10 @@
 
         <activity
             android:name=".AnalyticsActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".EditProfileActivity"
             android:exported="false"/>
 
 

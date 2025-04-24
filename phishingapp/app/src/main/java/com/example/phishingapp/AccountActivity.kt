@@ -15,6 +15,7 @@ class AccountActivity : AppCompatActivity() {
 
     private lateinit var textViewUsername: TextView
     private lateinit var buttonLogout: ConstraintLayout
+    private lateinit var buttonEditProfile: ConstraintLayout
     private lateinit var buttonAnalytics: ConstraintLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,14 +35,15 @@ class AccountActivity : AppCompatActivity() {
         textViewUsername = findViewById(R.id.textViewUsername)
         buttonLogout = findViewById(R.id.logout_button_plate)
         buttonAnalytics =findViewById(R.id.analytics_plate)
+        buttonEditProfile =findViewById(R.id.edit_profile_plate)
 
         // Set the username
         textViewUsername.text = username
 
         // Handle logout
         buttonLogout.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            val intent = Intent(this, StartupActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             startActivity(intent)
             finish()
         }
@@ -75,16 +77,19 @@ class AccountActivity : AppCompatActivity() {
             }
         }
 
-        /*findViewById<Button>(R.id.button_nav_account).setOnClickListener {
-            if (javaClass != AccountActivity::class.java) {
+        findViewById<ConstraintLayout>(R.id.edit_profile_plate).setOnClickListener {
+            if (javaClass != EditProfileActivity::class.java) {
                 val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val intent = Intent(this@AccountActivity, AccountActivity::class.java)
+                val userId = intent.extras?.getInt("userId")
+                Log.d(TAG, "Passing userId: $userId")
+                val intent = Intent(this@AccountActivity, EditProfileActivity::class.java)
                 intent.putExtra("userUsername", username)
+                intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
             } else {
-                Toast.makeText(this, "Already on Account Screen", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Already on Edit Profile Screen", Toast.LENGTH_SHORT).show()
             }
-        }*/
+        }
     }
 }

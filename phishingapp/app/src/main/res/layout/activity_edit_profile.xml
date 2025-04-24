@@ -1,0 +1,184 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".EditProfileActivity">
+
+
+    <!-- Content Layout (White Background) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/login_signup_white_rectangle"
+        android:padding="16dp"
+        tools:layout_editor_absoluteX="42dp">
+
+        <ImageView
+            android:id="@+id/return_icon"
+            android:layout_width="14dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="50dp"
+            android:clickable="true"
+            android:contentDescription="Return"
+            android:focusable="true"
+            android:src="@drawable/return_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:fontFamily="@font/inter_bold"
+            android:text=" Edit Profile"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.417"
+            app:layout_constraintStart_toEndOf="@id/return_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/editTextUsername"
+            android:layout_width="336dp"
+            android:layout_height="58dp"
+            android:layout_marginTop="348dp"
+            android:background="@android:drawable/editbox_background"
+            android:backgroundTint="#D9D9D9"
+            android:hint="New Username"
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColorHint="#6F6F7A"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/editTextCurrentPassword"
+            android:layout_width="336dp"
+            android:layout_height="58dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:backgroundTint="#D9D9D9"
+            android:hint="Current Password"
+            android:inputType="textPassword"
+            android:fontFamily="sans-serif"
+            android:padding="10dp"
+            android:textColorHint="#6F6F7A"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextUsername" />
+
+        <ImageView
+            android:id="@+id/CurrentpasswordToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Toggle Password Visibility"
+            android:padding="10dp"
+            android:src="@drawable/visible_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextCurrentPassword"
+            app:layout_constraintEnd_toEndOf="@+id/editTextCurrentPassword"
+            app:layout_constraintTop_toTopOf="@+id/editTextCurrentPassword"
+            app:layout_constraintVertical_bias="0.75" />
+
+
+        <EditText
+            android:id="@+id/editTextNewPassword"
+            android:layout_width="336dp"
+            android:layout_height="58dp"
+            android:layout_marginTop="12dp"
+            android:background="@android:drawable/editbox_background"
+            android:backgroundTint="#D9D9D9"
+            android:fontFamily="sans-serif"
+            android:hint="New Password"
+            android:inputType="textPassword"
+            android:padding="10dp"
+            android:textColorHint="#6F6F7A"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.488"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editTextCurrentPassword" />
+
+        <ImageView
+            android:id="@+id/NewpasswordToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Toggle Password Visibility"
+            android:padding="10dp"
+            android:src="@drawable/visible_icon"
+            app:layout_constraintBottom_toBottomOf="@+id/editTextNewPassword"
+            app:layout_constraintEnd_toEndOf="@+id/editTextNewPassword"
+            app:layout_constraintTop_toTopOf="@+id/editTextNewPassword"
+            app:layout_constraintVertical_bias="0.75" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/buttonUpdate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="48dp"
+            android:background="@drawable/rounded_violet_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.343"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/editTextNewPassword">
+
+            <TextView
+                android:id="@+id/UpdateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_extra_bold"
+                android:paddingVertical="12dp"
+                android:text="UPDATE"
+                android:textColor="#ffffff"
+                android:textSize="17sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/user_plate"
+            android:layout_width="375dp"
+            android:layout_height="131dp"
+            android:layout_marginTop="176dp"
+            android:background="@drawable/rounded_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints">
+
+            <TextView
+                android:id="@+id/textViewUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:text="User"
+                android:textColor="#ffffff"
+                android:textSize="24sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

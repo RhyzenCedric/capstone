@@ -60,20 +60,24 @@ class MainActivity : AppCompatActivity() {
         isAppInBackground = false
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent?.let {
+            val updatedUsername = it.getStringExtra("userUsername") ?: "DefaultUsername"
+            Log.d(TAG, "Updated username received: $updatedUsername")
+            // Update UI or perform actions with updatedUsername
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val username = intent.getStringExtra("userUsername") ?: "Guest"
-        Log.d(TAG, "Currently logged username:  $username")
-        val userId = intent.extras?.getInt("userId")
-        Log.d(TAG, "User Id:  $userId")
-
         val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("userUsername", username) // Replace with actual username
-        editor.putInt("userId", userId ?: 0) // Replace with actual user ID
-        editor.apply()
+        val username = sharedPreferences.getString("userUsername", "Guest")
+        val userId = sharedPreferences.getInt("userId", 0)
+
+        Log.d(TAG, "Currently logged username: $username")
+        Log.d(TAG, "User ID: $userId")
 
 
 
@@ -102,6 +106,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+
     private val maliciousLinkReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -126,11 +132,12 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavigationButtons() {
         findViewById<ConstraintLayout>(R.id.button_account).setOnClickListener {
             if (javaClass != AccountActivity::class.java) {
-                val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val userId = intent.extras?.getInt("userId")
+                // Retrieve the updated username from the intent or shared preferences
+                val updatedUsername = intent.getStringExtra("userUsername") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getString("userUsername", "Guest")
+                val userId = intent.extras?.getInt("userId") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getInt("userId", 0)
                 Log.d(TAG, "Passing userId: $userId")
                 val intent = Intent(this@MainActivity, AccountActivity::class.java)
-                intent.putExtra("userUsername", username)
+                intent.putExtra("userUsername", updatedUsername)
                 intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
@@ -141,11 +148,12 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<ConstraintLayout>(R.id.button_reports).setOnClickListener {
             if (javaClass != ReportActivity::class.java) {
-                val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val userId = intent.extras?.getInt("userId")
+                // Retrieve the updated username from the intent or shared preferences
+                val updatedUsername = intent.getStringExtra("userUsername") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getString("userUsername", "Guest")
+                val userId = intent.extras?.getInt("userId") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getInt("userId", 0)
                 Log.d(TAG, "Passing userId: $userId")
                 val intent = Intent(this@MainActivity, ReportActivity::class.java)
-                intent.putExtra("userUsername", username)
+                intent.putExtra("userUsername", updatedUsername)
                 intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
@@ -153,7 +161,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     private fun requestOverlayPermission() {

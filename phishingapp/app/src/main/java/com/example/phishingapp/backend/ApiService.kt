@@ -5,6 +5,7 @@ import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -46,6 +47,10 @@ data class ReportResponse(
     val message: String
 )
 
+data class UpdateResponse(
+    val message: String
+)
+
 interface ApiService {
     @POST("/usersignup")
     fun signup(@Body signupRequest: SignupRequest): Call<SignupResponse>
@@ -62,5 +67,8 @@ interface ApiService {
 
     @GET("links/{userId}")
     fun getUserLinks(@Path("userId") userId: Int): Call<List<Threat>>
+
+    @PUT("/users/{id}")
+    fun updateProfile(@Path("id") userId: Int, @Body updateRequest: Map<String, String>): Call<UpdateResponse>
 }
 
