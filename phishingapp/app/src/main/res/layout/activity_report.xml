@@ -99,33 +99,53 @@
         app:layout_constraintTop_toBottomOf="@id/maliciousLinkLabel" />
 
     <!-- Description Input -->
-    <EditText
-        android:id="@+id/descriptionEditText"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
-        android:gravity="top|start"
-        android:hint="Description (Phishing/Smishing/Scam)"
-        android:inputType="textMultiLine"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/urlEditText" />
+        app:layout_constraintTop_toBottomOf="@id/urlEditText">
+
+        <Button
+            android:id="@+id/buttonPhishing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Phishing" />
+
+        <Button
+            android:id="@+id/buttonSmishing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Smishing" />
+
+        <Button
+            android:id="@+id/buttonScam"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Scam" />
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/reportButton"
         android:layout_width="336dp"
         android:layout_height="42dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="68dp"
         android:background="@drawable/rounded_violet_button"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
+
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/descriptionEditText"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         tools:ignore="MissingConstraints">
 
         <TextView

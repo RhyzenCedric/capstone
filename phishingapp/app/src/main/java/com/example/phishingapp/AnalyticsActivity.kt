@@ -156,6 +156,8 @@ class AnalyticsActivity : AppCompatActivity() {
             lineWidth = 2f
             setCircleColor(resources.getColor(R.color.ic_launcher_background, theme))
             circleRadius = 4f
+            setValueTextSize(12f)
+            setValueTextColor(resources.getColor(R.color.black, theme))
         }
 
         lineChart.data = LineData(dataSet)
@@ -185,6 +187,7 @@ class AnalyticsActivity : AppCompatActivity() {
             isDragEnabled = true
             setScaleEnabled(true)
             setPinchZoom(true)
+            setDoubleTapToZoomEnabled(true)
             invalidate() // Force a redraw of the chart
         }
     }

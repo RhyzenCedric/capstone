@@ -24,9 +24,9 @@ class ReportActivity : AppCompatActivity() {
 
     private lateinit var textViewUsername: TextView
     private lateinit var editTextLink: EditText
-    private lateinit var editTextDescription: EditText
     private lateinit var buttonSubmitReport: ConstraintLayout
     private var userId: Int? = null
+    private lateinit var editTextDescription: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,10 +34,21 @@ class ReportActivity : AppCompatActivity() {
 
         textViewUsername = findViewById(R.id.userUsername)
         editTextLink = findViewById(R.id.urlEditText)
-        editTextDescription = findViewById(R.id.descriptionEditText)
         buttonSubmitReport = findViewById(R.id.reportButton)
 
         setupNavigationButtons()
+
+        findViewById<Button>(R.id.buttonPhishing).setOnClickListener {
+            selectDescription("Phishing")
+        }
+
+        findViewById<Button>(R.id.buttonSmishing).setOnClickListener {
+            selectDescription("Smishing")
+        }
+
+        findViewById<Button>(R.id.buttonScam).setOnClickListener {
+            selectDescription("Scam")
+        }
 
         val username = intent.getStringExtra("userUsername") ?: "Guest"
 
@@ -63,6 +74,15 @@ class ReportActivity : AppCompatActivity() {
                 submitReport(userId)
             }
         }
+    }
+
+    private fun selectDescription(description: String) {
+        editTextDescription = description
+
+        // Disable all buttons after selection
+        findViewById<Button>(R.id.buttonPhishing).isEnabled = false
+        findViewById<Button>(R.id.buttonSmishing).isEnabled = false
+        findViewById<Button>(R.id.buttonScam).isEnabled = false
     }
 
     private fun getUserIdFromUsername(username: String) {
@@ -102,7 +122,7 @@ class ReportActivity : AppCompatActivity() {
         }
 
         val link = editTextLink.text.toString().trim()
-        val description = editTextDescription.text.toString().trim()
+        val description = editTextDescription
 
         if (link.isEmpty()) {
             Toast.makeText(this, "Please fill in the link you want to report", Toast.LENGTH_SHORT).show()
