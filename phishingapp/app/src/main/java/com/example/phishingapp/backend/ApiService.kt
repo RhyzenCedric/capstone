@@ -38,9 +38,9 @@ data class LoginResponse(
 )
 
 data class ReportRequest(
-    val userId: Int?, // The user ID from the database
-    val link_reported: String,
-    val report_description: String
+    val userId: Int,
+    val link_reported: String,  // Match exactly with backend field name
+    val report_description: String  // Match exactly with backend field name
 )
 
 data class ReportResponse(

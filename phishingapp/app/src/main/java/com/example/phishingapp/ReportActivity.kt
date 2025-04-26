@@ -20,13 +20,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+
 class ReportActivity : AppCompatActivity() {
 
     private lateinit var textViewUsername: TextView
     private lateinit var editTextLink: EditText
     private lateinit var buttonSubmitReport: ConstraintLayout
     private var userId: Int? = null
-    private lateinit var editTextDescription: String
+    private var editTextDescription: String = "" // Initialize with empty string
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,33 +52,37 @@ class ReportActivity : AppCompatActivity() {
         }
 
         val username = intent.getStringExtra("userUsername") ?: "Guest"
-
         textViewUsername.text = username
-        getUserIdFromUsername(username)
+
+        // We try to get the userId from the intent
+        userId = intent.getIntExtra("userId", -1)
+        if (userId == -1) {
+            userId = null
+            Log.d("ReportActivity", "Invalid userId received, will try to fetch it")
+            getUserIdFromUsername(username)
+        } else {
+            Log.d("ReportActivity", "Received userId: $userId")
+        }
 
         val reportedLink = intent.getStringExtra("reportedLink")
         if (reportedLink != null) {
             editTextLink.setText(reportedLink) // Auto-fill the reported link field
         }
 
-        // We try to get the userId from the intent
-        val userId = intent.extras?.getInt("userId", -1)
-        Log.d("ReportActivity", "Received username: $username, userId: $userId")
-
-        if (userId == -1) {
-            // if userId is -1, try fetching it via Retrofit
-            getUserIdFromUsername(username)
-        }
-
         buttonSubmitReport.setOnClickListener {
-            if (userId != null) {
-                submitReport(userId)
+            val currentUserId = userId
+            if (currentUserId != null) {
+                submitReport(currentUserId)
+            } else {
+                Toast.makeText(this, "User ID not available. Please try again.", Toast.LENGTH_SHORT).show()
+                getUserIdFromUsername(username)
             }
         }
     }
 
     private fun selectDescription(description: String) {
         editTextDescription = description
+        Toast.makeText(this, "Selected: $description", Toast.LENGTH_SHORT).show()
 
         // Disable all buttons after selection
         findViewById<Button>(R.id.buttonPhishing).isEnabled = false
@@ -99,7 +104,7 @@ class ReportActivity : AppCompatActivity() {
                         Log.d("ReportActivity", "User ID found: $userId")
                         Log.d("ReportActivitySuccess", "Response Body: ${response.body()}")
                         // Once we have the userId, we proceed with the report submission
-                        submitReport(userId)
+                        userId?.let { it1 -> submitReport(it1) }
                     } else {
                         Toast.makeText(this@ReportActivity, "Failed to fetch user ID", Toast.LENGTH_SHORT).show()
                         Log.d("ReportActivityFail", "Response Body: ${response.body()}")
@@ -114,32 +119,33 @@ class ReportActivity : AppCompatActivity() {
         }
     }
 
-    private fun submitReport(userId: Int?) {
-        Log.d("ReportActivitySubmit", "UserId: $userId")
-        if (userId == null) {
-            Toast.makeText(this, "Fetching user ID, please try again", Toast.LENGTH_SHORT).show()
-            return
-        }
+    private fun submitReport(userId: Int) {
+        Log.d("ReportActivity", "Submitting report for userId: $userId")
 
         val link = editTextLink.text.toString().trim()
-        val description = editTextDescription
 
         if (link.isEmpty()) {
             Toast.makeText(this, "Please fill in the link you want to report", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (description.isEmpty()) {
-            Toast.makeText(this, "Please add a report description", Toast.LENGTH_SHORT).show()
+        if (editTextDescription.isEmpty()) {
+            Toast.makeText(this, "Please select a report type", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val reportRequest = ReportRequest(userId, link, description)
+        // Create the report request with the proper field names to match the backend
+        val reportRequest = ReportRequest(
+            userId = userId,
+            link_reported = link,          // Make sure this matches backend field name
+            report_description = editTextDescription  // Make sure this matches backend field name
+        )
 
         RetrofitClient.instance.submitReport(reportRequest).enqueue(object : Callback<ReportResponse> {
             override fun onResponse(call: Call<ReportResponse>, response: Response<ReportResponse>) {
                 if (response.isSuccessful) {
                     Toast.makeText(this@ReportActivity, "Report submitted successfully", Toast.LENGTH_SHORT).show()
+                    Log.d("ReportActivity", "Report submitted successfully")
 
                     // Navigate back to MainActivity
                     val intent = Intent(this@ReportActivity, MainActivity::class.java)
@@ -149,21 +155,31 @@ class ReportActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish() // Close the ReportActivity to prevent going back to it
                 } else {
-                    Toast.makeText(this@ReportActivity, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                    try {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("ReportActivity", "Error submitting report: $errorBody")
+                        Toast.makeText(this@ReportActivity, "Failed to submit report: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Log.e("ReportActivity", "Error parsing error response", e)
+                        Toast.makeText(this@ReportActivity, "Failed to submit report", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
             override fun onFailure(call: Call<ReportResponse>, t: Throwable) {
+                Log.e("ReportActivity", "Network error submitting report", t)
                 Toast.makeText(this@ReportActivity, "Error submitting report: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
-    }
 
+        LocalBroadcastManager.getInstance(this@ReportActivity)
+            .sendBroadcast(Intent(ScreenCaptureService.ACTION_RESUME_SCANNING))
+    }
 
     private fun setupNavigationButtons() {
         // Get the username and userId from the current activity (ReportActivity)
         val username = intent.getStringExtra("userUsername") ?: "Guest"
-        val userId = intent.extras?.getInt("userId", -1) // Retrieve userId from intent or set to -1 if not present
+        val userId = intent.getIntExtra("userId", -1) // Retrieve userId from intent or set to -1 if not present
 
         findViewById<ImageView>(R.id.return_icon).setOnClickListener {
             // Only pass data if we are navigating to a different activity
@@ -178,9 +194,7 @@ class ReportActivity : AppCompatActivity() {
             LocalBroadcastManager.getInstance(this)
                 .sendBroadcast(Intent(ScreenCaptureService.ACTION_RESUME_SCANNING))
         }
-
     }
-
 }
 
 

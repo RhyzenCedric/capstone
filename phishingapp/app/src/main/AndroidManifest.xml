@@ -42,6 +42,7 @@
 
         <activity
             android:name=".StartupActivity"
+            android:screenOrientation="portrait"
             android:exported="true"
             tools:ignore="Instantiatable">
             <intent-filter>
@@ -52,31 +53,38 @@
 
         <activity
             android:name=".LoginActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
 
         <activity
             android:name=".SignupActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
 
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:exported="false" />
 
         <activity
             android:name=".AccountActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
 
         <activity
             android:name=".ReportActivity"
+            android:screenOrientation="portrait"
             android:exported="false"/>
 
         <activity
             android:name=".AnalyticsActivity"
+            android:screenOrientation="portrait"
             android:exported="false"/>
 
         <activity
             android:name=".EditProfileActivity"
+            android:screenOrientation="portrait"
             android:exported="false"/>
 
 

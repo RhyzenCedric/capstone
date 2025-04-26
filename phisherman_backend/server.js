@@ -336,13 +336,14 @@ app.post('/submitreport', (req, res) => {
         const sql = "INSERT INTO reports (userId, link_reported, report_description) VALUES (?, ?, ?)";
         const values = [userId, link_reported, description];
 
-        db.query(sql, values, (err) => {
+        db.query(sql, values, (err, result) => {
             if (err) {
                 console.error('Error inserting report:', err);
                 return res.status(500).json({ error: 'Internal server error' });
             }
-
-            // Return success message
+        
+            console.log('Insert Result:', result); // ADD THIS
+        
             res.json({ message: 'Report submitted successfully', username: username });
         });
     });
@@ -438,13 +439,11 @@ app.post('/reports/approve', (req, res) => {
 app.get('/links', (req, res) => {
     const sql = `
         SELECT 
-            links.link_id, 
-            links.url_link, 
-            links.tld, 
-            links.date_verified, 
+            links.*, 
             users.userUsername AS reported_by 
         FROM links
-        LEFT JOIN reports ON LOWER(links.url_link) = LOWER(reports.link_reported) 
+        LEFT JOIN reports ON 
+            LOWER(TRIM(TRAILING '/' FROM links.url_link)) = LOWER(TRIM(TRAILING '/' FROM reports.link_reported))
         LEFT JOIN users ON reports.userId = users.userId
         WHERE reports.approved = 1;
     `;
@@ -485,7 +484,8 @@ app.get('/links/:userId', (req, res) => {
             links.tld, 
             links.date_verified
         FROM links
-        INNER JOIN reports ON LOWER(links.url_link) = LOWER(reports.link_reported) 
+        INNER JOIN reports ON 
+            LOWER(TRIM(TRAILING '/' FROM links.url_link)) = LOWER(TRIM(TRAILING '/' FROM reports.link_reported))
         WHERE reports.userId = ? AND reports.approved = 1;
     `;
 
