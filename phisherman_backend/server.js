@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const { parse } = require('tldts');
 
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

@@ -54,6 +54,52 @@ const Reports = () => {
         }
     };
 
+    const handlePrint = (type) => {
+        const filteredReports = reports.filter(report => 
+            type === 'approved' ? report.approved : !report.approved
+        );
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>${type} Reports</title>
+                    <style>
+                        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+                        h1 { color: #333; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${type.charAt(0).toUpperCase() + type.slice(1)} Reports</h1>
+                    ${filteredReports.length > 0 ? `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Reported By</th>
+                                    <th>Link Reported</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filteredReports.map(report => `
+                                    <tr>
+                                        <td>${report.userUsername}</td>
+                                        <td>${report.link_reported}</td>
+                                        <td>${report.report_description}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : '<p>No reports found.</p>'}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    };
+
+
     if (loading) {
         return <h1>Loading...</h1>;
     }
@@ -62,6 +108,20 @@ const Reports = () => {
         <>
             <TopNav />
             <h1 className='reports-header'>Reports</h1>
+            <div className="print-buttons">
+                <button 
+                    className="print-button"
+                    onClick={() => handlePrint('approved')}
+                >
+                    Print Approved Reports
+                </button>
+                {/* <button 
+                    className="print-button"
+                    onClick={() => handlePrint('rejected')}
+                >
+                    Print Rejected Reports
+                </button> */}
+            </div>
             <table>
                 <thead>
                     <tr>
