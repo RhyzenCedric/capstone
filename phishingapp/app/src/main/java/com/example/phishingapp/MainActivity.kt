@@ -272,7 +272,7 @@ class MainActivity : AppCompatActivity() {
 
         val circleDrawable = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(Color.argb(64, 0, 128, 255)) // Initial Blue
+            setColor(Color.argb(200, 0, 0, 255)) // Initial Blue
         }
 
 
@@ -325,7 +325,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun changeFloatingCircleColorToRed() {
         val circleDrawable = floatingCircle.background as GradientDrawable
-        circleDrawable.setColor(Color.argb(65, 255, 115, 100))// Change to red
+        circleDrawable.setColor(Color.argb(200, 255, 20, 20))// Change to red
         isRed= true
 
     }
@@ -333,7 +333,7 @@ class MainActivity : AppCompatActivity() {
     private fun changeFloatingCircleColorToBlue() {
         if (::floatingCircle.isInitialized) {
             val circleDrawable = floatingCircle.background as GradientDrawable
-            circleDrawable.setColor(Color.argb(64, 0, 128, 255)) // Original blue color
+            circleDrawable.setColor(Color.argb(200, 0, 0, 255)) // Original blue color
             isRed=false
         }
     }

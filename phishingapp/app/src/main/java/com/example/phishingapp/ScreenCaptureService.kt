@@ -732,7 +732,7 @@ class ScreenCaptureService : Service() {
         // Position the overlay based on the bounding box
         layoutParams.gravity = Gravity.TOP or Gravity.START
         layoutParams.x = boundingBox.left
-        layoutParams.y = boundingBox.top - 100 // Adjust vertical position as needed
+        layoutParams.y = boundingBox.top - 50// Adjust vertical position as needed
 
         try {
             windowManager.addView(overlayView, layoutParams)
