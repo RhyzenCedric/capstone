@@ -2,6 +2,8 @@ package com.example.phishingapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
@@ -42,11 +44,31 @@ class AccountActivity : AppCompatActivity() {
 
         // Handle logout
         buttonLogout.setOnClickListener {
-            val intent = Intent(this, StartupActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            startActivity(intent)
-            finish()
+            try {
+                // Stop service and clear overlays
+                val serviceIntent = Intent(this, ScreenCaptureService::class.java)
+                stopService(serviceIntent)
+
+                // Clear SharedPreferences
+                getSharedPreferences("userPrefs", MODE_PRIVATE).edit().clear().apply()
+
+                // Ensure UI operations run on main thread
+                Handler(Looper.getMainLooper()).postDelayed({
+                    startActivity(Intent(this, StartupActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                    finish()
+                }, 200)
+            } catch (e: Exception) {
+                Log.e(TAG, "Logout error", e)
+                // Fallback cleanup
+                startActivity(Intent(this, StartupActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                })
+                finish()
+            }
         }
+
 
     }
 

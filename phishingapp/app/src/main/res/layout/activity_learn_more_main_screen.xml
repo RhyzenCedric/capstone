@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="16dp">
+
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/return_icon"
+        android:layout_width="14dp"
+        android:layout_height="24dp"
+        android:src="@drawable/return_icon"
+        android:contentDescription="Return"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="8dp"/>
+
+    <!-- Title Centered -->
+    <TextView
+        android:id="@+id/titleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter_bold"
+        android:text="Learn More"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@+id/return_icon"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Phishing Card -->
+    <!-- Phishing Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/phishingSection"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_gray_button"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@id/titleTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp">
+
+        <ImageView
+            android:id="@+id/phishingIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_phishing"
+            android:contentDescription="Phishing Icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/phishingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phishing"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/phishingIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Smishing Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/smishingSection"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_gray_button"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@id/phishingSection"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/smishingIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_smishing"
+            android:contentDescription="Smishing Icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/smishingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Smishing"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/smishingIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Scamming Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/scammingSection"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_gray_button"
+        android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@id/smishingSection"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp">
+
+        <ImageView
+            android:id="@+id/scammingIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_scamming"
+            android:contentDescription="Scamming Icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/scammingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scamming"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingStart="16dp"
+            app:layout_constraintStart_toEndOf="@id/scammingIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

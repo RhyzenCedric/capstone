@@ -1,17 +1,14 @@
 package com.example.phishingapp
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
@@ -20,16 +17,14 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.*
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.phishingapp.ScreenCaptureService.Companion
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var windowManager: WindowManager
@@ -42,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isRed = false
     private var detectedMaliciousLink: String? = null
+
 
     companion object {
         const val TAG = "MainActivity"
@@ -72,12 +68,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val sonarWaveView = findViewById<SonarWaveView>(R.id.sonar_wave_view)
+        val animationSwitch = findViewById<SwitchCompat>(R.id.animation_switch)
+
         val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("userUsername", "Guest")
         val userId = sharedPreferences.getInt("userId", 0)
 
         Log.d(TAG, "Currently logged username: $username")
         Log.d(TAG, "User ID: $userId")
+
+        // Set initial state (animation enabled by default)
+        sonarWaveView.setAnimationEnabled(true)
+        animationSwitch.isChecked = true
+
+        // Set up listener for the switch
+        animationSwitch.setOnCheckedChangeListener { _, isChecked ->
+            sonarWaveView.setAnimationEnabled(isChecked)
+        }
 
 
 
@@ -153,6 +161,22 @@ class MainActivity : AppCompatActivity() {
                 val userId = intent.extras?.getInt("userId") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getInt("userId", 0)
                 Log.d(TAG, "Passing userId: $userId")
                 val intent = Intent(this@MainActivity, ReportActivity::class.java)
+                intent.putExtra("userUsername", updatedUsername)
+                intent.putExtra("userId", userId)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Already on Report Screen", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        findViewById<ConstraintLayout>(R.id.button_learn_more).setOnClickListener {
+            if (javaClass != LearnMoreActivity::class.java) {
+                // Retrieve the updated username from the intent or shared preferences
+                val updatedUsername = intent.getStringExtra("userUsername") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getString("userUsername", "Guest")
+                val userId = intent.extras?.getInt("userId") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getInt("userId", 0)
+                Log.d(TAG, "Passing userId: $userId")
+                val intent = Intent(this@MainActivity, LearnMoreActivity::class.java)
                 intent.putExtra("userUsername", updatedUsername)
                 intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP

@@ -168,7 +168,12 @@ class ScreenCaptureService : Service() {
     }
 
     private fun startForegroundService() {
-        showNotification("Screen Capture Active", "Monitoring screen for potential threats")
+        try {
+            showNotification("Screen Capture Active", "Monitoring screen for potential threats")
+        } catch (e: SecurityException) {
+            Log.e(TAG, "SecurityException starting foreground service", e)
+            stopSelf()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -845,17 +850,15 @@ class ScreenCaptureService : Service() {
             mediaProjection?.let {
                 it.unregisterCallback(mediaProjectionCallback)
                 it.stop()
+                mediaProjection = null
             }
 
             virtualDisplay?.release()
             virtualDisplay = null
 
-            mediaProjection = null
-
+            removeAllOverlays()
             visibleLinks.clear()
             currentLinkPositions.clear()
-
-            Log.d(TAG, "Screen capture stopped successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping screen capture", e)
         }
