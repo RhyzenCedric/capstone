@@ -25,6 +25,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
     private lateinit var windowManager: WindowManager
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private var isRed = false
     private var detectedMaliciousLink: String? = null
+    private var userId by Delegates.notNull<Int>()
+    private lateinit var userUsername: String
 
 
     companion object {
@@ -71,12 +74,12 @@ class MainActivity : AppCompatActivity() {
         val sonarWaveView = findViewById<SonarWaveView>(R.id.sonar_wave_view)
         val animationSwitch = findViewById<SwitchCompat>(R.id.animation_switch)
 
-        val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
-        val username = sharedPreferences.getString("userUsername", "Guest")
-        val userId = sharedPreferences.getInt("userId", 0)
+        val sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE)
+        userId = sharedPreferences.getInt("userId", -1) // Default value is -1 if not found
+        userUsername = sharedPreferences.getString("userUsername", "") ?: ""
 
-        Log.d(TAG, "Currently logged username: $username")
-        Log.d(TAG, "User ID: $userId")
+        // Use userId and userUsername as needed
+        Log.d("MainActivity", "User  ID: $userId, Username: $userUsername")
 
         // Set initial state (animation enabled by default)
         sonarWaveView.setAnimationEnabled(true)

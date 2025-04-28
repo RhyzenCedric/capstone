@@ -139,7 +139,8 @@ app.post('/userlogin', (req, res) => {
             // Return userId along with the message on successful login
             return res.status(200).json({
                 message: 'Login successful',
-                userId: user.userId // Include userId in the response
+                userId: user.userId, // Include userId in the response
+                userUsername:user.userUsername
             });
         } else {
             return res.status(401).json({ error: 'Invalid password' });

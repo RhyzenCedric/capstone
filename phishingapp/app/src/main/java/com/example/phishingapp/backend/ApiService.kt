@@ -34,6 +34,7 @@ data class UserDetails(
 data class LoginResponse(
     val message: String,
     val userId: Int?,
+    val userUsername: String,
     val error: String? = null
 )
 

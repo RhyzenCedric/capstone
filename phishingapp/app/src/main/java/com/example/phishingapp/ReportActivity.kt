@@ -95,28 +95,6 @@ class ReportActivity : AppCompatActivity() {
             Toast.makeText(this, "Guests cannot submit reports", Toast.LENGTH_SHORT).show()
             return
         }
-
-        userId?.let {
-            RetrofitClient.instance.getUserDetails(it).enqueue(object : Callback<UserDetails> {
-                override fun onResponse(call: Call<UserDetails>, response: Response<UserDetails>) {
-                    if (response.isSuccessful && response.body() != null) {
-                        userId = response.body()?.userId
-                        Log.d("ReportActivity", "User ID found: $userId")
-                        Log.d("ReportActivitySuccess", "Response Body: ${response.body()}")
-                        // Once we have the userId, we proceed with the report submission
-                        userId?.let { it1 -> submitReport(it1) }
-                    } else {
-                        Toast.makeText(this@ReportActivity, "Failed to fetch user ID", Toast.LENGTH_SHORT).show()
-                        Log.d("ReportActivityFail", "Response Body: ${response.body()}")
-                    }
-                }
-
-                override fun onFailure(call: Call<UserDetails>, t: Throwable) {
-                    Log.e("ReportActivity", "Error fetching user ID: ${t.message}")
-                    Toast.makeText(this@ReportActivity, "Failed to fetch user ID", Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
     }
 
     private fun submitReport(userId: Int) {
@@ -196,5 +174,3 @@ class ReportActivity : AppCompatActivity() {
         }
     }
 }
-
-

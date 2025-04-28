@@ -126,8 +126,11 @@ class TransparentOverlayView @JvmOverloads constructor(
         val username = sharedPreferences.getString("userUsername", "Guest") ?: "Guest"
         val userId = sharedPreferences.getInt("userId", 0)
 
+        Log.d(TAG, "Retrieved from SharedPreferences - Username: $username, UserID: $userId")
+
         // Create an intent to start the ReportActivity
         val intent = Intent(context, ReportActivity::class.java).apply {
+            Log.d(TAG, "Reporting link: $url, Username: $username, UserID: $userId")
             putExtra("userUsername", username)
             putExtra("userId", userId)
             putExtra("reportedLink", url)

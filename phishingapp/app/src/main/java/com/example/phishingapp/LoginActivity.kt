@@ -100,12 +100,21 @@ class LoginActivity : AppCompatActivity() {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
                         val userId = loginResponse.userId // Get userId from response
+                        val userUsername = loginResponse.userUsername // Get username from response
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
+
+                        val sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE)
+                        val editor = sharedPreferences.edit()
+                        if (userId != null) {
+                            editor.putInt("userId", userId)
+                        }
+                        editor.putString("userUsername", userUsername)
+                        editor.apply() // Save changes
 
                         // Redirect to MainActivity with userId and username
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         intent.putExtra("userId", userId)
-                        intent.putExtra("userUsername", userUsername)
+                        intent.putExtra("userUsername", userUsername) // Use the username from the response
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(intent)
                         finish()
