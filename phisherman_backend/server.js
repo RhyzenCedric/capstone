@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const { parse } = require('tldts');
 
@@ -349,229 +349,229 @@ app.get('/admins/:id', async (req, res) => {
     }
 });
 
-// app.post('/submitreport', async (req, res) => {
-//     const { userid, link_reported, report_description } = req.body;
+app.post('/submitreport', async (req, res) => {
+    const { userid, link_reported, report_description } = req.body;
 
-//     // Check if userid is provided
-//     if (!userid || !link_reported) {
-//         return res.status(400).json({ error: 'userid and link_reported are required' });
-//     }
+    // Check if userid is provided
+    if (!userid || !link_reported) {
+        return res.status(400).json({ error: 'userid and link_reported are required' });
+    }
 
-//     // If report_description is not provided, set it to 'None'
-//     const description = report_description || 'None';
+    // If report_description is not provided, set it to 'None'
+    const description = report_description || 'None';
 
-//     try {
-//         // Check if the user exists
-//         const { data: users, error: userError } = await supabase
-//             .from('users')
-//             .select('userusername')
-//             .eq('userid', userid);
+    try {
+        // Check if the user exists
+        const { data: users, error: userError } = await supabase
+            .from('users')
+            .select('userusername')
+            .eq('userid', userid);
 
-//         if (userError) throw userError;
+        if (userError) throw userError;
 
-//         // If no user found with that userid, return error
-//         if (!users || users.length === 0) {
-//             return res.status(404).json({ error: 'User not found' });
-//         }
+        // If no user found with that userid, return error
+        if (!users || users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-//         const username = users[0].userusername;
+        const username = users[0].userusername;
 
-//         // Insert the report
-//         const { data, error } = await supabase
-//             .from('reports')
-//             .insert([{ 
-//                 userid, 
-//                 link_reported, 
-//                 report_description: description 
-//             }]);
+        // Insert the report
+        const { data, error } = await supabase
+            .from('reports')
+            .insert([{ 
+                userid, 
+                link_reported, 
+                report_description: description 
+            }]);
 
-//         if (error) throw error;
+        if (error) throw error;
 
-//         res.json({ message: 'Report submitted successfully', username: username });
-//     } catch (err) {
-//         console.error('Error submitting report:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        res.json({ message: 'Report submitted successfully', username: username });
+    } catch (err) {
+        console.error('Error submitting report:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// app.get('/reports', async (req, res) => {
-//     try {
-//         const { data, error } = await supabase
-//             .from('reports')
-//             .select(`
-//                 report_id,
-//                 link_reported,
-//                 report_description,
-//                 approved,
-//                 users (userusername)
-//             `);
+app.get('/reports', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('reports')
+            .select(`
+                report_id,
+                link_reported,
+                report_description,
+                approved,
+                users (userusername)
+            `);
 
-//         if (error) throw error;
+        if (error) throw error;
 
-//         // Format the response to match the original structure
-//         const formattedData = data.map(report => ({
-//             report_id: report.report_id,
-//             link_reported: report.link_reported,
-//             report_description: report.report_description,
-//             approved: report.approved,
-//             userusername: report.users ? report.users.userusername : null
-//         }));
+        // Format the response to match the original structure
+        const formattedData = data.map(report => ({
+            report_id: report.report_id,
+            link_reported: report.link_reported,
+            report_description: report.report_description,
+            approved: report.approved,
+            userusername: report.users ? report.users.userusername : null
+        }));
 
-//         res.json(formattedData);
-//     } catch (err) {
-//         console.error('Error fetching reports:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        res.json(formattedData);
+    } catch (err) {
+        console.error('Error fetching reports:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// const extractTLD = (url) => {
-//     try {
-//         // Ensure URL is valid and standardized
-//         const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-//         const parsedUrl = new URL(formattedUrl);
+const extractTLD = (url) => {
+    try {
+        // Ensure URL is valid and standardized
+        const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+        const parsedUrl = new URL(formattedUrl);
         
-//         const hostname = parsedUrl.hostname;
-//         const tld = hostname.split('.').pop();
+        const hostname = parsedUrl.hostname;
+        const tld = hostname.split('.').pop();
 
-//         // Remove trailing slash from pathname
-//         let cleanedUrl = parsedUrl.href.replace(/\/+$/, '');
+        // Remove trailing slash from pathname
+        let cleanedUrl = parsedUrl.href.replace(/\/+$/, '');
 
-//         return {
-//             url_link: cleanedUrl, // Store URL WITHOUT trailing slash
-//             tld: tld
-//         };
-//     } catch (error) {
-//         console.error("Invalid URL:", url);
-//         return { url_link: null, tld: null };
-//     }
-// };
+        return {
+            url_link: cleanedUrl, // Store URL WITHOUT trailing slash
+            tld: tld
+        };
+    } catch (error) {
+        console.error("Invalid URL:", url);
+        return { url_link: null, tld: null };
+    }
+};
 
-// app.post('/reports/approve', async (req, res) => {
-//     const { report_id, link } = req.body;
-//     const { url_link, tld } = extractTLD(link); 
+app.post('/reports/approve', async (req, res) => {
+    const { report_id, link } = req.body;
+    const { url_link, tld } = extractTLD(link); 
 
-//     if (!url_link || !tld) {
-//         return res.status(400).json({ error: "Invalid URL" });
-//     }
+    if (!url_link || !tld) {
+        return res.status(400).json({ error: "Invalid URL" });
+    }
 
-//     try {
-//         // Get userid from the report before approving
-//         const { data: reports, error: fetchError } = await supabase
-//             .from('reports')
-//             .select('userid')
-//             .eq('report_id', report_id);
+    try {
+        // Get userid from the report before approving
+        const { data: reports, error: fetchError } = await supabase
+            .from('reports')
+            .select('userid')
+            .eq('report_id', report_id);
 
-//         if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
 
-//         if (!reports || reports.length === 0) {
-//             return res.status(404).json({ error: 'Report not found' });
-//         }
+        if (!reports || reports.length === 0) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
 
-//         const userid = reports[0].userid;
+        const userid = reports[0].userid;
 
-//         // Update the report to approved status
-//         const { error: updateError } = await supabase
-//             .from('reports')
-//             .update({ approved: true })
-//             .eq('report_id', report_id);
+        // Update the report to approved status
+        const { error: updateError } = await supabase
+            .from('reports')
+            .update({ approved: true })
+            .eq('report_id', report_id);
 
-//         if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-//         // Insert the link with userid
-//         const { error: insertError } = await supabase
-//             .from('links')
-//             .insert([{ url_link, tld, userid: userid }]);
+        // Insert the link with userid
+        const { error: insertError } = await supabase
+            .from('links')
+            .insert([{ url_link, tld, userid: userid }]);
 
-//         if (insertError) throw insertError;
+        if (insertError) throw insertError;
 
-//         return res.status(200).json({ message: 'Report approved and link stored successfully' });
-//     } catch (err) {
-//         console.error('Error in approve process:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        return res.status(200).json({ message: 'Report approved and link stored successfully' });
+    } catch (err) {
+        console.error('Error in approve process:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// app.get('/links', async (req, res) => {
-//     try {
-//         // This query is more complex in Supabase/PostgreSQL
-//         // We need to use raw SQL or break it down into multiple operations
-//         const { data, error } = await supabase.rpc('get_approved_links');
+app.get('/links', async (req, res) => {
+    try {
+        // This query is more complex in Supabase/PostgreSQL
+        // We need to use raw SQL or break it down into multiple operations
+        const { data, error } = await supabase.rpc('get_approved_links');
 
-//         if (error) {
-//             // Fallback to a simplified query if the RPC isn't set up
-//             console.error('RPC error, falling back to basic query:', error);
+        if (error) {
+            // Fallback to a simplified query if the RPC isn't set up
+            console.error('RPC error, falling back to basic query:', error);
             
-//             const { data: basicData, error: basicError } = await supabase
-//                 .from('links')
-//                 .select(`
-//                     *,
-//                     users (userusername)
-//                 `);
+            const { data: basicData, error: basicError } = await supabase
+                .from('links')
+                .select(`
+                    *,
+                    users (userusername)
+                `);
                 
-//             if (basicError) throw basicError;
+            if (basicError) throw basicError;
             
-//             // Format the data to match expected structure
-//             const formattedData = basicData.map(link => ({
-//                 ...link,
-//                 reported_by: link.users ? link.users.userusername : null
-//             }));
+            // Format the data to match expected structure
+            const formattedData = basicData.map(link => ({
+                ...link,
+                reported_by: link.users ? link.users.userusername : null
+            }));
             
-//             return res.json(formattedData);
-//         }
+            return res.json(formattedData);
+        }
 
-//         console.log("Fetched links:", data);
-//         res.json(data);
-//     } catch (err) {
-//         console.error('Error fetching links:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        console.log("Fetched links:", data);
+        res.json(data);
+    } catch (err) {
+        console.error('Error fetching links:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// app.delete('/reports/:report_id', async (req, res) => {
-//     const reportId = req.params.report_id;
+app.delete('/reports/:report_id', async (req, res) => {
+    const reportId = req.params.report_id;
     
-//     try {
-//         const { data, error } = await supabase
-//             .from('reports')
-//             .delete()
-//             .eq('report_id', reportId);
+    try {
+        const { data, error } = await supabase
+            .from('reports')
+            .delete()
+            .eq('report_id', reportId);
 
-//         if (error) throw error;
+        if (error) throw error;
         
-//         res.json({ message: 'Report deleted successfully' });
-//     } catch (err) {
-//         console.error('Error deleting report:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        res.json({ message: 'Report deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting report:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
-// app.get('/links/:userid', async (req, res) => {
-//     const { userid } = req.params;
+app.get('/links/:userid', async (req, res) => {
+    const { userid } = req.params;
 
-//     try {
-//         // This query is complex and might need a custom PostgreSQL function in Supabase
-//         const { data, error } = await supabase.rpc('get_user_links', { userid: userid });
+    try {
+        // This query is complex and might need a custom PostgreSQL function in Supabase
+        const { data, error } = await supabase.rpc('get_user_links', { userid: userid });
 
-//         if (error) {
-//             // Fallback to a simpler query if the RPC function isn't set up
-//             console.error('RPC error, falling back to basic query:', error);
+        if (error) {
+            // Fallback to a simpler query if the RPC function isn't set up
+            console.error('RPC error, falling back to basic query:', error);
             
-//             const { data: basicData, error: basicError } = await supabase
-//                 .from('links')
-//                 .select('link_id, url_link, tld, date_verified')
-//                 .eq('userid', userid);
+            const { data: basicData, error: basicError } = await supabase
+                .from('links')
+                .select('link_id, url_link, tld, date_verified')
+                .eq('userid', userid);
                 
-//             if (basicError) throw basicError;
-//             return res.json(basicData);
-//         }
+            if (basicError) throw basicError;
+            return res.json(basicData);
+        }
 
-//         console.log("Fetched user-specific links:", data);
-//         res.json(data);
-//     } catch (err) {
-//         console.error('Error fetching links for user:', err);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        console.log("Fetched user-specific links:", data);
+        res.json(data);
+    } catch (err) {
+        console.error('Error fetching links for user:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Start the server
 app.listen(PORT, () => {
