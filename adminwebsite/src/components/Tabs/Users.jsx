@@ -31,12 +31,12 @@ const Users = () => {
         setEditingUser(user); // Set the user to edit
     };
 
-    const handleDelete = async (userId) => {
+    const handleDelete = async (userid) => {
         if (window.confirm("Are you sure you want to delete this user?")) {
             try {
-                const response = await axios.delete(`http://localhost:5000/users/${userId}`); // Use Axios to delete user
+                const response = await axios.delete(`http://localhost:5000/users/${userid}`); // Use Axios to delete user
                 if (response.status === 200) { // Check if deletion was successful
-                    setUsers((prevUsers) => prevUsers.filter(user => user.userId !== userId)); // Update users state
+                    setUsers((prevUsers) => prevUsers.filter(user => user.userid !== userid)); // Update users state
                 } else {
                     throw new Error('Failed to delete user');
                 }
@@ -64,12 +64,11 @@ const Users = () => {
                 </thead>
                 <tbody>
                     {users.map((user) => (
-                        <tr key={user.userId}>
-                            <td>{user.userUsername}</td>
-                            <td>{user.userEmail}</td>
+                        <tr key={user.userid}>
+                            <td>{user.userusername}</td>
                             <td>
                                 <button className="user-edit-button" onClick={() => handleEdit(user)}>Edit</button>
-                                <button className="user-delete-button" onClick={() => handleDelete(user.userId)}>Delete</button>
+                                <button className="user-delete-button" onClick={() => handleDelete(user.userid)}>Delete</button>
                             </td>
                         </tr>
                     ))}
@@ -79,8 +78,8 @@ const Users = () => {
             {editingUser && ( 
                 <Modal onClose={() => setEditingUser(null)}>
                     <EditUserDetailsAdmin
-                        userId={editingUser.userId}
-                        username={editingUser.userUsername}
+                        userId={editingUser.userid}
+                        username={editingUser.userusername}
                         onUpdate={fetchUsers} // Pass fetchUsers to update after the modal
                         onClose={() => setEditingUser(null)} // Close modal
                     />

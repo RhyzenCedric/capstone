@@ -1,10 +1,9 @@
 const express = require('express');
-const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const { createClient } = require('@supabase/supabase-js');
 const { parse } = require('tldts');
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,75 +12,76 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json()); // Parse JSON request bodies
 
-// Create a connection to the MySQL database
-const db = mysql.createConnection({
-    host: 'localhost', // Your database host
-    user: 'root',      // Your database user
-    password: '',      // Your database password
-    database: 'phisherman' // Your database name
-});
+// Initialize Supabase client - replace with your actual Supabase URL and anon key
+const supabaseUrl = 'https://xyhhazbjkgtzcldfdbex.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5aGhhemJqa2d0emNsZGZkYmV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5MjU2NjUsImV4cCI6MjA2MTUwMTY2NX0.DvtCkvDVDe-bSXlaaaqMPhalF7FHuwib-1yoTj4DylU';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Connect to the database
-db.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MySQL:', err);
-        return;
-    }
-    console.log('Connected to MySQL database.');
+// Connect and verify Supabase connection
+app.get('/', async (req, res) => {
+  try {
+    // Simple check to see if we can connect to Supabase
+    const { data, error } = await supabase.from('users').select('count');
+    if (error) throw error;
+    res.json({ message: 'Connected to Supabase', status: 'ok' });
+  } catch (err) {
+    console.error('Error connecting to Supabase:', err);
+    res.status(500).json({ error: 'Failed to connect to database' });
+  }
 });
 
 app.post('/adminsignup', async (req, res) => {
     const { admin_username, admin_password } = req.body;
 
-    // Check if the username already exists
-    const checkIfExistsQuery = "SELECT * FROM admins WHERE admin_username = ?";
-    const checkIfExistsValues = [admin_username];
+    try {
+        // Check if the username already exists
+        const { data: existingAdmins, error: queryError } = await supabase
+            .from('admins')
+            .select('admin_id')
+            .eq('admin_username', admin_username);
 
-    db.query(checkIfExistsQuery, checkIfExistsValues, async (err, results) => {
-        if (err) {
-            console.error('Error checking if user exists:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+        if (queryError) throw queryError;
 
         // If a user with the provided username already exists, return an error
-        if (results.length > 0) {
+        if (existingAdmins && existingAdmins.length > 0) {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
         // Hash the password before storing it
         const hashedPassword = await bcrypt.hash(admin_password, 10);
 
-        // Proceed with registration
-        const sql = "INSERT INTO admins (admin_username, admin_password) VALUES (?, ?)";
-        const values = [admin_username, hashedPassword];
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('admins')
+            .insert([{ admin_username, admin_password: hashedPassword }]);
 
-        db.query(sql, values, (err) => {
-            if (err) {
-                console.error('Error registering user:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-            return res.json({ message: 'Registration successful' });
-        });
-    });
+        if (error) throw error;
+
+        return res.json({ message: 'Registration successful' });
+    } catch (err) {
+        console.error('Error registering admin:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.post('/adminlogin', (req, res) => {
+app.post('/adminlogin', async (req, res) => {
     const { admin_username, admin_password } = req.body;
 
-    // Find the user by username
-    const sql = "SELECT * FROM admins WHERE admin_username = ?";
-    db.query(sql, [admin_username], async (err, results) => {
-        if (err) {
-            console.error('Error logging in:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+    try {
+        // Find the user by username
+        const { data: admins, error } = await supabase
+            .from('admins')
+            .select('*')
+            .eq('admin_username', admin_username);
 
-        // Check if user exists
-        if (results.length === 0) {
+        if (error) throw error;
+
+        // Check if admin exists
+        if (!admins || admins.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        const admin = results[0];
+        const admin = admins[0];
         // Compare the inputted password with the hashed password
         const match = await bcrypt.compare(admin_password, admin.admin_password);
         if (match) {
@@ -89,139 +89,170 @@ app.post('/adminlogin', (req, res) => {
         } else {
             return res.status(401).json({ error: 'Invalid password' });
         }
-    });
+    } catch (err) {
+        console.error('Error logging in:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/usersignup', async (req, res) => {
-    const { userUsername, userEmail, userPassword } = req.body;
+    const { userusername, userpassword } = req.body;
 
-    // Similar checks and logic as before
-    const checkIfExistsQuery = "SELECT * FROM users WHERE userUsername = ?";
-    db.query(checkIfExistsQuery, [userUsername], async (err, results) => {
-        if (results.length > 0) {
+    try {
+        // Check if the username already exists
+        const { data: existingUsers, error: queryError } = await supabase
+            .from('users')
+            .select('userid')
+            .eq('userusername', userusername);
+
+        if (queryError) throw queryError;
+
+        if (existingUsers && existingUsers.length > 0) {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        const hashedPassword = await bcrypt.hash(userPassword, 10);
+        const hashedPassword = await bcrypt.hash(userpassword, 10);
 
-        const sql = "INSERT INTO users (userUsername, userPassword) VALUES (?, ?)";
-        const values = [userUsername, hashedPassword];
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('users')
+            .insert([{ userusername, userpassword: hashedPassword }]);
 
-        db.query(sql, values, (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-            res.json({ message: 'Registration successful' });
-        });
-    });
+        if (error) throw error;
+
+        res.json({ message: 'Registration successful' });
+    } catch (err) {
+        console.error('Error registering user:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.post('/userlogin', (req, res) => {
-    const { userUsername, userPassword } = req.body;
+app.post('/userlogin', async (req, res) => {
+    const { userusername, userpassword } = req.body;
 
-    // Find the user by username
-    const sql = "SELECT * FROM users WHERE userUsername = ?";
-    db.query(sql, [userUsername], async (err, results) => {
-        if (err) {
-            console.error('Error logging in:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+    try {
+        // Find the user by username
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('userusername', userusername);
+
+        if (error) throw error;
 
         // Check if user exists
-        if (results.length === 0) {
+        if (!users || users.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        const user = results[0];
+        const user = users[0];
         // Compare the inputted password with the hashed password
-        const match = await bcrypt.compare(userPassword, user.userPassword);
+        const match = await bcrypt.compare(userpassword, user.userpassword);
         if (match) {
-            // Return userId along with the message on successful login
+            // Return userid along with the message on successful login
             return res.status(200).json({
                 message: 'Login successful',
-                userId: user.userId, // Include userId in the response
-                userUsername:user.userUsername
+                userid: user.userid,
+                userusername: user.userusername
             });
         } else {
             return res.status(401).json({ error: 'Invalid password' });
         }
-    });
+    } catch (err) {
+        console.error('Error logging in:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
+app.get('/users', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*');
 
-app.get('/users', (req, res) => {
-    const sql = "SELECT * FROM users"; // Modify this SQL query as needed
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching users:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-        res.json(results); // Send the user data as JSON
-    });
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('/admins', (req, res) => {
-    const sql = "SELECT * FROM admins"; // Modify this SQL query as needed
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching admins:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-        res.json(results); // Send the user data as JSON
-    });
+app.get('/admins', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('admins')
+            .select('*');
+
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error('Error fetching admins:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.delete('/users/:id', (req, res) => {
-    const userId = req.params.id;
-    const sql = "DELETE FROM users WHERE userId = ?"; // Replace `id` with the actual column name used for the unique identifier
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            console.error('Error deleting user:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+app.delete('/users/:id', async (req, res) => {
+    const userid = req.params.id;
+    
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .delete()
+            .eq('userid', userid);
+
+        if (error) throw error;
         res.json({ message: 'User deleted successfully' });
-    });
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.delete('/admins/:id', (req, res) => {
-    const userId = req.params.id;
-    const sql = "DELETE FROM admins WHERE admin_id = ?"; // Replace `id` with the actual column name used for the unique identifier
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            console.error('Error deleting admin:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+app.delete('/admins/:id', async (req, res) => {
+    const adminId = req.params.id;
+    
+    try {
+        const { data, error } = await supabase
+            .from('admins')
+            .delete()
+            .eq('admin_id', adminId);
+
+        if (error) throw error;
         res.json({ message: 'Admin deleted successfully' });
-    });
+    } catch (err) {
+        console.error('Error deleting admin:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.put('/users/:id', (req, res) => {
+app.put('/users/:id', async (req, res) => {
     const { id } = req.params;
     const { newUsername, currentPassword, newPassword } = req.body;
 
-    // Step 1: Get the current user data
-    const selectQuery = 'SELECT userUsername, userPassword FROM users WHERE userId = ?';
-    db.query(selectQuery, [id], async (err, results) => {
-        if (err) {
-            console.error('Error retrieving user data:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+    try {
+        // Step 1: Get the current user data
+        const { data: users, error: fetchError } = await supabase
+            .from('users')
+            .select('userusername, userpassword')
+            .eq('userid', id);
 
-        if (results.length === 0) {
+        if (fetchError) throw fetchError;
+
+        if (!users || users.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const currentUser = results[0];
+        const currentUser = users[0];
 
         // Step 2: If password update is requested, verify and hash new password
-        let updatedPassword = currentUser.userPassword;
+        let updatedPassword = currentUser.userpassword;
 
         if (newPassword) {
             if (!currentPassword) {
                 return res.status(400).json({ error: 'Current password is required to change the password' });
             }
 
-            const isMatch = await bcrypt.compare(currentPassword, currentUser.userPassword);
+            const isMatch = await bcrypt.compare(currentPassword, currentUser.userpassword);
             if (!isMatch) {
                 return res.status(401).json({ error: 'Current password is incorrect' });
             }
@@ -230,277 +261,317 @@ app.put('/users/:id', (req, res) => {
         }
 
         // Step 3: Use newUsername if provided, else keep the old one
-        const updatedUsername = newUsername || currentUser.userUsername;
+        const updatedUsername = newUsername || currentUser.userusername;
 
         // Step 4: Perform the update
-        const updateQuery = `UPDATE users SET userUsername = ?, userPassword = ? WHERE userId = ?`;
-        db.query(updateQuery, [updatedUsername, updatedPassword, id], (err, updateResult) => {
-            if (err) {
-                console.error('Error updating user data:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
+        const { data, error: updateError } = await supabase
+            .from('users')
+            .update({ 
+                userusername: updatedUsername, 
+                userpassword: updatedPassword 
+            })
+            .eq('userid', id);
 
-            if (updateResult.affectedRows === 0) {
-                return res.status(404).json({ error: 'User not found' });
-            }
+        if (updateError) throw updateError;
 
-            res.json({ message: 'User profile updated successfully' });
-        });
-    });
-});
-
-app.get('/users/:id', (req, res) => {
-    const { id } = req.params;
-    const query = `SELECT userId, userUsername, userPassword FROM users WHERE userId = ?`; // Include userPassword in the SELECT statement
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error retrieving user data:', err);
-            res.status(500).json({ error: 'Internal server error' });
-            return;
-        }
-        if (results.length === 0) {
-            res.status(404).json({ error: 'User  not found' });
-            return;
-        }
-        const user = results[0];
-        res.json({
-            userId: user.userId,
-            userUsername: user.userUsername,
-            userPassword: user.userPassword // Return the plaintext password
-        });
-    });
-});
-  
-app.put('/admins/:id', (req, res) => {
-    const { id } = req.params;
-    const updatedAdminData = req.body; // This should only contain the fields that are being updated
-
-    const query = `UPDATE admins SET ? WHERE admin_id = ?`; // Adjust the column name as necessary
-    db.query(query, [updatedAdminData, id], (err, results) => {
-        if (err) {
-            console.error('Error updating user data:', err);
-            res.status(500).json({ error: 'Internal server error' });
-            return;
-        }
-        if (results.affectedRows === 0) {
-            res.status(404).json({ error: 'Admin not found' });
-            return;
-        }
-        res.json({ message: 'Admin data updated successfully' });
-    });
-});
-
-app.get('/admins/:id', (req, res) => {
-    const { id } = req.params;
-    const query = `SELECT * FROM admins WHERE admin_id = ?`;
-    db.query(query, [id], (err, results) => {
-      if (err) {
-        console.error('Error retrieving user data:', err);
-        res.status(500).json({ error: 'Internal server error' });
-        return;
-      }
-      if (results.length === 0) {
-        res.status(404).json({ error: 'Admin not found' });
-        return;
-      }
-      const user = results[0];
-      res.json(user);
-    });
-});
-
-app.post('/submitreport', (req, res) => {
-    const { userId, link_reported, report_description } = req.body;
-
-    // Check if userId is provided
-    if (!userId || !link_reported) {
-        return res.status(400).json({ error: 'userId and link_reported are required' });
+        res.json({ message: 'User profile updated successfully' });
+    } catch (err) {
+        console.error('Error updating user data:', err);
+        return res.status(500).json({ error: 'Internal server error' });
     }
+});
 
-    // If report_description is not provided, set it to 'None'
-    const description = report_description || 'None';
+app.get('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('userid, userusername, userpassword')
+            .eq('userid', id);
 
-    // Check if the username in AccountActivity matches the userId
-    const getUsernameQuery = "SELECT userUsername FROM users WHERE userId = ?";
-    db.query(getUsernameQuery, [userId], (err, results) => {
-        if (err) {
-            console.error('Error fetching username:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+        if (error) throw error;
 
-        // If no user found with that userId, return error
-        if (results.length === 0) {
+        if (!users || users.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        const username = results[0].userUsername;
-
-        // Now we can insert the report into the database
-        const sql = "INSERT INTO reports (userId, link_reported, report_description) VALUES (?, ?, ?)";
-        const values = [userId, link_reported, description];
-
-        db.query(sql, values, (err, result) => {
-            if (err) {
-                console.error('Error inserting report:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-        
-            console.log('Insert Result:', result); // ADD THIS
-        
-            res.json({ message: 'Report submitted successfully', username: username });
+        const user = users[0];
+        res.json({
+            userid: user.userid,
+            userusername: user.userusername,
+            userpassword: user.userpassword
         });
-    });
+    } catch (err) {
+        console.error('Error retrieving user data:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.get('/reports', (req, res) => {
-    const sql = `
-        SELECT reports.report_id, reports.link_reported, reports.report_description, reports.approved, 
-               users.userUsername 
-        FROM reports
-        JOIN users ON reports.userId = users.userId
-    `;
-
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching reports:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-        res.json(results);
-    });
-});
-
-
-
-const extractTLD = (url) => {
-    try {
-        // Ensure URL is valid and standardized
-        const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-        const parsedUrl = new URL(formattedUrl);
-        
-        const hostname = parsedUrl.hostname;
-        const tld = hostname.split('.').pop();
-
-        // Remove trailing slash from pathname
-        let cleanedUrl = parsedUrl.href.replace(/\/+$/, '');
-
-        return {
-            url_link: cleanedUrl, // Store URL WITHOUT trailing slash
-            tld: tld
-        };
-    } catch (error) {
-        console.error("Invalid URL:", url);
-        return { url_link: null, tld: null };
-    }
-};
-
-
-app.post('/reports/approve', (req, res) => {
-    const { report_id, link } = req.body;
-    const { url_link, tld } = extractTLD(link); 
-
-    if (!url_link || !tld) {
-        return res.status(400).json({ error: "Invalid URL" });
-    }
-
-    // Get userId from the report before approving
-    const getUserQuery = "SELECT userId FROM reports WHERE report_id = ?";
+app.put('/admins/:id', async (req, res) => {
+    const { id } = req.params;
+    const updatedAdminData = req.body;
     
-    db.query(getUserQuery, [report_id], (err, results) => {
-        if (err || results.length === 0) {
-            console.error('Error fetching userId:', err);
-            return res.status(500).json({ error: 'Failed to fetch userId' });
-        }
+    try {
+        const { data, error } = await supabase
+            .from('admins')
+            .update(updatedAdminData)
+            .eq('admin_id', id);
 
-        const userId = results[0].userId;
-
-        // Approve the report
-        const updateReportQuery = "UPDATE reports SET approved = 1 WHERE report_id = ?";
-        db.query(updateReportQuery, [report_id], (err, result) => {
-            if (err) {
-                console.error('Error updating report:', err);
-                return res.status(500).json({ error: 'Failed to approve report' });
-            }
-
-            // Insert the link along with the userId
-            const insertLinkQuery = "INSERT INTO links (url_link, tld, userId) VALUES (?, ?, ?)";
-
-            db.query(insertLinkQuery, [url_link, tld, userId], (err, result) => {
-                if (err) {
-                    console.error('Error inserting link into links table:', err);
-                    return res.status(500).json({ error: 'Failed to store link' });
-                }
-
-                return res.status(200).json({ message: 'Report approved and link stored successfully' });
-            });
-        });
-    });
+        if (error) throw error;
+        
+        res.json({ message: 'Admin data updated successfully' });
+    } catch (err) {
+        console.error('Error updating admin data:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
+app.get('/admins/:id', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const { data: admins, error } = await supabase
+            .from('admins')
+            .select('*')
+            .eq('admin_id', id);
 
+        if (error) throw error;
 
-
-app.get('/links', (req, res) => {
-    const sql = `
-        SELECT 
-            links.*, 
-            users.userUsername AS reported_by 
-        FROM links
-        LEFT JOIN reports ON 
-            LOWER(TRIM(TRAILING '/' FROM links.url_link)) = LOWER(TRIM(TRAILING '/' FROM reports.link_reported))
-        LEFT JOIN users ON reports.userId = users.userId
-        WHERE reports.approved = 1;
-    `;
-
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.error('Error fetching links:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+        if (!admins || admins.length === 0) {
+            return res.status(404).json({ error: 'Admin not found' });
         }
-        console.log("Fetched links:", results);
-        res.json(results);
-    });
+
+        res.json(admins[0]);
+    } catch (err) {
+        console.error('Error retrieving admin data:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.delete('/reports/:report_id', (req, res) => {
-    const reportId = req.params.report_id;
-    const sql = "DELETE FROM reports WHERE report_id = ?";
+// app.post('/submitreport', async (req, res) => {
+//     const { userid, link_reported, report_description } = req.body;
 
-    db.query(sql, [reportId], (err, results) => {
-        if (err) {
-            console.error('Error deleting report:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ error: 'Report not found' });
-        }
-        res.json({ message: 'Report deleted successfully' });
-    });
-});
+//     // Check if userid is provided
+//     if (!userid || !link_reported) {
+//         return res.status(400).json({ error: 'userid and link_reported are required' });
+//     }
 
-app.get('/links/:userId', (req, res) => {
-    const { userId } = req.params;
+//     // If report_description is not provided, set it to 'None'
+//     const description = report_description || 'None';
 
-    const sql = `
-        SELECT 
-            links.link_id, 
-            links.url_link, 
-            links.tld, 
-            links.date_verified
-        FROM links
-        INNER JOIN reports ON 
-            LOWER(TRIM(TRAILING '/' FROM links.url_link)) = LOWER(TRIM(TRAILING '/' FROM reports.link_reported))
-        WHERE reports.userId = ? AND reports.approved = 1;
-    `;
+//     try {
+//         // Check if the user exists
+//         const { data: users, error: userError } = await supabase
+//             .from('users')
+//             .select('userusername')
+//             .eq('userid', userid);
 
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            console.error('Error fetching links for user:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-        console.log("Fetched user-specific links:", results);
-        res.json(results);
-    });
-});
+//         if (userError) throw userError;
 
+//         // If no user found with that userid, return error
+//         if (!users || users.length === 0) {
+//             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         const username = users[0].userusername;
+
+//         // Insert the report
+//         const { data, error } = await supabase
+//             .from('reports')
+//             .insert([{ 
+//                 userid, 
+//                 link_reported, 
+//                 report_description: description 
+//             }]);
+
+//         if (error) throw error;
+
+//         res.json({ message: 'Report submitted successfully', username: username });
+//     } catch (err) {
+//         console.error('Error submitting report:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+// app.get('/reports', async (req, res) => {
+//     try {
+//         const { data, error } = await supabase
+//             .from('reports')
+//             .select(`
+//                 report_id,
+//                 link_reported,
+//                 report_description,
+//                 approved,
+//                 users (userusername)
+//             `);
+
+//         if (error) throw error;
+
+//         // Format the response to match the original structure
+//         const formattedData = data.map(report => ({
+//             report_id: report.report_id,
+//             link_reported: report.link_reported,
+//             report_description: report.report_description,
+//             approved: report.approved,
+//             userusername: report.users ? report.users.userusername : null
+//         }));
+
+//         res.json(formattedData);
+//     } catch (err) {
+//         console.error('Error fetching reports:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+// const extractTLD = (url) => {
+//     try {
+//         // Ensure URL is valid and standardized
+//         const formattedUrl = url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+//         const parsedUrl = new URL(formattedUrl);
+        
+//         const hostname = parsedUrl.hostname;
+//         const tld = hostname.split('.').pop();
+
+//         // Remove trailing slash from pathname
+//         let cleanedUrl = parsedUrl.href.replace(/\/+$/, '');
+
+//         return {
+//             url_link: cleanedUrl, // Store URL WITHOUT trailing slash
+//             tld: tld
+//         };
+//     } catch (error) {
+//         console.error("Invalid URL:", url);
+//         return { url_link: null, tld: null };
+//     }
+// };
+
+// app.post('/reports/approve', async (req, res) => {
+//     const { report_id, link } = req.body;
+//     const { url_link, tld } = extractTLD(link); 
+
+//     if (!url_link || !tld) {
+//         return res.status(400).json({ error: "Invalid URL" });
+//     }
+
+//     try {
+//         // Get userid from the report before approving
+//         const { data: reports, error: fetchError } = await supabase
+//             .from('reports')
+//             .select('userid')
+//             .eq('report_id', report_id);
+
+//         if (fetchError) throw fetchError;
+
+//         if (!reports || reports.length === 0) {
+//             return res.status(404).json({ error: 'Report not found' });
+//         }
+
+//         const userid = reports[0].userid;
+
+//         // Update the report to approved status
+//         const { error: updateError } = await supabase
+//             .from('reports')
+//             .update({ approved: true })
+//             .eq('report_id', report_id);
+
+//         if (updateError) throw updateError;
+
+//         // Insert the link with userid
+//         const { error: insertError } = await supabase
+//             .from('links')
+//             .insert([{ url_link, tld, userid: userid }]);
+
+//         if (insertError) throw insertError;
+
+//         return res.status(200).json({ message: 'Report approved and link stored successfully' });
+//     } catch (err) {
+//         console.error('Error in approve process:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+// app.get('/links', async (req, res) => {
+//     try {
+//         // This query is more complex in Supabase/PostgreSQL
+//         // We need to use raw SQL or break it down into multiple operations
+//         const { data, error } = await supabase.rpc('get_approved_links');
+
+//         if (error) {
+//             // Fallback to a simplified query if the RPC isn't set up
+//             console.error('RPC error, falling back to basic query:', error);
+            
+//             const { data: basicData, error: basicError } = await supabase
+//                 .from('links')
+//                 .select(`
+//                     *,
+//                     users (userusername)
+//                 `);
+                
+//             if (basicError) throw basicError;
+            
+//             // Format the data to match expected structure
+//             const formattedData = basicData.map(link => ({
+//                 ...link,
+//                 reported_by: link.users ? link.users.userusername : null
+//             }));
+            
+//             return res.json(formattedData);
+//         }
+
+//         console.log("Fetched links:", data);
+//         res.json(data);
+//     } catch (err) {
+//         console.error('Error fetching links:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+// app.delete('/reports/:report_id', async (req, res) => {
+//     const reportId = req.params.report_id;
+    
+//     try {
+//         const { data, error } = await supabase
+//             .from('reports')
+//             .delete()
+//             .eq('report_id', reportId);
+
+//         if (error) throw error;
+        
+//         res.json({ message: 'Report deleted successfully' });
+//     } catch (err) {
+//         console.error('Error deleting report:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
+
+// app.get('/links/:userid', async (req, res) => {
+//     const { userid } = req.params;
+
+//     try {
+//         // This query is complex and might need a custom PostgreSQL function in Supabase
+//         const { data, error } = await supabase.rpc('get_user_links', { userid: userid });
+
+//         if (error) {
+//             // Fallback to a simpler query if the RPC function isn't set up
+//             console.error('RPC error, falling back to basic query:', error);
+            
+//             const { data: basicData, error: basicError } = await supabase
+//                 .from('links')
+//                 .select('link_id, url_link, tld, date_verified')
+//                 .eq('userid', userid);
+                
+//             if (basicError) throw basicError;
+//             return res.json(basicData);
+//         }
+
+//         console.log("Fetched user-specific links:", data);
+//         res.json(data);
+//     } catch (err) {
+//         console.error('Error fetching links for user:', err);
+//         return res.status(500).json({ error: 'Internal server error' });
+//     }
+// });
 
 // Start the server
 app.listen(PORT, () => {
