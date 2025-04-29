@@ -13,10 +13,19 @@ const Reports = () => {
     // Fetch reports from Supabase
     const fetchReports = async () => {
         try {
-            const { data, error } = await supabase.from('reports').select('*');
+            const { data, error } = await supabase
+            .from('reports')
+            .select(`
+                report_id,
+                link_reported,
+                report_description,
+                approved,
+                users:userid(userusername)
+            `);
             if (error) {
                 console.error('Error fetching reports:', error.message);
             } else {
+                console.log('Fetched reports data:', data); // ✅ Log fetched data
                 setReports(data);
             }
         } catch (error) {
@@ -33,8 +42,8 @@ const Reports = () => {
                 const { error } = await supabase
                     .from('reports')
                     .update({ approved: true })
-                    .match({ report_id });
-
+                    .match({ report_id, link_reported: link }); // Match both report_id and link_reported
+    
                 if (error) {
                     console.error('Error approving report:', error.message);
                 } else {
@@ -102,7 +111,7 @@ const Reports = () => {
                             <tbody>
                                 ${filteredReports.map(report => `
                                     <tr>
-                                        <td>${report.userusername}</td>
+                                        <td>${report.users?.userusername || 'N/A'}</td>
                                         <td>${report.link_reported}</td>
                                         <td>${report.report_description}</td>
                                     </tr>
@@ -145,7 +154,7 @@ const Reports = () => {
                 <tbody>
                     {reports.map((report) => (
                         <tr key={report.report_id}>
-                            <td>{report.userusername}</td>
+                            <td>{report.users?.userusername || 'N/A'}</td>
                             <td>{report.link_reported}</td>
                             <td>{report.report_description}</td>
                             <td>
