@@ -39,23 +39,23 @@ const Reports = () => {
     const handleApprove = async (report_id, link) => {
         if (window.confirm("Are you sure you want to approve this report?")) {
             try {
-                const { error } = await supabase
-                    .from('reports')
-                    .update({ approved: true })
-                    .match({ report_id, link_reported: link }); // Match both report_id and link_reported
+                const response = await fetch('https://capstone-server-p18f.onrender.com/reports/approve', { // 👈 Add full URL
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_id, link })
+                });
     
-                if (error) {
-                    console.error('Error approving report:', error.message);
-                } else {
-                    alert("Report approved successfully!");
-                    setReports(prevReports =>
-                        prevReports.map(report =>
-                            report.report_id === report_id ? { ...report, approved: true } : report
-                        )
-                    );
-                }
+                const result = await response.json(); // 👈 Parse JSON response
+                if (!response.ok) throw new Error(result.error || 'Approval failed');
+    
+                // Update local state
+                setReports(prev => prev.map(r => 
+                    r.report_id === report_id ? { ...r, approved: true } : r
+                ));
+                alert("Report approved successfully!");
             } catch (error) {
-                console.error('Error approving report:', error.message);
+                console.error('Error:', error);
+                alert(`Approval failed: ${error.message}`); // 👈 Show actual error
             }
         }
     };

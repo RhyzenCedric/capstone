@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.phishingapp.MainActivity.Companion.TAG
 import com.example.phishingapp.backend.RetrofitClient
+import com.example.phishingapp.backend.UpdateRequest
 import com.example.phishingapp.backend.UpdateResponse
 import retrofit2.Call
 import retrofit2.Response
@@ -95,10 +96,10 @@ class EditProfileActivity : AppCompatActivity() {
         val currentPassword = editTextPassword.text.toString()
         val newPassword = editTextNewPassword.text.toString()
 
-        val updateRequest = mapOf(
-            "newUsername" to newUsername,
-            "currentPassword" to currentPassword,
-            "newPassword" to newPassword
+        val updateRequest = UpdateRequest(
+            newUsername = if (enteredUsername.isEmpty()) null else enteredUsername,
+            currentPassword = if (currentPassword.isEmpty()) null else currentPassword,
+            newPassword = if (newPassword.isEmpty()) null else newPassword
         )
 
         RetrofitClient.instance.updateProfile(userId, updateRequest)

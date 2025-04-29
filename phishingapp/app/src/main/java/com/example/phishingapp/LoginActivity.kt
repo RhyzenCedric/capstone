@@ -89,43 +89,50 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // Function to log in the user
-    private fun loginUser(userUsername: String, userPassword: String) {
+    private fun loginUser (userUsername: String, userPassword: String) {
         val loginRequest = LoginRequest(userUsername, userPassword)
         val call = RetrofitClient.instance.login(loginRequest)
 
         call.enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                Log.d("LoginActivity", "Response received: ${response.body()}")
+                Log.d("LoginActivity", "Response code: ${response.code()}")
+                Log.d("LoginActivity", "Response headers: ${response.headers()}")
+
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
-                        val userId = loginResponse.userId // Get userId from response
-                        val userUsername = loginResponse.userUsername // Get username from response
+                        Log.d("LoginActivity", "Login successful: $loginResponse")
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
 
-                        val sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        if (userId != null) {
-                            editor.putInt("userId", userId)
+                        // Save user data in SharedPreferences
+                        val sharedPreferences = getSharedPreferences("User Data", MODE_PRIVATE)
+                        with(sharedPreferences.edit()) {
+                            putInt("userId", loginResponse.userId)
+                            putString("userUsername", loginResponse.username)
+                            apply()
                         }
-                        editor.putString("userUsername", userUsername)
-                        editor.apply() // Save changes
 
-                        // Redirect to MainActivity with userId and username
+                        // Redirect to MainActivity
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        intent.putExtra("userId", userId)
-                        intent.putExtra("userUsername", userUsername) // Use the username from the response
+                        intent.putExtra("userId", loginResponse.userId)
+                        intent.putExtra("userUsername", loginResponse.username)
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(intent)
                         finish()
+                    } else {
+                        Log.e("LoginActivity", "Response body is null despite successful status")
                     }
                 } else {
-                    val errorMessage = response.body()?.error ?: "Login failed: ${response.message()}"
-                    Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    // Log the error response
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("LoginActivity", "Error response: $errorBody")
+                    val errorMessage = errorBody ?: "Login failed: ${response.message()}"
+                    Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_LONG).show()
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Log.e("LoginActivity", "Error: ${t.message}")
                 Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

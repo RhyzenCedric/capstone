@@ -448,28 +448,23 @@ const extractTLD = (url) => {
 
 app.post('/reports/approve', async (req, res) => {
     const { report_id, link } = req.body;
-    const { url_link, tld } = extractTLD(link); 
+    const { url_link, tld } = extractTLD(link);
 
     if (!url_link || !tld) {
         return res.status(400).json({ error: "Invalid URL" });
     }
 
     try {
-        // Get userid from the report before approving
+        // Get userid from the report
         const { data: reports, error: fetchError } = await supabase
             .from('reports')
             .select('userid')
             .eq('report_id', report_id);
 
         if (fetchError) throw fetchError;
+        if (!reports?.length) return res.status(404).json({ error: 'Report not found' });
 
-        if (!reports || reports.length === 0) {
-            return res.status(404).json({ error: 'Report not found' });
-        }
-
-        const userid = reports[0].userid;
-
-        // Update the report to approved status
+        // Update report status
         const { error: updateError } = await supabase
             .from('reports')
             .update({ approved: true })
@@ -477,16 +472,21 @@ app.post('/reports/approve', async (req, res) => {
 
         if (updateError) throw updateError;
 
-        // Insert the link with userid
+        // Insert into links with explicit timestamp
         const { error: insertError } = await supabase
             .from('links')
-            .insert([{ url_link, tld, userid: userid }]);
+            .insert([{
+                url_link,
+                tld,
+                userid: reports[0].userid,
+                date_verified: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            }]);
 
         if (insertError) throw insertError;
 
-        return res.status(200).json({ message: 'Report approved and link stored successfully' });
+        return res.status(200).json({ message: 'Approved and link stored' });
     } catch (err) {
-        console.error('Error in approve process:', err);
+        console.error('Error:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

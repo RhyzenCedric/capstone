@@ -115,14 +115,14 @@ class AnalyticsActivity : AppCompatActivity() {
 
         for (threat in threatsList) {
             try {
-                val utcDate = utcFormat.parse(threat.date_verified)
+                val utcDate = utcFormat.parse(threat.date)
                 utcDate?.let {
                     // Convert to Manila time and format as MMM-dd
                     val manilaDateString = manilaFormat.format(it)
 
                     // Add or increment the count for this date
                     threatsByTime[manilaDateString] = threatsByTime.getOrDefault(manilaDateString, 0) + 1
-                    Log.d("ThreatDate", "Original: ${threat.date_verified}, Manila Date: $manilaDateString")
+                    Log.d("ThreatDate", "Original: ${threat.date}, Manila Date: $manilaDateString")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

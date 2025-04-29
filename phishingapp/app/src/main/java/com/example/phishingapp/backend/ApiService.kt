@@ -1,51 +1,104 @@
 // ApiService.kt
 package com.example.phishingapp.backend
 
+import com.google.gson.annotations.SerializedName
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
+// Signup Request/Response
 data class SignupRequest(
-    val userUsername: String,
+    @SerializedName("userusername")
+    val username: String,
 
-    val userPassword: String
+    @SerializedName("userpassword")
+    val password: String
 )
 
 data class SignupResponse(
     val message: String
 )
 
+// Login Request/Response
 data class LoginRequest(
-    val userUsername: String,
-    val userPassword: String,
+    @SerializedName("userusername")
+    val username: String,
 
-)
-
-data class UserDetails(
-    val userUsername: String,
-
-    val userId: Int?,
+    @SerializedName("userpassword")
+    val password: String
 )
 
 data class LoginResponse(
     val message: String,
-    val userId: Int?,
-    val userUsername: String,
+
+    @SerializedName("userid")
+    val userId: Int,
+
+    @SerializedName("userusername")
+    val username: String,
+
+    @SerializedName("userpassword")
+    val password: String,
+
     val error: String? = null
 )
 
-data class ReportRequest(
+// User Details
+data class UserDetails(
+    @SerializedName("userid")
     val userId: Int,
-    val link_reported: String,  // Match exactly with backend field name
-    val report_description: String  // Match exactly with backend field name
+
+    @SerializedName("userusername")
+    val username: String,
+
+    @SerializedName("userpassword")
+    val password: String  // Only include if needed for updates
+)
+
+// Report Handling
+data class ReportRequest(
+    @SerializedName("userid")
+    val userId: Int,
+
+    @SerializedName("link_reported")
+    val linkReported: String,
+
+    @SerializedName("report_description")
+    val description: String
 )
 
 data class ReportResponse(
-    val message: String
+    val message: String,
+    val username: String?
+)
+
+// Threat Listing
+data class Threat(
+    @SerializedName("link_id")
+    val id: Int,
+
+    @SerializedName("url_link")
+    val url: String,
+
+    @SerializedName("tld")
+    val domain: String,
+
+    @SerializedName("date_verified")
+    val date: String,
+
+    @SerializedName("reported_by")
+    val reporter: String?
+)
+
+// Profile Update
+data class UpdateRequest(
+    @SerializedName("newUsername")
+    val newUsername: String?,
+
+    @SerializedName("currentPassword")
+    val currentPassword: String?,
+
+    @SerializedName("newPassword")
+    val newPassword: String?
 )
 
 data class UpdateResponse(
@@ -53,23 +106,34 @@ data class UpdateResponse(
 )
 
 interface ApiService {
+    // Authentication
     @POST("/usersignup")
-    fun signup(@Body signupRequest: SignupRequest): Call<SignupResponse>
+    fun signup(@Body request: SignupRequest): Call<SignupResponse>
 
     @POST("/userlogin")
-    fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
+    fun login(@Body request: LoginRequest): Call<LoginResponse>
 
-    // New method for retrieving user details
-    @GET("/users/{id}")  // Use {id} to pass the userId as a URL parameter
+    // User Data
+    @GET("/users/{id}")
     fun getUserDetails(@Path("id") userId: Int): Call<UserDetails>
 
-    @POST("/submitreport")
-    fun submitReport(@Body reportRequest: ReportRequest): Call<ReportResponse>
-
-    @GET("links/{userId}")
-    fun getUserLinks(@Path("userId") userId: Int): Call<List<Threat>>
-
     @PUT("/users/{id}")
-    fun updateProfile(@Path("id") userId: Int, @Body updateRequest: Map<String, String>): Call<UpdateResponse>
-}
+    fun updateProfile(
+        @Path("id") userId: Int,
+        @Body updateRequest: UpdateRequest  // Use data class instead of Map
+    ): Call<UpdateResponse>
 
+    // Reporting System
+    @POST("/submitreport")
+    fun submitReport(@Body request: ReportRequest): Call<ReportResponse>
+
+    @GET("/links/{userid}")
+    fun getUserLinks(@Path("userid") userid: Int): Call<List<Threat>>
+
+    // Admin Endpoints (if needed)
+    @GET("/reports")
+    fun getAllReports(): Call<List<ReportResponse>>
+
+    @POST("/reports/approve")
+    fun approveReport(@Body approvalData: Map<String, Any>): Call<ReportResponse>
+}

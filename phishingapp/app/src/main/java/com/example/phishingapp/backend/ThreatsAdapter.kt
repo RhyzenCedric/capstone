@@ -10,8 +10,6 @@ import com.example.phishingapp.R
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-data class Threat(val link_id: Int, val url_link: String, val date_verified: String)
-
 class ThreatsAdapter(private val threats: List<Threat>) :
     RecyclerView.Adapter<ThreatsAdapter.ThreatViewHolder>() {
 
@@ -29,8 +27,8 @@ class ThreatsAdapter(private val threats: List<Threat>) :
     @SuppressLint("SimpleDateFormat")
     override fun onBindViewHolder(holder: ThreatViewHolder, position: Int) {
         val threat = threats[position]
-        holder.urlTextView.text = threat.url_link
-        holder.dateTextView.text = "Verified: ${formatDate(threat.date_verified)}"
+        holder.urlTextView.text = threat.url
+        holder.dateTextView.text = "Verified: ${formatDate(threat.date)}"
     }
     override fun getItemCount() = threats.size
 

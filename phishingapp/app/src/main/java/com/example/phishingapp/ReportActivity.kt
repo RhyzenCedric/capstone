@@ -115,8 +115,8 @@ class ReportActivity : AppCompatActivity() {
         // Create the report request with the proper field names to match the backend
         val reportRequest = ReportRequest(
             userId = userId,
-            link_reported = link,          // Make sure this matches backend field name
-            report_description = editTextDescription  // Make sure this matches backend field name
+            linkReported = link,          // Make sure this matches backend field name
+            description = editTextDescription  // Make sure this matches backend field name
         )
 
         RetrofitClient.instance.submitReport(reportRequest).enqueue(object : Callback<ReportResponse> {
