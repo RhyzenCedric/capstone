@@ -3,28 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import TopNav from "../NavBars/TopNav";
 import EditAdminDetails from '../EditDetails/EditAdminDetails'; 
 import Modal from '../EditDetails/EditAdminDetailsModal';
-import axios from 'axios'; // Import Axios
+import { supabase } from '../../supabaseClient'; // ✅ import Supabase client
 import "../../css/Admins.css"
 
 const Admins = () => {
-    const [admins, setAdmins] = useState([]); // State to hold user data
-    const [loading, setLoading] = useState(true); // State to manage loading status
+    const [admins, setAdmins] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [editingAdmin, setEditingAdmin] = useState(null); 
-    const navigate = useNavigate(); 
-    
+    const navigate = useNavigate();
+
     useEffect(() => {
         fetchAdmins();
-    }, []); // Run this effect only once on component mount
-    
+    }, []);
+
     const fetchAdmins = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/admins'); // Use Axios to fetch admins
-            setAdmins(response.data); // Set the fetched data to the state
-        } catch (error) {
-            console.error('Error fetching admins:', error);
-        } finally {
-            setLoading(false); // Set loading to false after fetching
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('admins')
+            .select('*');
+        if (error) {
+            console.error('Error fetching admins:', error.message);
+        } else {
+            setAdmins(data);
         }
+        setLoading(false);
     };
 
     const handleEdit = (admin) => {
@@ -33,23 +35,22 @@ const Admins = () => {
 
     const handleDelete = async (admin_id) => {
         if (window.confirm("Are you sure you want to delete this admin?")) {
-            try {
-                const response = await axios.delete(`http://localhost:5000/admins/${admin_id}`); // Use Axios to delete admin
-                if (response.status === 200) {
-                    setAdmins((prevAdmins) => prevAdmins.filter(admin => admin.admin_id !== admin_id)); // Update state after deletion
-                } else {
-                    throw new Error('Failed to delete admin');
-                }
-            } catch (error) {
-                console.error('Error deleting admin:', error);
+            const { error } = await supabase
+                .from('admins')
+                .delete()
+                .eq('admin_id', admin_id);
+            if (error) {
+                console.error('Error deleting admin:', error.message);
+            } else {
+                setAdmins((prev) => prev.filter(admin => admin.admin_id !== admin_id));
             }
         }
     };
 
     if (loading) {
-        return <h1>Loading...</h1>; // Show loading state
+        return <h1>Loading...</h1>;
     }
-    
+
     return (
         <>
             <TopNav />
@@ -74,13 +75,13 @@ const Admins = () => {
                 </tbody>
             </table>
 
-            {editingAdmin && ( 
+            {editingAdmin && (
                 <Modal onClose={() => setEditingAdmin(null)}>
                     <EditAdminDetails
                         admin_id={editingAdmin.admin_id}
                         admin_username={editingAdmin.admin_username}
-                        onUpdate={fetchAdmins} // Pass fetchAdmins to update after the modal
-                        onClose={() => setEditingAdmin(null)} // Close modal
+                        onUpdate={fetchAdmins}
+                        onClose={() => setEditingAdmin(null)}
                     />
                 </Modal>
             )}

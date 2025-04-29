@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Import Axios
+import { supabase } from '../../supabaseClient'; // ✅ Import Supabase client
 import "../../css/EditAdminDetails.css";
 
 const EditAdminDetails = ({ admin_id, onUpdate, onClose }) => {
@@ -7,37 +7,37 @@ const EditAdminDetails = ({ admin_id, onUpdate, onClose }) => {
 
     useEffect(() => {
         const fetchAdmin = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5000/admins/${admin_id}`); // Fetch the specific admin by ID
-                setAdmin_username(response.data.admin_username); // Set the fetched admin's username
-            } catch (error) {
-                console.error('Error fetching admin:', error);
+            const { data, error } = await supabase
+                .from('admins')
+                .select('admin_username')
+                .eq('admin_id', admin_id)
+                .single();
+
+            if (error) {
+                console.error('Error fetching admin:', error.message);
+            } else {
+                setAdmin_username(data.admin_username);
             }
         };
 
         if (admin_id) {
-            fetchAdmin(); // Fetch admin data when admin_id is available
+            fetchAdmin();
         }
     }, [admin_id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const updatedData = {
-            admin_username,
-        };
+        const { error } = await supabase
+            .from('admins')
+            .update({ admin_username })
+            .eq('admin_id', admin_id);
 
-        try {
-            const response = await axios.put(`http://localhost:5000/admins/${admin_id}`, updatedData); // Use admin_id for updating
-
-            if (response.status === 200) {
-                onUpdate(); 
-                onClose();  
-            } else {
-                throw new Error('Failed to update admin');
-            }
-        } catch (error) {
-            console.error('Error updating admin:', error);
+        if (error) {
+            console.error('Error updating admin:', error.message);
+        } else {
+            onUpdate();  // Refresh the list in parent
+            onClose();   // Close modal
         }
     };
 
@@ -50,8 +50,8 @@ const EditAdminDetails = ({ admin_id, onUpdate, onClose }) => {
                         Username:
                         <input
                             type="text"
-                            value={admin_username} // Pre-fill with fetched admin_username
-                            onChange={(e) => setAdmin_username(e.target.value)} // Update state on input change
+                            value={admin_username}
+                            onChange={(e) => setAdmin_username(e.target.value)}
                             required
                         />
                     </label>

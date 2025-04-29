@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { supabase } from '../../supabaseClient'; // ✅ Import Supabase client
 import TopNav from "../NavBars/TopNav";
 
 const Reports = () => {
@@ -10,22 +10,34 @@ const Reports = () => {
         fetchReports();
     }, []);
 
+    // Fetch reports from Supabase
     const fetchReports = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/reports');
-            setReports(response.data);
+            const { data, error } = await supabase.from('reports').select('*');
+            if (error) {
+                console.error('Error fetching reports:', error.message);
+            } else {
+                setReports(data);
+            }
         } catch (error) {
-            console.error('Error fetching reports:', error);
+            console.error('Error fetching reports:', error.message);
         } finally {
             setLoading(false);
         }
     };
 
+    // Approve a report
     const handleApprove = async (report_id, link) => {
         if (window.confirm("Are you sure you want to approve this report?")) {
             try {
-                const response = await axios.post('http://localhost:5000/reports/approve', { report_id, link });
-                if (response.status === 200) {
+                const { error } = await supabase
+                    .from('reports')
+                    .update({ approved: true })
+                    .match({ report_id });
+
+                if (error) {
+                    console.error('Error approving report:', error.message);
+                } else {
                     alert("Report approved successfully!");
                     setReports(prevReports =>
                         prevReports.map(report =>
@@ -34,28 +46,34 @@ const Reports = () => {
                     );
                 }
             } catch (error) {
-                console.error('Error approving report:', error);
+                console.error('Error approving report:', error.message);
             }
         }
     };
 
+    // Delete a report
     const handleDelete = async (report_id) => {
         if (window.confirm("Are you sure you want to delete this report?")) {
             try {
-                const response = await axios.delete(`http://localhost:5000/reports/${report_id}`);
-                if (response.status === 200) {
-                    setReports(prevReports => prevReports.filter(report => report.report_id !== report_id));
+                const { error } = await supabase
+                    .from('reports')
+                    .delete()
+                    .match({ report_id });
+
+                if (error) {
+                    console.error('Error deleting report:', error.message);
                 } else {
-                    throw new Error('Failed to delete report');
+                    setReports(prevReports => prevReports.filter(report => report.report_id !== report_id));
                 }
             } catch (error) {
-                console.error('Error deleting report:', error);
+                console.error('Error deleting report:', error.message);
             }
         }
     };
 
+    // Print reports (approved or not)
     const handlePrint = (type) => {
-        const filteredReports = reports.filter(report => 
+        const filteredReports = reports.filter(report =>
             type === 'approved' ? report.approved : !report.approved
         );
 
@@ -84,7 +102,7 @@ const Reports = () => {
                             <tbody>
                                 ${filteredReports.map(report => `
                                     <tr>
-                                        <td>${report.userUsername}</td>
+                                        <td>${report.userusername}</td>
                                         <td>${report.link_reported}</td>
                                         <td>${report.report_description}</td>
                                     </tr>
@@ -99,7 +117,6 @@ const Reports = () => {
         printWindow.print();
     };
 
-
     if (loading) {
         return <h1>Loading...</h1>;
     }
@@ -109,18 +126,12 @@ const Reports = () => {
             <TopNav />
             <h1 className='reports-header'>Reports</h1>
             <div className="print-buttons">
-                <button 
+                <button
                     className="print-button"
                     onClick={() => handlePrint('approved')}
                 >
                     Print Approved Reports
                 </button>
-                {/* <button 
-                    className="print-button"
-                    onClick={() => handlePrint('rejected')}
-                >
-                    Print Rejected Reports
-                </button> */}
             </div>
             <table>
                 <thead>
@@ -134,7 +145,7 @@ const Reports = () => {
                 <tbody>
                     {reports.map((report) => (
                         <tr key={report.report_id}>
-                            <td>{report.userUsername}</td>
+                            <td>{report.userusername}</td>
                             <td>{report.link_reported}</td>
                             <td>{report.report_description}</td>
                             <td>
