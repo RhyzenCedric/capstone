@@ -12,14 +12,21 @@ const Links = () => {
         const fetchLinks = async () => {
             try {
                 // Fetch links from Supabase
-                const { data, error } = await supabase.from('links').select('*');
+                const { data, error } = await supabase
+                    .from('links')
+                    .select(`
+                        *,
+                        users (userusername)  // Fetch userusername from the users table
+                    `);
+                
                 if (error) {
                     console.error('Error fetching links:', error.message);
                 } else {
                     // Format date_verified
                     const updatedLinks = data.map(link => ({
                         ...link,
-                        date_verified: new Date(link.date_verified).toLocaleString()
+                        date_verified: new Date(link.date_verified).toLocaleString(),
+                        userusername: link.users ? link.users.userusername : null // Get userusername
                     }));
 
                     // Remove duplicates based on link_id
@@ -34,6 +41,7 @@ const Links = () => {
                     if (!ignore) {
                         setLinks(uniqueLinks);
                     }
+                    console.log('Fetched links data:', uniqueLinks);
                 }
             } catch (error) {
                 console.error('Error fetching links:', error.message);
@@ -73,7 +81,7 @@ const Links = () => {
                         <tr key={link.link_id}>
                             <td>{link.url_link}</td>
                             <td>{link.tld}</td>
-                            <td>{link.reported_by}</td>
+                            <td>{link.userusername}</td> {/* Display userusername */}
                             <td>{link.date_verified}</td>
                         </tr>
                     ))}
