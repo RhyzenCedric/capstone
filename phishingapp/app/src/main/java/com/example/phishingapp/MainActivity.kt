@@ -59,14 +59,6 @@ class MainActivity : AppCompatActivity() {
         isAppInBackground = false
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        intent?.let {
-            val updatedUsername = it.getStringExtra("userUsername") ?: "DefaultUsername"
-            Log.d(TAG, "Updated username received: $updatedUsername")
-            // Update UI or perform actions with updatedUsername
-        }
-    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -268,7 +260,7 @@ class MainActivity : AppCompatActivity() {
         // Disable the button and change its text
         showCircleButton.isEnabled = false
         showCircleButton.setImageResource(R.drawable.home_activated)
-
+        Log.d("MainActivity", "ImageView clicked")
 
         // Create a new View for the floating circle
         floatingCircle = View(this)

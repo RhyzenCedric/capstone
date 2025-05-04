@@ -16,7 +16,7 @@ class StartupActivity : AppCompatActivity() {
         setContentView(R.layout.startup_activity) // Make sure this layout exists
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonSignUp = findViewById(R.id.buttonSignup)
-        buttonGuest =  findViewById(R.id.buttonGuest)
+
 
         buttonLogin.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java) // Directly go to MainActivity
@@ -26,12 +26,6 @@ class StartupActivity : AppCompatActivity() {
 
         buttonSignUp.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java) // Directly go to MainActivity
-            startActivity(intent)
-            finish()
-        }
-
-        buttonGuest.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java) // Directly go to MainActivity
             startActivity(intent)
             finish()
         }

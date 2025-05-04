@@ -20,6 +20,20 @@
     <!-- Content Layout (White Background) -->
 
 
+    <ImageView
+        android:id="@+id/appIcon"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="App Icon"
+        android:src="@drawable/app_icon"
+        app:layout_constraintBottom_toTopOf="@id/title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1" />
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
@@ -63,18 +77,6 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
-            android:id="@+id/buttonGuest"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="900dp"
-            android:backgroundTint="#108690"
-            android:text="Continue as Guest"
-            android:textColor="#ffffff"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/buttonSignup"
