@@ -573,6 +573,26 @@ app.get('/links/:userid', async (req, res) => {
     }
 });
 
+app.get('/infographics', async (req, res) => {
+    try {
+        // Fetch more items than needed
+        const { data, error } = await supabase
+            .from('infographics')
+            .select('image_url, title_text, description, infographic_type');
+
+        if (error) throw error;
+
+        // Shuffle and select 3 random items
+        const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+        res.json(shuffled);
+    } catch (err) {
+        console.error('Error fetching random items:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
