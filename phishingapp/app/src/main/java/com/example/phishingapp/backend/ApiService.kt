@@ -105,6 +105,13 @@ data class UpdateResponse(
     val message: String
 )
 
+data class Infographic(
+    val image_url: String,
+    val title_text: String,
+    val description: String,
+
+)
+
 interface ApiService {
     // Authentication
     @POST("/usersignup")

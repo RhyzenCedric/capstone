@@ -1,7 +1,6 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -10,10 +9,10 @@
         android:id="@+id/sonar_wave_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Bottom White Background -->
     <View
@@ -122,10 +121,10 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/text_stay_protected"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/text_stay_protected">
 
         <!-- Learn More Button -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -136,9 +135,9 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintWidth_percent="0.25"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/button_reports"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintWidth_percent="0.25"
             tools:ignore="MissingConstraints">
 
             <ImageView
@@ -147,9 +146,9 @@
                 android:layout_height="@dimen/image_size"
                 android:src="@drawable/learn_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/label_learn_more"
@@ -175,9 +174,9 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintWidth_percent="0.25"
-            app:layout_constraintStart_toEndOf="@id/button_learn_more"
             app:layout_constraintEnd_toStartOf="@id/button_account"
+            app:layout_constraintStart_toEndOf="@id/button_learn_more"
+            app:layout_constraintWidth_percent="0.25"
             tools:ignore="MissingConstraints">
 
             <ImageView
@@ -213,9 +212,9 @@
             android:clickable="true"
             android:focusable="true"
             app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintWidth_percent="0.25"
-            app:layout_constraintStart_toEndOf="@id/button_reports"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/button_reports"
+            app:layout_constraintWidth_percent="0.25"
             tools:ignore="MissingConstraints">
 
             <ImageView
@@ -224,9 +223,9 @@
                 android:layout_height="@dimen/image_size"
                 android:src="@drawable/account_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/label_account"

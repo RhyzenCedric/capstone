@@ -88,7 +88,17 @@
             android:exported="false"/>
 
         <activity
-            android:name=".LearnMoreActivity"
+            android:name=".LearnMoreMainScreenActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"/>
+
+        <activity
+            android:name=".PhishingInfographicActivity"
+            android:screenOrientation="portrait"
+            android:exported="false"/>
+
+        <activity
+            android:name=".ScammingInfographicActivity"
             android:screenOrientation="portrait"
             android:exported="false"/>
 

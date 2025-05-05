@@ -575,22 +575,24 @@ app.get('/links/:userid', async (req, res) => {
 
 app.get('/infographics', async (req, res) => {
     try {
-        // Fetch more items than needed
+        const infographicType = req.query.type; // Get the type from query parameters
+        console.log('Requested infographic type:', infographicType); // Log the type
+        // Fetch items with the specified infographic_type
         const { data, error } = await supabase
             .from('infographics')
-            .select('image_url, title_text, description, infographic_type');
-
+            .select('image_url, title_text, description, infographic_type')
+            .eq('infographic_type', infographicType); // Filter by type
         if (error) throw error;
-
+        console.log('Fetched data:', data); // Log the fetched data
         // Shuffle and select 3 random items
         const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 3);
-
         res.json(shuffled);
     } catch (err) {
         console.error('Error fetching random items:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 
 // Start the server

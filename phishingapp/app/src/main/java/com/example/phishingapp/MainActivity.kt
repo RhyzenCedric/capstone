@@ -166,12 +166,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<ConstraintLayout>(R.id.button_learn_more).setOnClickListener {
-            if (javaClass != LearnMoreActivity::class.java) {
+            if (javaClass != LearnMoreMainScreenActivity::class.java) {
                 // Retrieve the updated username from the intent or shared preferences
                 val updatedUsername = intent.getStringExtra("userUsername") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getString("userUsername", "Guest")
                 val userId = intent.extras?.getInt("userId") ?: getSharedPreferences("User Data", Context.MODE_PRIVATE).getInt("userId", 0)
                 Log.d(TAG, "Passing userId: $userId")
-                val intent = Intent(this@MainActivity, LearnMoreActivity::class.java)
+                val intent = Intent(this@MainActivity, LearnMoreMainScreenActivity::class.java)
                 intent.putExtra("userUsername", updatedUsername)
                 intent.putExtra("userId", userId)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
