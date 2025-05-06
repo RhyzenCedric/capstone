@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp") version "1.9.22-1.0.16"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
@@ -18,9 +18,6 @@ android {
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk {
-            abiFilters += setOf("armeabi-v7a", "arm64-v8a") // Include only these ABIs
-        }
     }
 
     buildTypes {
@@ -80,6 +77,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    kapt("com.github.bumptech.glide:compiler:4.16.0")
+    ksp("com.github.bumptech.glide:ksp:4.16.0")
     implementation("androidx.multidex:multidex:2.0.1")
 }
