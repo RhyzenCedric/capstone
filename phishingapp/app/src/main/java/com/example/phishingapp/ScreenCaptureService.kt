@@ -50,6 +50,10 @@ class ScreenCaptureService : Service() {
     private val isPaused = AtomicBoolean(false)
     private var isScanningPaused = false
     private var isServicePaused = false
+    private var truePositives = 0
+    private var trueNegatives = 0
+    private var falsePositives = 0
+    private var falseNegatives = 0
 
     // Store link positions with coordinates
     data class LinkPosition(val url: String, val boundingBox: Rect)
@@ -639,8 +643,26 @@ class ScreenCaptureService : Service() {
         }
 
         val maliciousLinks = scanningResult.scanResults.filter { it.isMalicious }
-        var maliciousLinksDetected = maliciousLinks.isNotEmpty()
+        val maliciousLinksDetected = maliciousLinks.isNotEmpty()
 
+        // Update metrics
+        if (maliciousLinksDetected) {
+            truePositives += maliciousLinks.size
+            falseNegatives += currentLinkPositions.size - maliciousLinks.size
+        } else {
+            // Check for false positives
+            val visibleLinksNotDetected = visibleLinks.filter { url ->
+                !scanningResult.scanResults.any { it.url == url && it.isMalicious }
+            }
+            falsePositives += visibleLinksNotDetected.size
+            trueNegatives += visibleLinksNotDetected.size
+        }
+
+        // Log the current metrics
+        Log.d(TAG, "TP: $truePositives, TN: $trueNegatives, FP: $falsePositives, FN: $falseNegatives")
+
+        // Calculate and display accuracy
+        calculateAndDisplayAccuracy()
         // Find links that disappeared (were visible before but not now)
         val disappearedLinks = overlays.keys.filter { url ->
             !visibleLinks.contains(url)
@@ -697,6 +719,50 @@ class ScreenCaptureService : Service() {
             LocalBroadcastManager.getInstance(this)
                 .sendBroadcast(Intent("com.example.phishingapp.NO_MALICIOUS_LINKS"))
         }
+    }
+
+    private fun calculateAndDisplayAccuracy() {
+        val total = truePositives + trueNegatives + falsePositives + falseNegatives
+        val precision = if (truePositives + falsePositives > 0) {
+            (truePositives.toDouble() / (truePositives + falsePositives)) * 100
+        } else {
+            0.0
+        }
+
+        val recall = if (truePositives + falseNegatives > 0) {
+            (truePositives.toDouble() / (truePositives + falseNegatives)) * 100
+        } else {
+            0.0
+        }
+
+        val f1Score = if (precision + recall > 0) {
+            (2 * precision * recall) / (precision + recall)
+        } else {
+            0.0
+        }
+
+        val accuracy = if (total > 0) {
+            ((truePositives + trueNegatives).toDouble() / total) * 100
+        } else {
+            0.0
+        }
+
+        // Display the metrics in the notification
+        showAccuracyNotification(
+            accuracy,
+            precision,
+            recall,
+            f1Score,
+            truePositives,
+            trueNegatives,
+            falsePositives,
+            falseNegatives
+        )
+
+        Log.d(TAG, "Accuracy: ${accuracy.toInt()}%")
+        Log.d(TAG, "Precision: ${precision.toInt()}%")
+        Log.d(TAG, "Recall: ${recall.toInt()}%")
+        Log.d(TAG, "F1 Score: ${f1Score.toInt()}")
     }
 
     // Determine if position changed significantly enough to warrant updating the overlay
@@ -792,6 +858,39 @@ class ScreenCaptureService : Service() {
         }
     }
 
+    private fun showAccuracyNotification(
+        accuracy: Double,
+        precision: Double,
+        recall: Double,
+        f1Score: Double,
+        tp: Int,
+        tn: Int,
+        fp: Int,
+        fn: Int
+    ) {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+
+        // Create an expandable notification with accuracy details
+        val inboxStyle = NotificationCompat.InboxStyle()
+        inboxStyle.setBigContentTitle("Scanner Accuracy")
+
+        inboxStyle.addLine("Accuracy: ${accuracy.toInt()}%")
+        inboxStyle.addLine("Precision: ${precision.toInt()}%")
+        inboxStyle.addLine("Recall: ${recall.toInt()}%")
+        inboxStyle.addLine("F1 Score: ${f1Score.toInt()}")
+        inboxStyle.addLine("TP: $tp, TN: $tn, FP: $fp, FN: $fn")
+
+        notificationBuilder
+            .setContentTitle("Scanner Performance")
+            .setContentText("View accuracy metrics")
+            .setStyle(inboxStyle)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+
+        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+    }
+
     private fun showNotification(title: String, content: String, maliciousLinks: List<ScanResult>? = null) {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -842,6 +941,14 @@ class ScreenCaptureService : Service() {
         }
     }
 
+    private fun resetMetrics() {
+        truePositives = 0
+        trueNegatives = 0
+        falsePositives = 0
+        falseNegatives = 0
+        Log.d(TAG, "Metrics reset")
+    }
+
     private fun stopScreenCapture() {
         try {
             isScanning.set(false)
@@ -871,6 +978,7 @@ class ScreenCaptureService : Service() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(scanControlReceiver)
         stopScreenCapture()
         removeAllOverlays()
+        resetMetrics()
         super.onDestroy()
     }
 
