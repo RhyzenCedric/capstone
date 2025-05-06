@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import Axios
+import { supabase } from '../../supabaseClient'; // Import Supabase
 import '../../css/Signup.css';
 
 const Signup = () => {
@@ -21,17 +21,15 @@ const Signup = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:5000/adminsignup', {
-                admin_username: username,
-                admin_password: password,
-            });
+            const { data, error } = await supabase
+                .from('admins')
+                .insert([{ admin_username: username, admin_password: password }]);
 
-            if (response.status === 200) {
+            if (error) {
+                setErrorMessage(error.message);
+            } else {
                 console.log('Registered Successfully');
                 navigate('/'); // Redirect on successful signup
-            } else {
-                // Handle error response from the backend
-                setErrorMessage(response.data.error || 'Signup failed');
             }
         } catch (error) {
             console.error('Error during signup:', error);

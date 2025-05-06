@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import Axios
+import { supabase } from '../../supabaseClient'; // Import Supabase
 import '../../css/Login.css';
 
 const Login = () => {
@@ -13,16 +13,22 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:5000/adminlogin', {
-                admin_username: username,
-                admin_password: password,
-            });
+            const { data: admins, error } = await supabase
+                .from('admins')
+                .select('*')
+                .eq('admin_username', username);
 
-            if (response.status === 200) {
+            if (error || !admins.length) {
+                alert('Invalid username or password');
+                return;
+            }
+
+            const admin = admins[0];
+            if (admin.admin_password === password) { // Replace with hashed password comparison in production
                 console.log("Logged In Successfully");
                 navigate('/dashboard'); // Navigate to dashboard on successful login
             } else {
-                alert(response.data.message); // Show error message if login fails
+                alert('Invalid password');
             }
         } catch (error) {
             console.error('Error during login:', error);
