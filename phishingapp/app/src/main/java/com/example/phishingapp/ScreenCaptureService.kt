@@ -54,6 +54,7 @@ class ScreenCaptureService : Service() {
     private var trueNegatives = 0
     private var falsePositives = 0
     private var falseNegatives = 0
+    private val uniqueLinks = mutableSetOf<String>()
 
     // Store link positions with coordinates
     data class LinkPosition(val url: String, val boundingBox: Rect)
@@ -497,42 +498,60 @@ class ScreenCaptureService : Service() {
         val urls = mutableListOf<String>()
 
         while (matcher.find()) {
-            var url = matcher.group()
-
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "http://$url"
-            }
-
-            urls.add(url)
+            urls.add(matcher.group()) // Keep original URL exactly as found
         }
 
         return urls
     }
 
+    // Simple sanitization without protocol addition
     private fun sanitizeUrl(urlString: String): String {
-        var cleanUrl = urlString.trim()
-
-        if (!cleanUrl.startsWith("http://") && !cleanUrl.startsWith("https://")) {
-            cleanUrl = "http://$cleanUrl"
-        }
-
-        return cleanUrl
+        return urlString.trim() // Only trim whitespace
     }
+
+    private fun extractHostname(urlString: String): String {
+        return try {
+            // If it has a protocol, use URL class
+            if (urlString.startsWith("http://") || urlString.startsWith("https://")) {
+                URL(urlString).host.lowercase()
+            } else {
+                // Without protocol, parse manually
+                // First check if there's a path part
+                val hostPart = if (urlString.contains("/")) {
+                    urlString.substring(0, urlString.indexOf("/"))
+                } else {
+                    urlString
+                }
+
+                // Remove any query parameters or fragments if present
+                if (hostPart.contains("?")) {
+                    hostPart.substring(0, hostPart.indexOf("?"))
+                } else if (hostPart.contains("#")) {
+                    hostPart.substring(0, hostPart.indexOf("#"))
+                } else {
+                    hostPart
+                }.lowercase()
+            }
+        } catch (e: Exception) {
+            // If parsing fails, just return the original string
+            Log.e(TAG, "Error extracting hostname from $urlString", e)
+            urlString
+        }
+    }
+
 
     private fun scanUrl(urlString: String): ScanResult {
         return try {
             val sanitizedUrl = sanitizeUrl(urlString)
-            val url = URL(sanitizedUrl)
-            val hostname = url.host.lowercase()
+            val hostname = extractHostname(sanitizedUrl)
             val tld = hostname.substringAfterLast('.', "")
 
-            // Define lists for analysis
+            // 1. Expand phishing indicator keywords
             val phishingIndicators = listOf(
-                "free-gift",
-                "suspicious",
-                "login-verify",
-                "account-secure",
-                "urgent-action"
+                "free-gift", "suspicious", "login-verify", "account-secure", "urgent-action",
+                "verification", "secure", "update", "limited-time", "click", "confirm",
+                "password", "banking", "recover", "alert", "unusual", "activity",
+                "security", "verify", "expire", "access", "restricted", "suspend"
             )
 
             val suspiciousDomains = listOf(
@@ -541,17 +560,15 @@ class ScreenCaptureService : Service() {
                 "phishing-site.org"
             )
 
+            // 2. Expand legitimate domains list
             val legitimateDomains = listOf(
-                "google.com",
-                "microsoft.com",
-                "paypal.com",
-                "amazon.com",
-                "facebook.com",
-                "twitter.com",
-                "apple.com",
-                "bank.com",
-                "open.spotify.com",
-                "youtube.com"
+                // Current domains...
+                "google.com", "microsoft.com", "paypal.com", "amazon.com", "facebook.com",
+                "twitter.com", "apple.com", "bank.com", "open.spotify.com", "youtube.com",
+                // Additional domains
+                "instagram.com", "linkedin.com", "netflix.com", "gmail.com", "outlook.com",
+                "yahoo.com", "dropbox.com", "github.com", "reddit.com", "wikipedia.org",
+                "chase.com", "wellsfargo.com", "bankofamerica.com", "citibank.com"
             )
 
             // Whitelist of known safe domains
@@ -561,7 +578,6 @@ class ScreenCaptureService : Service() {
                 "whatsapp.com"
             )
 
-            // Check if the URL is in the safe domains
             if (safeDomains.any { hostname.contains(it) }) {
                 return ScanResult(url = sanitizedUrl, isMalicious = false, description = "Known safe domain")
             }
@@ -574,6 +590,15 @@ class ScreenCaptureService : Service() {
             )
 
             val isSuspiciousTld = tld in riskyCcTlds
+
+            // URL checks - extract query parameters safely
+            val queryPart = try {
+                if (sanitizedUrl.contains("?")) {
+                    sanitizedUrl.substring(sanitizedUrl.indexOf("?") + 1)
+                } else ""
+            } catch (e: Exception) {
+                ""
+            }
 
             // Enhanced URL Complexity and Risk Checks
             val hasPhishingKeyword = phishingIndicators.any {
@@ -605,16 +630,34 @@ class ScreenCaptureService : Service() {
                 similarityRatio < 0.3
             }
 
-            // Comprehensive risk assessment
+            // 3. IP address detection (often used in phishing)
+            val containsIpAddress = hostname.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+"))
+
+            // 4. Check for URL shorteners
+            val urlShorteners = listOf("bit.ly", "goo.gl", "t.co", "tinyurl.com", "is.gd", "cli.gs", "ow.ly")
+            val isUrlShortener = urlShorteners.any { hostname.contains(it) }
+
+            // 5. Suspicious URL parameter detection - safely extract query params
+            val suspiciousParams = listOf("password", "username", "user", "login", "token", "verify", "account", "secure")
+            val hasSpecialChars = queryPart.isNotEmpty() && suspiciousParams.any { queryPart.contains(it) }
+
+            // 6. Check for excessive use of special characters
+            val hasExcessiveSpecialChars = sanitizedUrl.count { it in "@%&=#" } > 3
+
+            // 7. Refined comprehensive risk assessment
             val isMalicious = hasPhishingKeyword ||
                     isKnownBadDomain ||
                     isLongAndComplexUrl ||
                     domainSimilarityRisk ||
                     isSuspiciousTld ||
-                    hasObfuscatedSubdomain
+                    hasObfuscatedSubdomain ||
+                    containsIpAddress ||
+                    isUrlShortener ||
+                    hasSpecialChars ||
+                    hasExcessiveSpecialChars
 
             ScanResult(
-                url = sanitizedUrl,
+                url = sanitizedUrl, // Return original sanitized URL
                 isMalicious = isMalicious,
                 description = when {
                     isSuspiciousTld -> "Suspicious top-level domain"
@@ -623,13 +666,15 @@ class ScreenCaptureService : Service() {
                     isLongAndComplexUrl -> "Overly complex URL structure"
                     hasObfuscatedSubdomain -> "Potential subdomain obfuscation"
                     domainSimilarityRisk -> "Potential domain spoofing detected"
+                    containsIpAddress -> "IP address in URL"
+                    isUrlShortener -> "URL shortener detected"
                     else -> "Link appears safe"
                 }
             )
         } catch (e: Exception) {
             Log.e(TAG, "URL scanning error for $urlString", e)
             ScanResult(
-                url = urlString,
+                url = urlString, // Keep the original URL
                 isMalicious = false,
                 description = "Invalid URL"
             )
@@ -644,25 +689,32 @@ class ScreenCaptureService : Service() {
 
         val maliciousLinks = scanningResult.scanResults.filter { it.isMalicious }
         val maliciousLinksDetected = maliciousLinks.isNotEmpty()
+        val nonMaliciousLinks = scanningResult.scanResults.filter { !it.isMalicious }
 
-        // Update metrics
-        if (maliciousLinksDetected) {
-            truePositives += maliciousLinks.size
-            falseNegatives += currentLinkPositions.size - maliciousLinks.size
-        } else {
-            // Check for false positives
-            val visibleLinksNotDetected = visibleLinks.filter { url ->
-                !scanningResult.scanResults.any { it.url == url && it.isMalicious }
-            }
-            falsePositives += visibleLinksNotDetected.size
-            trueNegatives += visibleLinksNotDetected.size
-        }
+        // Update metrics based on unique links
+        val newlyScannedLinks = scanningResult.scanResults.map { it.url }.filter { it !in uniqueLinks }
+        uniqueLinks.addAll(newlyScannedLinks)
+
+        // Calculate true positives and false positives
+        val tp = maliciousLinks.count()
+        val fp = nonMaliciousLinks.count()
+
+        // True negatives are links that were not detected as malicious and are actually safe
+        // False negatives are malicious links that were not detected
+        // For demonstration, assuming we have ground truth, but in practice, this needs proper validation
+        truePositives += tp
+        falsePositives += fp
+
+        // Calculate accuracy only after a certain number of scans
+//        if (uniqueLinks.size % 100 == 0) {
+//            calculateAndDisplayAccuracy()
+//        }
+
+        calculateAndDisplayAccuracy()
 
         // Log the current metrics
         Log.d(TAG, "TP: $truePositives, TN: $trueNegatives, FP: $falsePositives, FN: $falseNegatives")
 
-        // Calculate and display accuracy
-        calculateAndDisplayAccuracy()
         // Find links that disappeared (were visible before but not now)
         val disappearedLinks = overlays.keys.filter { url ->
             !visibleLinks.contains(url)
@@ -722,7 +774,16 @@ class ScreenCaptureService : Service() {
     }
 
     private fun calculateAndDisplayAccuracy() {
+        Log.d(TAG, "Entering calculateAndDisplayAccuracy()")
+
         val total = truePositives + trueNegatives + falsePositives + falseNegatives
+        Log.d(TAG, "Total scans: $total")
+
+        if (total == 0) {
+            Log.d(TAG, "No scans performed yet")
+            return
+        }
+
         val precision = if (truePositives + falsePositives > 0) {
             (truePositives.toDouble() / (truePositives + falsePositives)) * 100
         } else {
@@ -747,6 +808,11 @@ class ScreenCaptureService : Service() {
             0.0
         }
 
+        Log.d(TAG, "Accuracy: ${accuracy.toInt()}%")
+        Log.d(TAG, "Precision: ${precision.toInt()}%")
+        Log.d(TAG, "Recall: ${recall.toInt()}%")
+        Log.d(TAG, "F1 Score: ${f1Score.toInt()}")
+
         // Display the metrics in the notification
         showAccuracyNotification(
             accuracy,
@@ -758,11 +824,6 @@ class ScreenCaptureService : Service() {
             falsePositives,
             falseNegatives
         )
-
-        Log.d(TAG, "Accuracy: ${accuracy.toInt()}%")
-        Log.d(TAG, "Precision: ${precision.toInt()}%")
-        Log.d(TAG, "Recall: ${recall.toInt()}%")
-        Log.d(TAG, "F1 Score: ${f1Score.toInt()}")
     }
 
     // Determine if position changed significantly enough to warrant updating the overlay
@@ -941,11 +1002,12 @@ class ScreenCaptureService : Service() {
         }
     }
 
-    private fun resetMetrics() {
+    fun resetMetrics() {
         truePositives = 0
         trueNegatives = 0
         falsePositives = 0
         falseNegatives = 0
+        uniqueLinks.clear()
         Log.d(TAG, "Metrics reset")
     }
 
