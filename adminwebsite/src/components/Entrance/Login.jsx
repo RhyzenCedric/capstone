@@ -36,9 +36,6 @@ const Login = () => {
         }
     };
 
-    const handleGuestLogin = () => {
-        navigate('/dashboard'); // Direct guest login to dashboard
-    };
 
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible); // Toggle password visibility
@@ -80,9 +77,6 @@ const Login = () => {
             {/* Sign Up Button */}
             <button onClick={handleSignUp} className="sign-up-button">
                 Sign Up
-            </button>
-            <button onClick={handleGuestLogin} className="guest-button">
-                Continue as Guest
             </button>
         </div>
     );
