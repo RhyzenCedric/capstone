@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient'; // ✅ Import Supabase client
 import TopNav from "../NavBars/TopNav";
+import "../../css/Reports.css";
 
 const Reports = () => {
     const [reports, setReports] = useState([]);
@@ -159,9 +160,9 @@ const Reports = () => {
                             <td>{report.report_description}</td>
                             <td>
                                 <button
-                                    className="report-approve-button"
+                                    className={`report-approve-button ${report.approved ? 'approved' : ''}`}
                                     onClick={() => handleApprove(report.report_id, report.link_reported)}
-                                    disabled={report.approved} // Disable if approved
+                                    disabled={report.approved}
                                 >
                                     {report.approved ? "Approved" : "Approve"}
                                 </button>

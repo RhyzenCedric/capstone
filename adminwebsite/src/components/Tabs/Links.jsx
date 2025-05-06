@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient'; // ✅ Import Supabase Client
 import TopNav from "../NavBars/TopNav";
+import "../../css/Links.css";
 
 const Links = () => {
     const [links, setLinks] = useState([]);
