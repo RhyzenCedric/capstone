@@ -36,6 +36,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.IOException
 import java.util.concurrent.ExecutionException
+import java.util.regex.Pattern
 
 class ScreenCaptureService : Service() {
     private var mediaProjection: MediaProjection? = null
@@ -238,7 +239,7 @@ class ScreenCaptureService : Service() {
                     "com.example.phishingapp.StartupActivity",
                     "com.example.phishingapp.AnalyticsActivity",
 
-                )
+                    )
 
                 // Return true only if it's one of our main activities
                 return mainActivities.any { activityName ->
@@ -493,16 +494,36 @@ class ScreenCaptureService : Service() {
     }
 
     private fun extractUrls(text: String): List<String> {
-        val urlMatcher = Patterns.WEB_URL
-        val matcher = urlMatcher.matcher(text)
+        // Enhanced regex pattern for better URL detection - handles more variations
+        val urlPattern = Pattern.compile(
+            "((https?|ftp|gopher|telnet|file):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)|" +
+                    // Also match URLs without protocol that contain suspicious patterns
+                    "([\\w\\d-]+\\.[\\w\\d-]+\\.[\\w\\d-]+((/)[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)?)",
+            Pattern.CASE_INSENSITIVE
+        )
+        val matcher = urlPattern.matcher(text)
         val urls = mutableListOf<String>()
 
         while (matcher.find()) {
-            urls.add(matcher.group()) // Keep original URL exactly as found
+            urls.add(matcher.group())
+        }
+
+        // Additional check for URLs with subdomains containing keywords like "login"
+        val subdomainPattern = Pattern.compile(
+            "([\\w\\d-]+(\\.[\\w\\d-]+)*(\\.(login|account|secure|verify|banking|pay|signin|auth)[\\w\\d-]*)+\\.[a-z]{2,}((/)[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)?)",
+            Pattern.CASE_INSENSITIVE
+        )
+        val subdomainMatcher = subdomainPattern.matcher(text)
+        while (subdomainMatcher.find()) {
+            val match = subdomainMatcher.group()
+            if (!urls.contains(match)) {
+                urls.add(match)
+            }
         }
 
         return urls
     }
+
 
     // Simple sanitization without protocol addition
     private fun sanitizeUrl(urlString: String): String {
@@ -515,7 +536,7 @@ class ScreenCaptureService : Service() {
             if (urlString.startsWith("http://") || urlString.startsWith("https://")) {
                 URL(urlString).host.lowercase()
             } else {
-                // Without protocol, parse manually
+                // Without protocol, parse manually with improved detection
                 // First check if there's a path part
                 val hostPart = if (urlString.contains("/")) {
                     urlString.substring(0, urlString.indexOf("/"))
@@ -524,13 +545,17 @@ class ScreenCaptureService : Service() {
                 }
 
                 // Remove any query parameters or fragments if present
-                if (hostPart.contains("?")) {
+                val cleanedHost = if (hostPart.contains("?")) {
                     hostPart.substring(0, hostPart.indexOf("?"))
                 } else if (hostPart.contains("#")) {
                     hostPart.substring(0, hostPart.indexOf("#"))
                 } else {
                     hostPart
                 }.lowercase()
+
+                // Log the extracted hostname for debugging
+                Log.d(TAG, "Extracted hostname: $cleanedHost from URL: $urlString")
+                cleanedHost
             }
         } catch (e: Exception) {
             // If parsing fails, just return the original string
@@ -546,26 +571,31 @@ class ScreenCaptureService : Service() {
             val hostname = extractHostname(sanitizedUrl)
             val tld = hostname.substringAfterLast('.', "")
 
-            // 1. Expand phishing indicator keywords
+            // Log what we're processing to help with debugging
+            Log.d(TAG, "Scanning URL: $sanitizedUrl, Hostname: $hostname, TLD: $tld")
+
+            // Expanded phishing indicator keywords
             val phishingIndicators = listOf(
-                "free-gift", "suspicious", "login-verify", "account-secure", "urgent-action",
+                "free-gift", "suspicious", "login", "verify", "account", "secure", "urgent-action",
                 "verification", "secure", "update", "limited-time", "click", "confirm",
                 "password", "banking", "recover", "alert", "unusual", "activity",
-                "security", "verify", "expire", "access", "restricted", "suspend"
+                "security", "verify", "expire", "access", "restricted", "suspend", "account",
+                "signin", "auth", "authenticate", "validate", "reset", "fraud", "customer",
+                "support", "service", "bill", "payment", "authorize", "identity", "confirm-id"
             )
 
+            // Expanded suspicious domains
             val suspiciousDomains = listOf(
                 "suspicious-link.com",
                 "fake-bank.net",
                 "phishing-site.org"
             )
 
-            // 2. Expand legitimate domains list
+            // List of legitimate domains
             val legitimateDomains = listOf(
-                // Current domains...
+                "phishtank.com",
                 "google.com", "microsoft.com", "paypal.com", "amazon.com", "facebook.com",
                 "twitter.com", "apple.com", "bank.com", "open.spotify.com", "youtube.com",
-                // Additional domains
                 "instagram.com", "linkedin.com", "netflix.com", "gmail.com", "outlook.com",
                 "yahoo.com", "dropbox.com", "github.com", "reddit.com", "wikipedia.org",
                 "chase.com", "wellsfargo.com", "bankofamerica.com", "citibank.com"
@@ -578,17 +608,71 @@ class ScreenCaptureService : Service() {
                 "whatsapp.com"
             )
 
+            // FIRST CHECK: Is this an exact match for a legitimate domain?
+            // If the hostname exactly matches a legitimate domain, it's safe
+            if (legitimateDomains.any { legitDomain ->
+                    hostname == legitDomain ||
+                            hostname.endsWith(".$legitDomain")
+                }) {
+                return ScanResult(
+                    url = sanitizedUrl,
+                    isMalicious = false,
+                    description = "Legitimate domain"
+                )
+            }
+
+            // If it's on our explicit safelist
             if (safeDomains.any { hostname.contains(it) }) {
-                return ScanResult(url = sanitizedUrl, isMalicious = false, description = "Known safe domain")
+                return ScanResult(
+                    url = sanitizedUrl,
+                    isMalicious = false,
+                    description = "Known safe domain"
+                )
+            }
+
+            // CRITICAL ENHANCEMENT: Detect suspicious subdomains like 'account.login.app'
+            val hostnameParts = hostname.split('.')
+            if (hostnameParts.size >= 3) {
+                // Check for suspicious terms in subdomains - this is key for catching your example
+                val containsSuspiciousSubdomain = hostnameParts.any { part ->
+                    phishingIndicators.any { keyword ->
+                        part.contains(keyword) ||
+                                levenshteinDistance(part, keyword) <= 2  // Also catch misspellings
+                    }
+                }
+
+                if (containsSuspiciousSubdomain) {
+                    Log.d(TAG, "Detected suspicious subdomain in: $hostname")
+                    return ScanResult(
+                        url = sanitizedUrl,
+                        isMalicious = true,
+                        description = "Suspicious subdomain detected"
+                    )
+                }
+
+                // Check if hostname mimics account subdomains (like your-account.login.app)
+                val isAccountMimicry = hostnameParts.size >= 3 && (
+                        (hostnameParts[0].contains("your") && hostnameParts[1].contains("account")) ||
+                                (hostnameParts[0].contains("account") || hostnameParts[0].contains("login")) ||
+                                (hostnameParts[1].contains("login") || hostnameParts[1].contains("account"))
+                        )
+
+                if (isAccountMimicry) {
+                    Log.d(TAG, "Detected account mimicry in: $hostname")
+                    return ScanResult(
+                        url = sanitizedUrl,
+                        isMalicious = true,
+                        description = "Account mimicry detected"
+                    )
+                }
             }
 
             // TLD Risk Assessment
             val riskyCcTlds = listOf(
                 "tk", "ml", "ga", "cf", "gq", // Free TLDs often used for scams
                 "pw", "top", "xyz",           // Frequently associated with spam
-                "loan", "win", "bid"          // Suspicious commercial TLDs
+                "loan", "win", "bid", "cc", "me", "app", // Suspicious commercial TLDs
             )
-
             val isSuspiciousTld = tld in riskyCcTlds
 
             // URL checks - extract query parameters safely
@@ -610,10 +694,23 @@ class ScreenCaptureService : Service() {
             }
 
             val isLongAndComplexUrl = sanitizedUrl.let {
-                it.length > 20 ||                        // Very long URL
+                it.length > 20 ||                      // Very long URL
                         (it.count { char -> char == '.' } > 3) || // Too many subdomains
                         (it.count { char -> char == '/' } > 4) || // Too many path segments
                         (it.count { char -> char == '-' } > 2)    // Multiple hyphens
+            }
+
+            // Check for random strings/gibberish in path or subdomain (like "sfdgsdcvgfqwbve")
+            val hasRandomString = sanitizedUrl.contains(Regex("/[a-zA-Z0-9]{10,}/?")) ||
+                    hostname.contains(Regex("[a-zA-Z0-9]{10,}"))
+
+            if (hasRandomString) {
+                Log.d(TAG, "Detected random string in URL: $sanitizedUrl")
+                return ScanResult(
+                    url = sanitizedUrl,
+                    isMalicious = true,
+                    description = "Random string pattern detected"
+                )
             }
 
             // Subdomain obfuscation check
@@ -621,30 +718,39 @@ class ScreenCaptureService : Service() {
                 parts.size > 2 && parts.first().length < 3
             }
 
-            // Levenshtein distance check for domain similarity
+            // FIXED: Levenshtein distance check for domain similarity - only run if not exact match
             val domainSimilarityRisk = legitimateDomains.any { legitimateDomain ->
-                val distance = levenshteinDistance(hostname, legitimateDomain)
-                val similarityRatio = distance.toDouble() / maxOf(hostname.length, legitimateDomain.length)
+                if (hostname == legitimateDomain) {
+                    false
+                } else {
+                    val distance = levenshteinDistance(hostname, legitimateDomain)
+                    val maxLen = maxOf(hostname.length, legitimateDomain.length)
 
-                // If the similarity ratio is less than 0.3 (30% difference), consider it a potential phishing attempt
-                similarityRatio < 0.3
+                    // Adjust the threshold - 0.3 might be too aggressive
+                    if (maxLen > 5) {
+                        val similarityRatio = distance.toDouble() / maxLen
+                        similarityRatio < 0.25 && similarityRatio > 0.0
+                    } else {
+                        false
+                    }
+                }
             }
 
-            // 3. IP address detection (often used in phishing)
+            // IP address detection (often used in phishing)
             val containsIpAddress = hostname.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+"))
 
-            // 4. Check for URL shorteners
+            // Check for URL shorteners
             val urlShorteners = listOf("bit.ly", "goo.gl", "t.co", "tinyurl.com", "is.gd", "cli.gs", "ow.ly")
             val isUrlShortener = urlShorteners.any { hostname.contains(it) }
 
-            // 5. Suspicious URL parameter detection - safely extract query params
+            // Suspicious URL parameter detection
             val suspiciousParams = listOf("password", "username", "user", "login", "token", "verify", "account", "secure")
             val hasSpecialChars = queryPart.isNotEmpty() && suspiciousParams.any { queryPart.contains(it) }
 
-            // 6. Check for excessive use of special characters
+            // Check for excessive use of special characters
             val hasExcessiveSpecialChars = sanitizedUrl.count { it in "@%&=#" } > 3
 
-            // 7. Refined comprehensive risk assessment
+            // Refined comprehensive risk assessment
             val isMalicious = hasPhishingKeyword ||
                     isKnownBadDomain ||
                     isLongAndComplexUrl ||
@@ -654,12 +760,18 @@ class ScreenCaptureService : Service() {
                     containsIpAddress ||
                     isUrlShortener ||
                     hasSpecialChars ||
-                    hasExcessiveSpecialChars
+                    hasExcessiveSpecialChars ||
+                    hasRandomString // Added new detection criteria
+
+            if (isMalicious) {
+                Log.d(TAG, "Detected malicious URL: $sanitizedUrl with hostname: $hostname")
+            }
 
             ScanResult(
-                url = sanitizedUrl, // Return original sanitized URL
+                url = sanitizedUrl,
                 isMalicious = isMalicious,
                 description = when {
+                    hasRandomString -> "Random string in URL detected"
                     isSuspiciousTld -> "Suspicious top-level domain"
                     hasPhishingKeyword -> "Suspicious keyword detected"
                     isKnownBadDomain -> "Known malicious domain"
@@ -674,7 +786,7 @@ class ScreenCaptureService : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "URL scanning error for $urlString", e)
             ScanResult(
-                url = urlString, // Keep the original URL
+                url = urlString,
                 isMalicious = false,
                 description = "Invalid URL"
             )
