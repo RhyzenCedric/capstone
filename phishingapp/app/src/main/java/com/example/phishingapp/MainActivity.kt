@@ -66,12 +66,12 @@ class MainActivity : AppCompatActivity() {
         val sonarWaveView = findViewById<SonarWaveView>(R.id.sonar_wave_view)
         val animationSwitch = findViewById<SwitchCompat>(R.id.animation_switch)
 
-        val sharedPreferences = getSharedPreferences("UserData", MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("User Data", MODE_PRIVATE)
         userId = sharedPreferences.getInt("userId", -1) // Default value is -1 if not found
         userUsername = sharedPreferences.getString("userUsername", "") ?: ""
 
         // Use userId and userUsername as needed
-        Log.d("MainActivity", "User  ID: $userId, Username: $userUsername")
+        Log.d("MainActivity", "User ID: $userId, Username: $userUsername")
 
         // Set initial state (animation enabled by default)
         sonarWaveView.setAnimationEnabled(true)

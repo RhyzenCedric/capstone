@@ -27,6 +27,7 @@ class ReportActivity : AppCompatActivity() {
     private lateinit var editTextLink: EditText
     private lateinit var buttonSubmitReport: ConstraintLayout
     private var userId: Int? = null
+    private var username: String = ""
     private var editTextDescription: String = "" // Initialize with empty string
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +52,9 @@ class ReportActivity : AppCompatActivity() {
             selectDescription("Scam")
         }
 
-        val username = intent.getStringExtra("userUsername") ?: "Guest"
+        val sharedPreferences = getSharedPreferences("User Data", MODE_PRIVATE)
+        userId = sharedPreferences.getInt("userId", -1) // Default value is -1 if not found
+        username = sharedPreferences.getString("userUsername", "") ?: ""
         textViewUsername.text = username
 
         // We try to get the userId from the intent
