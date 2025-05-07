@@ -19,7 +19,6 @@ const App = () => {
                     <Route path="/dashboard/admins" element={<Admins />} />
                     <Route path="/dashboard/links" element={<Links />} />
                     <Route path="/dashboard/reports" element={<Reports />} />
-                    <Route path="/dashboard/settings" element={<Settings />} />
                     
                     <Route path="/signup" element={<Signup />} />
                 </Routes>

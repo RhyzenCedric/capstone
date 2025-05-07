@@ -17,7 +17,6 @@ const SideNav = ({ toggleSidebar }) => {
                     <li><Link to="/dashboard/admins"><i className="fas fa-user-shield"/> Admins</Link></li>
                     <li><Link to="/dashboard/links"><i className="fas fa-link"/> Links</Link></li>
                     <li><Link to="/dashboard/reports"><i className="fas fa-file-alt"/> Reports</Link></li>
-                    <li><Link to="/dashboard/settings"><i className="fas fa-cog"/> Settings</Link></li>
                 </ul>
             </nav>
         </div>

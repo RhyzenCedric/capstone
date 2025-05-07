@@ -39,11 +39,6 @@ const TopNav = () => {
                             <i className="fas fa-file-alt"/> Reports
                         </Link>
                     </li>
-                    <li>
-                        <Link to="/dashboard/settings" className={location.pathname === "/dashboard/settings" ? "active" : ""}>
-                            <i className="fas fa-cog"/> Settings
-                        </Link>
-                    </li>
                 </ul>
             </nav>
             {isSidebarOpen && <SideNav toggleSidebar={toggleSidebar} />}
