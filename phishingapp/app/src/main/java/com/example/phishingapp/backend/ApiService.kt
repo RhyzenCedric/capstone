@@ -112,6 +112,19 @@ data class Infographic(
 
 )
 
+data class WhitelistResponse(
+    @SerializedName("original_url")
+    val url: String,
+    @SerializedName("domain")
+    val domain: String
+)
+data class BlacklistResponse(
+    @SerializedName("original_url")
+    val url: String,
+    @SerializedName("domain")
+    val domain: String
+)
+
 interface ApiService {
     // Authentication
     @POST("/usersignup")
@@ -143,4 +156,9 @@ interface ApiService {
 
     @POST("/reports/approve")
     fun approveReport(@Body approvalData: Map<String, Any>): Call<ReportResponse>
+
+    @GET("/whitelist")
+    fun getWhitelist(): Call<List<WhitelistResponse>>
+    @GET("/blacklist")
+    fun getBlacklist(): Call<List<BlacklistResponse>>
 }

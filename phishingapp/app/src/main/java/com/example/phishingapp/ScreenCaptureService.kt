@@ -27,6 +27,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.phishingapp.backend.RetrofitClient
 import kotlinx.coroutines.*
 import java.net.URL
 import java.util.concurrent.atomic.AtomicBoolean
@@ -392,7 +393,7 @@ class ScreenCaptureService : Service() {
         val linkPositions: List<LinkPosition>
     )
 
-    private fun performImageScanning(bitmap: Bitmap): ScanningResult {
+    private suspend fun performImageScanning(bitmap: Bitmap): ScanningResult {
         Log.d(TAG, "performImageScanning: performing link scanning")
 
         try {
@@ -440,6 +441,7 @@ class ScreenCaptureService : Service() {
             )
         }
     }
+
 
     private fun performOCR(bitmap: Bitmap): Pair<String, List<Pair<String, Rect>>> {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -565,7 +567,7 @@ class ScreenCaptureService : Service() {
     }
 
 
-    private fun scanUrl(urlString: String): ScanResult {
+    private suspend fun scanUrl(urlString: String): ScanResult {
         return try {
             val sanitizedUrl = sanitizeUrl(urlString)
             val hostname = extractHostname(sanitizedUrl)
@@ -574,212 +576,50 @@ class ScreenCaptureService : Service() {
             // Log what we're processing to help with debugging
             Log.d(TAG, "Scanning URL: $sanitizedUrl, Hostname: $hostname, TLD: $tld")
 
-            // Expanded phishing indicator keywords
-            val phishingIndicators = listOf(
-                "free-gift", "suspicious", "login", "verify", "account", "secure", "urgent-action",
-                "verification", "secure", "update", "limited-time", "click", "confirm",
-                "password", "banking", "recover", "alert", "unusual", "activity",
-                "security", "verify", "expire", "access", "restricted", "suspend", "account",
-                "signin", "auth", "authenticate", "validate", "reset", "fraud", "customer",
-                "support", "service", "bill", "payment", "authorize", "identity", "confirm-id"
-            )
-
-            // Expanded suspicious domains
-            val suspiciousDomains = listOf(
-                "suspicious-link.com",
-                "fake-bank.net",
-                "phishing-site.org"
-            )
-
-            // List of legitimate domains
-            val legitimateDomains = listOf(
-                "phishtank.com",
-                "google.com", "microsoft.com", "paypal.com", "amazon.com", "facebook.com",
-                "twitter.com", "apple.com", "bank.com", "open.spotify.com", "youtube.com",
-                "instagram.com", "linkedin.com", "netflix.com", "gmail.com", "outlook.com",
-                "yahoo.com", "dropbox.com", "github.com", "reddit.com", "wikipedia.org",
-                "chase.com", "wellsfargo.com", "bankofamerica.com", "citibank.com"
-            )
-
-            // Whitelist of known safe domains
-            val safeDomains = listOf(
-                "messenger.com",
-                "facebook.com",
-                "whatsapp.com"
-            )
-
-            // FIRST CHECK: Is this an exact match for a legitimate domain?
-            // If the hostname exactly matches a legitimate domain, it's safe
-            if (legitimateDomains.any { legitDomain ->
-                    hostname == legitDomain ||
-                            hostname.endsWith(".$legitDomain")
-                }) {
+            // First check whitelist
+            if (isWhitelisted(hostname)) {
                 return ScanResult(
                     url = sanitizedUrl,
                     isMalicious = false,
-                    description = "Legitimate domain"
+                    description = "Domain is in whitelist"
                 )
             }
 
-            // If it's on our explicit safelist
-            if (safeDomains.any { hostname.contains(it) }) {
-                return ScanResult(
-                    url = sanitizedUrl,
-                    isMalicious = false,
-                    description = "Known safe domain"
-                )
-            }
-
-            // CRITICAL ENHANCEMENT: Detect suspicious subdomains like 'account.login.app'
-            val hostnameParts = hostname.split('.')
-            if (hostnameParts.size >= 3) {
-                // Check for suspicious terms in subdomains - this is key for catching your example
-                val containsSuspiciousSubdomain = hostnameParts.any { part ->
-                    phishingIndicators.any { keyword ->
-                        part.contains(keyword) ||
-                                levenshteinDistance(part, keyword) <= 2  // Also catch misspellings
-                    }
-                }
-
-                if (containsSuspiciousSubdomain) {
-                    Log.d(TAG, "Detected suspicious subdomain in: $hostname")
-                    return ScanResult(
-                        url = sanitizedUrl,
-                        isMalicious = true,
-                        description = "Suspicious subdomain detected"
-                    )
-                }
-
-                // Check if hostname mimics account subdomains (like your-account.login.app)
-                val isAccountMimicry = hostnameParts.size >= 3 && (
-                        (hostnameParts[0].contains("your") && hostnameParts[1].contains("account")) ||
-                                (hostnameParts[0].contains("account") || hostnameParts[0].contains("login")) ||
-                                (hostnameParts[1].contains("login") || hostnameParts[1].contains("account"))
-                        )
-
-                if (isAccountMimicry) {
-                    Log.d(TAG, "Detected account mimicry in: $hostname")
-                    return ScanResult(
-                        url = sanitizedUrl,
-                        isMalicious = true,
-                        description = "Account mimicry detected"
-                    )
-                }
-            }
-
-            // TLD Risk Assessment
-            val riskyCcTlds = listOf(
-                "tk", "ml", "ga", "cf", "gq", // Free TLDs often used for scams
-                "pw", "top", "xyz",           // Frequently associated with spam
-                "loan", "win", "bid", "cc", "me", "app", // Suspicious commercial TLDs
-            )
-            val isSuspiciousTld = tld in riskyCcTlds
-
-            // URL checks - extract query parameters safely
-            val queryPart = try {
-                if (sanitizedUrl.contains("?")) {
-                    sanitizedUrl.substring(sanitizedUrl.indexOf("?") + 1)
-                } else ""
-            } catch (e: Exception) {
-                ""
-            }
-
-            // Enhanced URL Complexity and Risk Checks
-            val hasPhishingKeyword = phishingIndicators.any {
-                hostname.contains(it) || sanitizedUrl.contains(it)
-            }
-
-            val isKnownBadDomain = suspiciousDomains.any {
-                hostname.contains(it)
-            }
-
-            val isLongAndComplexUrl = sanitizedUrl.let {
-                it.length > 20 ||                      // Very long URL
-                        (it.count { char -> char == '.' } > 3) || // Too many subdomains
-                        (it.count { char -> char == '/' } > 4) || // Too many path segments
-                        (it.count { char -> char == '-' } > 2)    // Multiple hyphens
-            }
-
-            // Check for random strings/gibberish in path or subdomain (like "sfdgsdcvgfqwbve")
-            val hasRandomString = sanitizedUrl.contains(Regex("/[a-zA-Z0-9]{10,}/?")) ||
-                    hostname.contains(Regex("[a-zA-Z0-9]{10,}"))
-
-            if (hasRandomString) {
-                Log.d(TAG, "Detected random string in URL: $sanitizedUrl")
+            // Then check blacklist
+            if (isBlacklisted(hostname)) {
                 return ScanResult(
                     url = sanitizedUrl,
                     isMalicious = true,
-                    description = "Random string pattern detected"
+                    description = "Domain is in blacklist"
                 )
             }
 
-            // Subdomain obfuscation check
-            val hasObfuscatedSubdomain = hostname.split('.').let { parts ->
-                parts.size > 2 && parts.first().length < 3
-            }
-
-            // FIXED: Levenshtein distance check for domain similarity - only run if not exact match
-            val domainSimilarityRisk = legitimateDomains.any { legitimateDomain ->
-                if (hostname == legitimateDomain) {
-                    false
-                } else {
-                    val distance = levenshteinDistance(hostname, legitimateDomain)
-                    val maxLen = maxOf(hostname.length, legitimateDomain.length)
-
-                    // Adjust the threshold - 0.3 might be too aggressive
-                    if (maxLen > 5) {
-                        val similarityRatio = distance.toDouble() / maxLen
-                        similarityRatio < 0.25 && similarityRatio > 0.0
-                    } else {
-                        false
-                    }
-                }
-            }
-
-            // IP address detection (often used in phishing)
-            val containsIpAddress = hostname.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+"))
-
-            // Check for URL shorteners
-            val urlShorteners = listOf("bit.ly", "goo.gl", "t.co", "tinyurl.com", "is.gd", "cli.gs", "ow.ly")
-            val isUrlShortener = urlShorteners.any { hostname.contains(it) }
-
-            // Suspicious URL parameter detection
-            val suspiciousParams = listOf("password", "username", "user", "login", "token", "verify", "account", "secure")
-            val hasSpecialChars = queryPart.isNotEmpty() && suspiciousParams.any { queryPart.contains(it) }
-
-            // Check for excessive use of special characters
+            // If not in whitelist or blacklist, proceed with heuristic checks
+//            val phishingIndicators = listOf(
+//                "free-gift", "suspicious", "login", "verify", "account", "secure", "urgent-action",
+//                "verification", "update", "limited-time", "click", "confirm",
+//                "password", "banking", "recover", "alert", "unusual", "activity",
+//                "security", "expire", "access", "restricted", "suspend", "signin", "auth", "validate", "reset", "fraud", "customer",
+//                "support", "service", "bill", "payment", "authorize", "identity", "confirm-id"
+//            )
+//
+//            // Heuristic checks
+//            val isSuspiciousTld = tld in listOf("tk", "ml", "ga", "cf", "gq", "pw", "top", "xyz", "loan", "win", "bid", "cc", "me", "app")
+            //val hasPhishingKeyword = phishingIndicators.any { hostname.contains(it) || sanitizedUrl.contains(it) }
+            val isLongAndComplexUrl = sanitizedUrl.length > 20 || sanitizedUrl.count { it == '.' } > 3 || sanitizedUrl.count { it == '/' } > 4 || sanitizedUrl.count { it == '-' } > 2
+            val hasRandomString = sanitizedUrl.contains(Regex("/[a-zA-Z0-9]{10,}/?")) || hostname.contains(Regex("[a-zA-Z0-9]{10,}"))
             val hasExcessiveSpecialChars = sanitizedUrl.count { it in "@%&=#" } > 3
 
-            // Refined comprehensive risk assessment
-            val isMalicious = hasPhishingKeyword ||
-                    isKnownBadDomain ||
-                    isLongAndComplexUrl ||
-                    domainSimilarityRisk ||
-                    isSuspiciousTld ||
-                    hasObfuscatedSubdomain ||
-                    containsIpAddress ||
-                    isUrlShortener ||
-                    hasSpecialChars ||
-                    hasExcessiveSpecialChars ||
-                    hasRandomString // Added new detection criteria
-
-            if (isMalicious) {
-                Log.d(TAG, "Detected malicious URL: $sanitizedUrl with hostname: $hostname")
-            }
+            // Determine if the URL is malicious based on heuristic checks
+            val isMalicious = //hasPhishingKeyword ||
+                // isSuspiciousTld ||
+                isLongAndComplexUrl || hasRandomString || hasExcessiveSpecialChars
 
             ScanResult(
                 url = sanitizedUrl,
                 isMalicious = isMalicious,
                 description = when {
-                    hasRandomString -> "Random string in URL detected"
-                    isSuspiciousTld -> "Suspicious top-level domain"
-                    hasPhishingKeyword -> "Suspicious keyword detected"
-                    isKnownBadDomain -> "Known malicious domain"
-                    isLongAndComplexUrl -> "Overly complex URL structure"
-                    hasObfuscatedSubdomain -> "Potential subdomain obfuscation"
-                    domainSimilarityRisk -> "Potential domain spoofing detected"
-                    containsIpAddress -> "IP address in URL"
-                    isUrlShortener -> "URL shortener detected"
+                    hasRandomString -> "Random string pattern detected"
                     else -> "Link appears safe"
                 }
             )
@@ -793,35 +633,46 @@ class ScreenCaptureService : Service() {
         }
     }
 
+    // New function to check whitelist
+    private suspend fun isWhitelisted(hostname: String): Boolean {
+        try {
+            val response = RetrofitClient.instance.getWhitelist().execute()
+            if (response.isSuccessful) {
+                val whitelist = response.body() ?: emptyList()
+                return whitelist.any { it.domain == hostname || it.url == hostname }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking whitelist", e)
+        }
+        return false
+    }
+    // New function to check blacklist
+    private suspend fun isBlacklisted(hostname: String): Boolean {
+        try {
+            val response = RetrofitClient.instance.getBlacklist().execute()
+            if (response.isSuccessful) {
+                val blacklist = response.body() ?: emptyList()
+                return blacklist.any { it.domain == hostname || it.url == hostname }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking blacklist", e)
+        }
+        return false
+    }
+
     private fun handleScanResult(scanningResult: ScanningResult, bitmap: Bitmap) {
         if (wasAppInForeground) {
             Log.d(TAG, "App is in foreground, skipping overlay handling")
             return
         }
-
         val maliciousLinks = scanningResult.scanResults.filter { it.isMalicious }
         val maliciousLinksDetected = maliciousLinks.isNotEmpty()
         val nonMaliciousLinks = scanningResult.scanResults.filter { !it.isMalicious }
-
-        // Update metrics based on unique links
+        // Update metrics
         val newlyScannedLinks = scanningResult.scanResults.map { it.url }.filter { it !in uniqueLinks }
         uniqueLinks.addAll(newlyScannedLinks)
-
-        // Calculate true positives and false positives
-        val tp = maliciousLinks.count()
-        val fp = nonMaliciousLinks.count()
-
-        // True negatives are links that were not detected as malicious and are actually safe
-        // False negatives are malicious links that were not detected
-        // For demonstration, assuming we have ground truth, but in practice, this needs proper validation
-        truePositives += tp
-        falsePositives += fp
-
-        // Calculate accuracy only after a certain number of scans
-//        if (uniqueLinks.size % 100 == 0) {
-//            calculateAndDisplayAccuracy()
-//        }
-
+        truePositives += maliciousLinks.count()
+        falsePositives += nonMaliciousLinks.count()
         calculateAndDisplayAccuracy()
 
         // Log the current metrics

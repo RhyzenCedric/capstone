@@ -464,6 +464,9 @@ app.post('/reports/approve', async (req, res) => {
         if (fetchError) throw fetchError;
         if (!reports?.length) return res.status(404).json({ error: 'Report not found' });
 
+        const userid = reports[0].userid;
+        const date_verified = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
         // Update report status
         const { error: updateError } = await supabase
             .from('reports')
@@ -472,24 +475,45 @@ app.post('/reports/approve', async (req, res) => {
 
         if (updateError) throw updateError;
 
-        // Insert into links with explicit timestamp
-        const { error: insertError } = await supabase
+        // Insert into links
+        const { error: insertLinksError } = await supabase
             .from('links')
             .insert([{
                 url_link,
                 tld,
-                userid: reports[0].userid,
-                date_verified: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                userid,
+                date_verified
             }]);
 
-        if (insertError) throw insertError;
+        if (insertLinksError) throw insertLinksError;
 
-        return res.status(200).json({ message: 'Approved and link stored' });
+        // Parse URL for blacklist
+        const parsed = parse(url_link);
+
+        // Insert into blacklist with the required fields
+        const { error: insertBlacklistError } = await supabase
+            .from('blacklist')
+            .insert([{
+                original_url: url_link,
+                domain: parsed.domain || '',
+                subdomain: parsed.subdomain || '',
+                hostname: parsed.hostname || '',
+                is_ip: parsed.isIp,
+                public_suffix: parsed.publicSuffix || '',
+                tld: tld,
+                date_verified: date_verified,
+                userid: userid
+            }]);
+
+        if (insertBlacklistError) throw insertBlacklistError;
+
+        return res.status(200).json({ message: 'Approved and link stored in both tables' });
     } catch (err) {
         console.error('Error:', err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 app.get('/links', async (req, res) => {
     try {
@@ -593,6 +617,56 @@ app.get('/infographics', async (req, res) => {
     }
 });
 
+app.get('/blacklist', async (req, res) => {
+    try {
+        const { data: links, error } = await supabase
+            .from('blacklist')
+            .select('*');
+
+        if (error) throw error;
+
+        const processedLinks = links.map(link => {
+            const parsed = parse(link.url_link || '');
+            return {
+                ...link,
+                domain: parsed.domain || '',
+                subdomain: parsed.subdomain || '',
+                hostname: parsed.hostname || '',
+                isIp: parsed.isIp,
+                publicSuffix: parsed.publicSuffix || ''
+            };
+        });
+
+        res.json(processedLinks);
+    } catch (err) {
+        console.error('Error fetching links with domains:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/whitelist', async (req, res) => {
+    try {
+        const { data: whitelistEntries, error } = await supabase
+            .from('whitelist')
+            .select('*');
+        if (error) throw error;
+        const processedLinks = whitelistEntries.map(entry => {
+            const parsed = parse(entry.original_url || '');
+            return {
+                original_url: entry.original_url,
+                domain: parsed.domain || '',
+                subdomain: parsed.subdomain || '',
+                hostname: parsed.hostname || '',
+                is_ip: entry.is_ip,
+                public_suffix: parsed.publicSuffix || '',
+            };
+        });
+        res.json(processedLinks);
+    } catch (err) {
+        console.error('Error fetching whitelist entries:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 // Start the server
