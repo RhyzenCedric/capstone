@@ -116,13 +116,17 @@ data class WhitelistResponse(
     @SerializedName("original_url")
     val url: String,
     @SerializedName("domain")
-    val domain: String
+    val domain: String,
+    @SerializedName("tld")
+    val tld: String
 )
 data class BlacklistResponse(
     @SerializedName("original_url")
     val url: String,
     @SerializedName("domain")
-    val domain: String
+    val domain: String,
+    @SerializedName("tld")
+    val tld: String
 )
 
 interface ApiService {

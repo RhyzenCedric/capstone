@@ -1,166 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <!-- Return Icon (Outside Constraint but in the Same Row) -->
-
-    <!-- Title Text (Centered in the Same Row) -->
-
-    <!-- Account Name Label -->
-    <ImageView
-        android:id="@+id/return_icon"
-        android:layout_width="14dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="50dp"
-        android:clickable="true"
-        android:contentDescription="Return"
-        android:focusable="true"
-        android:src="@drawable/return_icon"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:fontFamily="@font/inter_bold"
-        android:text="REPORT MALICIOUS LINK"
-        android:textSize="16sp"
-
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.414"
-        app:layout_constraintStart_toEndOf="@id/return_icon"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/accountNameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Account Name"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="16dp"/>
-
-    <!-- Username Input -->
-    <EditText
-        android:id="@+id/userUsername"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Username"
-        android:layout_marginTop="4dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/report_text_border"
-        app:layout_constraintTop_toBottomOf="@id/accountNameLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:focusable="false"
-        android:clickable="false"
-        android:inputType="none"/>
-
-    <!-- Malicious Link Label -->
-    <TextView
-        android:id="@+id/maliciousLinkLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Malicious Link"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/userUsername"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="16dp"/>
-
-    <!-- URL Input -->
-    <EditText
-        android:id="@+id/urlEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="16dp"
-        android:hint="Enter Link URL"
-        android:background="@drawable/report_text_border"
-        android:inputType="none"
-        android:focusable="false"
-        android:clickable="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/maliciousLinkLabel" />
-
-    <!-- Description Input -->
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/urlEditText">
-
-        <Button
-            android:id="@+id/buttonPhishing"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Phishing" />
-
-        <Button
-            android:id="@+id/buttonSmishing"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Smishing" />
-
-        <Button
-            android:id="@+id/buttonScam"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Scam" />
-    </LinearLayout>
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/reportButton"
-        android:layout_width="336dp"
-        android:layout_height="42dp"
-        android:layout_marginTop="68dp"
-        android:background="@drawable/rounded_violet_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        tools:ignore="MissingConstraints">
-
-        <TextView
-            android:id="@+id/submitText"
-            android:layout_width="wrap_content"
+        <!-- Header with properly centered title and return icon -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_extra_bold"
-            android:text="SUBMIT"
-            android:textColor="#ffffff"
-            android:textSize="17sp"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/return_icon"
+                android:layout_width="14dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="24dp"
+                android:clickable="true"
+                android:contentDescription="Return"
+                android:focusable="true"
+                android:src="@drawable/return_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:gravity="center"
+                android:text="REPORT MALICIOUS LINK"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Form content with improved responsiveness -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/formLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout"
+            app:layout_constraintWidth_max="600dp">
+
+            <!-- Account Name Label -->
+            <TextView
+                android:id="@+id/accountNameLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Account Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Username Input -->
+            <EditText
+                android:id="@+id/userUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/report_text_border"
+                android:clickable="false"
+                android:focusable="false"
+                android:hint="Username"
+                android:inputType="none"
+                android:padding="12dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/accountNameLabel" />
+
+            <!-- Malicious Link Label -->
+            <TextView
+                android:id="@+id/maliciousLinkLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Malicious Link"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/userUsername" />
+
+            <!-- URL Input -->
+            <EditText
+                android:id="@+id/urlEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/report_text_border"
+                android:clickable="false"
+                android:focusable="false"
+                android:hint="Enter Link URL"
+                android:inputType="none"
+                android:padding="12dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/maliciousLinkLabel" />
+
+            <!-- Category Selection Buttons - Changed to vertical orientation for better text display -->
+            <LinearLayout
+                android:id="@+id/categoriesLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/urlEditText">
+
+                <Button
+                    android:id="@+id/buttonPhishing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Phishing"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/buttonSmishing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="Smishing"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/buttonScam"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Scam"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Submit Button - Responsive width -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/reportButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="48dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="32dp"
+            android:background="@drawable/rounded_violet_button"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/formLayout"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintWidth_max="400dp"
+            app:layout_constraintWidth_percent="0.85">
+
+            <TextView
+                android:id="@+id/submitText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_extra_bold"
+                android:text="SUBMIT"
+                android:textColor="#ffffff"
+                android:textSize="17sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

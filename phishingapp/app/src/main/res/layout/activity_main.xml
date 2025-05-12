@@ -17,10 +17,12 @@
     <!-- Bottom White Background -->
     <View
         android:id="@+id/bottom_background"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@drawable/rounded_white_bg_home"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHeight_percent="0.55" />
 
     <!-- Animation Toggle Switch -->
@@ -31,10 +33,9 @@
         android:id="@+id/animation_toggle_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="332dp"
         android:layout_marginEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@+id/guideline_top">
 
         <TextView
             android:id="@+id/animation_label"
@@ -47,8 +48,7 @@
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/animation_switch"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.533" />
+            app:layout_constraintTop_toTopOf="parent"  />
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/animation_switch"
@@ -57,36 +57,37 @@
             android:checked="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.35" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintGuide_percent="0.7" />
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.65" />
 
     <!-- Title -->
     <TextView
         android:id="@+id/text_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="220dp"
         android:fontFamily="@font/inter_extra_bold"
         android:text="PHISHERMAN"
         android:textColor="#1d1e4e"
         android:textSize="@dimen/text_title_size"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_top"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/sonar_wave_view"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.8" />
 
     <ImageView
         android:id="@+id/button_activate_scanner"
@@ -96,30 +97,31 @@
         android:contentDescription="Activate Scanner Icon"
         android:focusable="true"
         android:src="@drawable/home_activate"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintWidth_percent="0.5"
+        app:layout_constraintTop_toBottomOf="@id/guideline_top"
+        app:layout_constraintBottom_toTopOf="@id/guideline_buttons"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.4" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Buttons Row -->
     <TextView
         android:id="@+id/text_stay_protected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
         android:fontFamily="@font/inter_extra_bold"
         android:text="Stay Protected"
         android:textColor="#1d1e4e"
         android:textSize="@dimen/text_stay_protected_size"
+        app:layout_constraintBottom_toTopOf="@+id/buttons_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_activate_scanner" />
+        app:layout_constraintTop_toBottomOf="@id/guideline_buttons"
+        app:layout_constraintVertical_bias="0.2" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+        android:id="@+id/buttons_container"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -158,7 +160,7 @@
                 android:fontFamily="@font/inter_bold"
                 android:text="LEARN MORE"
                 android:textColor="#1d1e4e"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.50"
                 app:layout_constraintStart_toStartOf="parent"
@@ -197,7 +199,7 @@
                 android:fontFamily="@font/inter_bold"
                 android:text="REPORTS"
                 android:textColor="#1d1e4e"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/reports_icon" />
@@ -235,7 +237,7 @@
                 android:fontFamily="@font/inter_bold"
                 android:text="ACCOUNT"
                 android:textColor="#1d1e4e"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.503"
                 app:layout_constraintStart_toStartOf="parent"

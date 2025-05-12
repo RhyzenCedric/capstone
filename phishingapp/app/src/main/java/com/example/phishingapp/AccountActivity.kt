@@ -37,7 +37,7 @@ class AccountActivity : AppCompatActivity() {
         textViewUsername = findViewById(R.id.textViewUsername)
         buttonLogout = findViewById(R.id.logout_button_plate)
         buttonAnalytics =findViewById(R.id.analytics_plate)
-        buttonEditProfile =findViewById(R.id.edit_profile_plate)
+        //buttonEditProfile =findViewById(R.id.edit_profile_plate)
 
         // Set the username
         textViewUsername.text = username
@@ -99,19 +99,19 @@ class AccountActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<ConstraintLayout>(R.id.edit_profile_plate).setOnClickListener {
-            if (javaClass != EditProfileActivity::class.java) {
-                val username = intent.getStringExtra("userUsername") ?: "Guest"
-                val userId = intent.extras?.getInt("userId")
-                Log.d(TAG, "Passing userId: $userId")
-                val intent = Intent(this@AccountActivity, EditProfileActivity::class.java)
-                intent.putExtra("userUsername", username)
-                intent.putExtra("userId", userId)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, "Already on Edit Profile Screen", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        findViewById<ConstraintLayout>(R.id.edit_profile_plate).setOnClickListener {
+//            if (javaClass != EditProfileActivity::class.java) {
+//                val username = intent.getStringExtra("userUsername") ?: "Guest"
+//                val userId = intent.extras?.getInt("userId")
+//                Log.d(TAG, "Passing userId: $userId")
+//                val intent = Intent(this@AccountActivity, EditProfileActivity::class.java)
+//                intent.putExtra("userUsername", username)
+//                intent.putExtra("userId", userId)
+//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                startActivity(intent)
+//            } else {
+//                Toast.makeText(this, "Already on Edit Profile Screen", Toast.LENGTH_SHORT).show()
+//            }
+//        }
     }
 }

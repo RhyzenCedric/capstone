@@ -5,385 +5,384 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     android:background="@color/white">
 
-    <!-- Title Text (Centered in the Same Row) -->
+    <!-- Scrollable content to handle smaller screens -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/accountNameLabel3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-
-        android:text="MORE"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/analytics_plate" />
-
-    <ImageView
-        android:id="@+id/return_icon"
-        android:layout_width="14dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="50dp"
-        android:clickable="true"
-        android:contentDescription="Return"
-        android:focusable="true"
-        android:src="@drawable/return_icon"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:fontFamily="@font/inter_bold"
-        android:text=" MY ACCOUNT"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.417"
-        app:layout_constraintStart_toEndOf="@id/return_icon"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/user_plate"
-        android:layout_width="375dp"
-        android:layout_height="131dp"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/rounded_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titleTextView"
-        tools:ignore="MissingConstraints">
-
-        <TextView
-            android:id="@+id/textViewUsername"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="User"
-            android:textColor="#ffffff"
-            android:textSize="24sp"
-            android:fontFamily="@font/inter_bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Header Section -->
+            <ImageView
+                android:id="@+id/return_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="16dp"
+                android:clickable="true"
+                android:contentDescription="Return"
+                android:focusable="true"
+                android:src="@drawable/return_icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/accountNameLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="GENERAL"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/user_plate" />
+            <TextView
+                android:id="@+id/titleTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_bold"
+                android:text="MY ACCOUNT"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/return_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/return_icon" />
 
-    <TextView
-        android:id="@+id/accountNameLabel2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="DANGER ZONE"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/about_us_plate" />
+            <!-- User Profile Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/user_plate"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="32dp"
+                android:background="@drawable/rounded_button"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/titleTextView"
+                app:layout_constraintWidth_percent="0.95">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/edit_profile_plate"
-        android:layout_width="375dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/rounded_gray_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/accountNameLabel"
-        tools:ignore="MissingConstraints">
+                <TextView
+                    android:id="@+id/textViewUsername"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:text="User"
+                    android:textColor="#ffffff"
+                    android:textSize="24sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/edit_profile_icon"
-            android:layout_width="28dp"
-            android:layout_height="23dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:clickable="true"
-            android:contentDescription="Edit Profile"
-            android:focusable="true"
-            android:src="@drawable/edit_profile_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/edit_profile_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edit Profile"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.283"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.529" />
+            <!-- General Section -->
+            <TextView
+                android:id="@+id/accountNameLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="GENERAL"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/user_plate" />
 
-        <ImageView
-            android:id="@+id/edit_profile_proceed_icon"
-            android:layout_width="10dp"
-            android:layout_height="17dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:clickable="true"
-            android:contentDescription="Logout"
-            android:focusable="true"
-            android:src="@drawable/proceed_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <!-- Edit Profile Button -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/edit_profile_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/rounded_gray_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="60dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/accountNameLabel"
+                app:layout_constraintWidth_percent="0.95">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/edit_profile_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="Edit Profile"
+                    android:src="@drawable/edit_profile_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/analytics_plate"
-        android:layout_width="375dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/rounded_gray_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_profile_plate"
-        tools:ignore="MissingConstraints">
+                <TextView
+                    android:id="@+id/edit_profile_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Edit Profile"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/edit_profile_proceed_icon"
+                    app:layout_constraintStart_toEndOf="@+id/edit_profile_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/analytics_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:clickable="true"
-            android:contentDescription="Analytics"
-            android:focusable="true"
-            android:src="@drawable/analytics_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/edit_profile_proceed_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Proceed"
+                    android:src="@drawable/proceed_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/history_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Analytics"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.25"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <ImageView
-            android:id="@+id/history_proceed_icon"
-            android:layout_width="10dp"
-            android:layout_height="17dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:clickable="true"
-            android:contentDescription="Logout"
-            android:focusable="true"
-            android:src="@drawable/proceed_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <!-- Analytics Button -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/analytics_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/rounded_gray_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="60dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/edit_profile_plate"
+                app:layout_constraintWidth_percent="0.95">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/analytics_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="Analytics"
+                    android:src="@drawable/analytics_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/help_center_plate"
-        android:layout_width="375dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/rounded_gray_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/analytics_plate"
-        tools:ignore="MissingConstraints">
+                <TextView
+                    android:id="@+id/history_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Analytics"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/history_proceed_icon"
+                    app:layout_constraintStart_toEndOf="@+id/analytics_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/help_center_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="24dp"
-            android:clickable="true"
-            android:contentDescription="Help Center"
-            android:focusable="true"
-            android:src="@drawable/help_center_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/history_proceed_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Proceed"
+                    android:src="@drawable/proceed_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/help_center_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Help Center"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <ImageView
-            android:id="@+id/help_center_proceed_icon"
-            android:layout_width="10dp"
-            android:layout_height="17dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:clickable="true"
-            android:contentDescription="Proceed"
-            android:focusable="true"
-            android:src="@drawable/proceed_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <!-- More Section -->
+            <TextView
+                android:id="@+id/accountNameLabel3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="MORE"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/analytics_plate" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Help Center Button -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/help_center_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/rounded_gray_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="60dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/accountNameLabel3"
+                app:layout_constraintWidth_percent="0.95">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/logout_button_plate"
-        android:layout_width="375dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="50dp"
-        android:background="@drawable/rounded_gray_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/about_us_plate"
-        tools:ignore="MissingConstraints">
+                <ImageView
+                    android:id="@+id/help_center_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="Help Center"
+                    android:src="@drawable/help_center_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/logout_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="24dp"
-            android:clickable="true"
-            android:contentDescription="Logout"
-            android:focusable="true"
-            android:src="@drawable/logout_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/help_center_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Help Center"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/help_center_proceed_icon"
+                    app:layout_constraintStart_toEndOf="@+id/help_center_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/logout_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Logout"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.25"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+                <ImageView
+                    android:id="@+id/help_center_proceed_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Proceed"
+                    android:src="@drawable/proceed_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/logout_proceed_icon"
-            android:layout_width="10dp"
-            android:layout_height="17dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:clickable="true"
-            android:contentDescription="Logout"
-            android:focusable="true"
-            android:src="@drawable/proceed_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- About Us Button -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/about_us_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/rounded_gray_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="60dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/help_center_plate"
+                app:layout_constraintWidth_percent="0.95">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/about_us_plate"
-        android:layout_width="375dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/rounded_gray_button"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/help_center_plate"
-        tools:ignore="MissingConstraints">
+                <ImageView
+                    android:id="@+id/about_us_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="About Us"
+                    android:src="@drawable/about_us"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/about_us_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="24dp"
-            android:clickable="true"
-            android:contentDescription="Help Center"
-            android:focusable="true"
-            android:src="@drawable/about_us"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/about_us_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="About Us"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/about_us_proceed_icon"
+                    app:layout_constraintStart_toEndOf="@+id/about_us_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/about_us_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="About Us"
-            android:textColor="#000000"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5" />
+                <ImageView
+                    android:id="@+id/about_us_proceed_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Proceed"
+                    android:src="@drawable/proceed_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/about_us_proceed_icon"
-            android:layout_width="10dp"
-            android:layout_height="17dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp"
-            android:clickable="true"
-            android:contentDescription="Proceed"
-            android:focusable="true"
-            android:src="@drawable/proceed_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <!-- Danger Zone Section -->
+            <TextView
+                android:id="@+id/accountNameLabel2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="DANGER ZONE"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/about_us_plate" />
 
+            <!-- Logout Button -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/logout_button_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/rounded_gray_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:minHeight="60dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/accountNameLabel2"
+                app:layout_constraintVertical_bias="0.0"
+                app:layout_constraintWidth_percent="0.95">
+
+                <ImageView
+                    android:id="@+id/logout_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:contentDescription="Logout"
+                    android:src="@drawable/logout_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/logout_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Logout"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/logout_proceed_icon"
+                    app:layout_constraintStart_toEndOf="@+id/logout_icon"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/logout_proceed_icon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Proceed"
+                    android:src="@drawable/proceed_icon"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

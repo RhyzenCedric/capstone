@@ -17,11 +17,13 @@
     <!-- Top Background View (Dynamic height) -->
     <View
         android:id="@+id/topBackground"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="#1B1E46"
-        app:layout_constraintBottom_toTopOf="@id/topSectionGuide"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_percent="0.35" />
 
     <!-- Content Layout (White Background) -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,36 +31,40 @@
         android:layout_height="match_parent"
         android:background="@drawable/login_signup_white_rectangle"
         android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topBackground"
-        tools:layout_editor_absoluteX="42dp">
+        app:layout_constraintHeight_percent="0.65">
 
         <ImageView
             android:id="@+id/appIcon"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_marginTop="25dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="40dp"
             android:contentDescription="App Icon"
-
             android:src="@drawable/app_icon"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.096"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toStartOf="@+id/title"
+
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.3" />
 
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="76dp"
-            android:paddingBottom="20dp"
             android:text="PHISHERMAN"
             android:textColor="#ffffff"
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.857"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintStart_toEndOf="@id/appIcon"
+            app:layout_constraintTop_toTopOf="@id/appIcon"
+            app:layout_constraintBottom_toBottomOf="@id/appIcon" />
+
 
         <TextView
             android:id="@+id/accountNameLabel"

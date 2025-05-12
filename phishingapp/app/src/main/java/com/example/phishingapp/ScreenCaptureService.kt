@@ -21,7 +21,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import android.util.Patterns
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -35,8 +34,6 @@ import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.IOException
-import java.util.concurrent.ExecutionException
 import java.util.regex.Pattern
 
 class ScreenCaptureService : Service() {
@@ -566,17 +563,23 @@ class ScreenCaptureService : Service() {
         }
     }
 
+    private fun extractTLD(hostname: String): String {
+        return try {
+            hostname.split(".").last().lowercase()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting TLD from $hostname", e)
+            ""
+        }
+    }
 
     private suspend fun scanUrl(urlString: String): ScanResult {
         return try {
             val sanitizedUrl = sanitizeUrl(urlString)
             val hostname = extractHostname(sanitizedUrl)
-            val tld = hostname.substringAfterLast('.', "")
+            val tld = extractTLD(hostname)
 
-            // Log what we're processing to help with debugging
             Log.d(TAG, "Scanning URL: $sanitizedUrl, Hostname: $hostname, TLD: $tld")
 
-            // First check whitelist
             if (isWhitelisted(hostname)) {
                 return ScanResult(
                     url = sanitizedUrl,
@@ -585,41 +588,31 @@ class ScreenCaptureService : Service() {
                 )
             }
 
-            // Then check blacklist
             if (isBlacklisted(hostname)) {
                 return ScanResult(
                     url = sanitizedUrl,
                     isMalicious = true,
-                    description = "Domain is in blacklist"
+                    description = "Suspicious TLD: $tld found in blacklist"
                 )
             }
 
-            // If not in whitelist or blacklist, proceed with heuristic checks
-//            val phishingIndicators = listOf(
-//                "free-gift", "suspicious", "login", "verify", "account", "secure", "urgent-action",
-//                "verification", "update", "limited-time", "click", "confirm",
-//                "password", "banking", "recover", "alert", "unusual", "activity",
-//                "security", "expire", "access", "restricted", "suspend", "signin", "auth", "validate", "reset", "fraud", "customer",
-//                "support", "service", "bill", "payment", "authorize", "identity", "confirm-id"
-//            )
-//
-//            // Heuristic checks
-//            val isSuspiciousTld = tld in listOf("tk", "ml", "ga", "cf", "gq", "pw", "top", "xyz", "loan", "win", "bid", "cc", "me", "app")
-            //val hasPhishingKeyword = phishingIndicators.any { hostname.contains(it) || sanitizedUrl.contains(it) }
-            val isLongAndComplexUrl = sanitizedUrl.length > 20 || sanitizedUrl.count { it == '.' } > 3 || sanitizedUrl.count { it == '/' } > 4 || sanitizedUrl.count { it == '-' } > 2
-            val hasRandomString = sanitizedUrl.contains(Regex("/[a-zA-Z0-9]{10,}/?")) || hostname.contains(Regex("[a-zA-Z0-9]{10,}"))
+            val isLongAndComplexUrl = sanitizedUrl.length > 20 ||
+                    sanitizedUrl.count { it == '.' } > 3 ||
+                    sanitizedUrl.count { it == '/' } > 4 ||
+                    sanitizedUrl.count { it == '-' } > 2
+            val hasRandomString = sanitizedUrl.contains(Regex("/[a-zA-Z0-9]{10,}/?")) ||
+                    hostname.contains(Regex("[a-zA-Z0-9]{10,}"))
             val hasExcessiveSpecialChars = sanitizedUrl.count { it in "@%&=#" } > 3
 
-            // Determine if the URL is malicious based on heuristic checks
-            val isMalicious = //hasPhishingKeyword ||
-                // isSuspiciousTld ||
-                isLongAndComplexUrl || hasRandomString || hasExcessiveSpecialChars
+            val isMalicious = isLongAndComplexUrl || hasRandomString || hasExcessiveSpecialChars
 
             ScanResult(
                 url = sanitizedUrl,
                 isMalicious = isMalicious,
                 description = when {
                     hasRandomString -> "Random string pattern detected"
+                    isLongAndComplexUrl -> "Long & Complex URL"
+                    hasExcessiveSpecialChars -> "Has Excessive Special Characters"
                     else -> "Link appears safe"
                 }
             )
@@ -632,6 +625,7 @@ class ScreenCaptureService : Service() {
             )
         }
     }
+
 
     // New function to check whitelist
     private suspend fun isWhitelisted(hostname: String): Boolean {
@@ -652,7 +646,8 @@ class ScreenCaptureService : Service() {
             val response = RetrofitClient.instance.getBlacklist().execute()
             if (response.isSuccessful) {
                 val blacklist = response.body() ?: emptyList()
-                return blacklist.any { it.domain == hostname || it.url == hostname }
+                val tld = extractTLD(hostname)
+                return blacklist.any { it.domain == hostname || it.url == hostname || it.tld == tld}
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking blacklist", e)
