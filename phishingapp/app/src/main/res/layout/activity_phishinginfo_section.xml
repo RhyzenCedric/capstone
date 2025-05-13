@@ -102,7 +102,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:contentDescription="Email icon"
-                    android:src="@drawable/email_phishing"
+                    android:src="@drawable/email"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -159,7 +159,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:contentDescription="Smartphone icon"
-                    android:src="@drawable/smishing"
+                    android:src="@drawable/message"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -215,7 +215,7 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:contentDescription="Clone icon"
-                    android:src="@drawable/clone_phishing"
+                    android:src="@drawable/clone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
