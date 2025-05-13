@@ -79,4 +79,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.16.0")
     implementation("androidx.multidex:multidex:2.0.1")
+    // SVG support
+    implementation("com.caverock:androidsvg:1.4")
 }
